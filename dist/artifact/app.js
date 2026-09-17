@@ -118,6 +118,8 @@ const state = {
   coverage: store.get('coverage', {}),
   units: store.get('units', []),
   lesson: store.get('lesson', { title: '', date: '', periods: '' }),
+  sequence: store.get('sequence', { scope: 'bridge', option: null, density: 'full' }),
+  lastSequence: null,
   open: new Set(store.get('open', [])),
 };
 
@@ -126,6 +128,7 @@ const persist = {
   coverage: () => store.set('coverage', state.coverage),
   units: () => store.set('units', state.units),
   lesson: () => store.set('lesson', state.lesson),
+  sequence: () => store.set('sequence', state.sequence),
   open: () => store.set('open', [...state.open]),
 };
 
@@ -135,7 +138,7 @@ function toggleSelect(uid) {
   const i = state.selection.indexOf(uid);
   if (i >= 0) state.selection.splice(i, 1); else state.selection.push(uid);
   persist.selection();
-  if (['lesson', 'plan'].includes(state.view)) { render(); return; }
+  if (['lesson', 'plan', 'sequence'].includes(state.view)) { render(); return; }
   const on = state.selection.includes(uid);
   $$(`[data-add="${uid}"]`).forEach((btn) => {
     btn.dataset.on = String(on);
@@ -463,6 +466,286 @@ function buildAnswer(query) {
     || null;
 }
 
+/* ------------------------------------------------------- sequence engine */
+/* Connects what the user picked: finds the instructional path between their
+   selections, fills in what has to come between, groups the result into
+   lessons and units, and expands outward to a full scope and sequence. */
+
+const G = F.graph;
+const META = G.standardMeta;
+const THREADS = new Map(G.threads.map((t) => [t.id, t]));
+
+const ADJ = new Map();
+const RADJ = new Map();
+G.standardEdges.forEach((e) => {
+  if (!ADJ.has(e.from)) ADJ.set(e.from, []);
+  if (!RADJ.has(e.to)) RADJ.set(e.to, []);
+  ADJ.get(e.from).push(e);
+  RADJ.get(e.to).push(e);
+});
+
+const orderOf = (stdUid) => META[stdUid]?.order ?? 0;
+
+// Dijkstra over standards. Tries the forward (prerequisite) direction first;
+// falls back to treating edges as undirected, which means "related" rather
+// than "builds on".
+function standardPath(fromUid, toUid) {
+  const run = (undirected) => {
+    const dist = new Map([[fromUid, 0]]);
+    const prev = new Map();
+    const queue = [{ uid: fromUid, d: 0 }];
+    const done = new Set();
+    while (queue.length) {
+      queue.sort((a, b) => a.d - b.d);
+      const { uid } = queue.shift();
+      if (done.has(uid)) continue;
+      done.add(uid);
+      if (uid === toUid) break;
+      const out = [...(ADJ.get(uid) || []).map((e) => ({ e, next: e.to }))];
+      if (undirected) (RADJ.get(uid) || []).forEach((e) => out.push({ e, next: e.from }));
+      out.forEach(({ e, next }) => {
+        const d = dist.get(uid) + e.weight;
+        if (d < (dist.get(next) ?? Infinity)) {
+          dist.set(next, d);
+          prev.set(next, { uid, edge: e });
+          queue.push({ uid: next, d });
+        }
+      });
+    }
+    if (!dist.has(toUid)) return null;
+    const nodes = [toUid];
+    const edges = [];
+    let cur = toUid;
+    while (prev.has(cur)) {
+      const step = prev.get(cur);
+      edges.unshift(step.edge);
+      nodes.unshift(step.uid);
+      cur = step.uid;
+    }
+    return { nodes, edges, directed: !undirected };
+  };
+  return run(false) || run(true) || { nodes: [fromUid, toUid], edges: [], directed: false, disconnected: true };
+}
+
+// Benchmarks an intermediate standard contributes to a bridge: the ones that
+// actually carry the shared content, not the whole standard.
+function bridgeBenchmarks(stdUid, focusTopics) {
+  const std = STD_BY_UID.get(stdUid);
+  const related = std.benchmarks.filter((b) => b.topics.some((t) => focusTopics.has(t)));
+  const pick = related.length ? related : std.benchmarks;
+  const knowledge = pick.filter((b) => b.modality === 'knowledge').slice(0, 3);
+  const performance = pick.filter((b) => b.modality === 'performance').slice(0, 2);
+  return [...new Set([...knowledge, ...performance])].sort((a, b) => a.id.localeCompare(b.id));
+}
+
+function groupLessons(list) {
+  const lessons = [];
+  let cur = null;
+  const focusOf = (b) => b.topics[0] || b.standardId;
+  list.forEach((b) => {
+    const breakHere = !cur
+      || cur.standardId !== b.standardId
+      || cur.uids.length >= 6
+      || cur.periods >= 3.5
+      || (focusOf(b) !== cur.focus && cur.periods >= 1);
+    if (breakHere) {
+      cur = { uids: [], periods: 0, standardId: b.standardId, courseNumber: b.courseNumber, focus: focusOf(b) };
+      lessons.push(cur);
+    }
+    cur.uids.push(b.uid);
+    cur.periods = Math.round((cur.periods + b.suggestedPeriods) * 4) / 4;
+  });
+  return lessons.map((l, i) => {
+    const items = l.uids.map((uid) => BY_UID.get(uid));
+    const perf = items.filter((b) => b.modality === 'performance');
+    const topicLabel = TOPIC_LABEL.get(l.focus);
+    const gist = items[0].text.split(/\s+/).slice(0, 7).join(' ').replace(/[,.:;]$/, '');
+    return {
+      ...l,
+      id: `L${i + 1}`,
+      title: topicLabel ? `${topicLabel}` : gist,
+      subtitle: items.length === 1 ? items[0].text : `${items[0].id}-${items[items.length - 1].id}`,
+      rawPeriods: l.periods,
+      arc: perf.length === items.length ? 'performance' : perf.length ? 'practice' : 'knowledge',
+      performanceCount: perf.length,
+      items,
+    };
+  });
+}
+
+// Which benchmarks already taught earlier in this sequence does a lesson lean on?
+function lessonLinks(lesson, taughtBefore) {
+  const builds = [];
+  const revisits = [];
+  lesson.items.forEach((b) => {
+    G.benchmarkEdges.filter((e) => e.to === b.uid).forEach((e) => {
+      if (!taughtBefore.has(e.from)) return;
+      const target = e.type === 'spiral' ? revisits : builds;
+      if (!target.includes(e.from)) target.push(e.from);
+    });
+    b.repeatsIn.forEach((uid) => { if (taughtBefore.has(uid) && !revisits.includes(uid)) revisits.push(uid); });
+  });
+  return { builds: builds.slice(0, 4), revisits: revisits.slice(0, 3) };
+}
+
+const OPTION_COURSES = COURSES.filter((c) => c.track === 'capstone-option').map((c) => c.courseNumber);
+
+const SCOPES = [
+  { id: 'bridge', label: 'Bridge', hint: 'Only what connects the picks' },
+  { id: 'standards', label: 'Full standards', hint: 'Every benchmark of each standard on the path' },
+  { id: 'thread', label: 'Whole thread', hint: 'The pathway end to end, across courses' },
+  { id: 'course', label: 'Whole course', hint: 'Every standard in the courses involved' },
+  { id: 'program', label: 'Whole program', hint: 'All four credits in teaching order, with one capstone option' },
+];
+
+function buildSequence(seedUids, scope) {
+  const seeds = seedUids.map((uid) => BY_UID.get(uid)).filter(Boolean);
+  if (!seeds.length) return null;
+
+  const seedStandards = [...new Set(seeds.map((b) => `${b.courseNumber}:${b.standardId}`))]
+    .sort((a, b) => orderOf(a) - orderOf(b));
+  const focusTopics = new Set(seeds.flatMap((b) => b.topics));
+  const legs = [];
+  for (let i = 1; i < seedStandards.length; i += 1) {
+    legs.push(standardPath(seedStandards[i - 1], seedStandards[i]));
+  }
+
+  let standardUids;
+  if (scope === 'program') {
+    const option = state.sequence.option || seeds.map((b) => b.courseNumber).find((n) => OPTION_COURSES.includes(n)) || OPTION_COURSES[0];
+    standardUids = G.programOrder.filter((uid) => {
+      const num = uid.split(':')[0];
+      return !OPTION_COURSES.includes(num) || num === option;
+    });
+  } else if (scope === 'course') {
+    const courseNums = [...new Set(seeds.map((b) => b.courseNumber))];
+    standardUids = G.programOrder.filter((uid) => courseNums.includes(uid.split(':')[0]));
+  } else if (scope === 'thread') {
+    const threadIds = [...new Set(seedStandards.flatMap((uid) => META[uid].threads))];
+    const set = new Set(threadIds.flatMap((id) => THREADS.get(id).standards));
+    standardUids = G.programOrder.filter((uid) => set.has(uid));
+  } else {
+    const onPath = new Set([...seedStandards, ...legs.flatMap((l) => l.nodes)]);
+    standardUids = G.programOrder.filter((uid) => onPath.has(uid));
+  }
+
+  const pathSet = new Set([...seedStandards, ...legs.flatMap((l) => l.nodes)]);
+  const benchmarks = standardUids.flatMap((uid) => {
+    const std = STD_BY_UID.get(uid);
+    const isSeedStandard = seedStandards.includes(uid);
+    if (scope === 'bridge' && !isSeedStandard) return bridgeBenchmarks(uid, focusTopics);
+    if (scope === 'bridge' && isSeedStandard) {
+      const picked = seeds.filter((b) => `${b.courseNumber}:${b.standardId}` === uid);
+      const support = std.benchmarks.filter((b) => b.modality === 'knowledge'
+        && b.topics.some((t) => focusTopics.has(t))
+        && b.id < picked[0].id).slice(-2);
+      return [...new Set([...support, ...picked])].sort((a, b) => a.id.localeCompare(b.id));
+    }
+    return std.benchmarks;
+  });
+
+  const lessons = groupLessons(benchmarks);
+
+  // Phase = course, unit = standard.
+  const phases = [];
+  const taught = new Set();
+  let elapsed = 0;
+  lessons.forEach((lesson) => {
+    const course = COURSE_BY_NUM.get(lesson.courseNumber);
+    let phase = phases[phases.length - 1];
+    if (!phase || phase.courseNumber !== lesson.courseNumber) {
+      phase = { courseNumber: lesson.courseNumber, course, units: [] };
+      phases.push(phase);
+    }
+    let unit = phase.units[phase.units.length - 1];
+    if (!unit || unit.standardId !== lesson.standardId) {
+      const std = STD_BY_UID.get(`${lesson.courseNumber}:${lesson.standardId}`);
+      unit = {
+        standardId: lesson.standardId,
+        standard: std,
+        onPath: pathSet.has(std.uid),
+        threads: META[std.uid].threads,
+        prereqs: META[std.uid].prereqs.filter((p) => p.type === 'thread'),
+        lessons: [],
+      };
+      phase.units.push(unit);
+    }
+    lesson.links = lessonLinks(lesson, taught);
+    lesson.startDay = Math.round(elapsed) + 1;
+    elapsed += lesson.rawPeriods;
+    lesson.endDay = Math.max(lesson.startDay, Math.round(elapsed));
+    lesson.periods = lesson.endDay - lesson.startDay + 1;
+    lesson.items.forEach((b) => taught.add(b.uid));
+    unit.lessons.push(lesson);
+  });
+
+  // Two lessons in one unit can land on the same topic label; name them by the
+  // part of the arc they carry so the sequence reads as a progression.
+  const ARC_QUALIFIER = { knowledge: 'foundations', practice: 'guided practice', performance: 'performance task' };
+  phases.forEach((phase) => {
+    phase.units.forEach((unit) => {
+      const counts = {};
+      unit.lessons.forEach((l) => { counts[l.title] = (counts[l.title] || 0) + 1; });
+      const used = {};
+      unit.lessons.forEach((l) => {
+        if (counts[l.title] > 1) {
+          used[l.title] = (used[l.title] || 0) + 1;
+          l.title = `${l.title} - ${ARC_QUALIFIER[l.arc] || `part ${used[l.title]}`}`;
+        }
+      });
+      const seenTitles = new Set();
+      unit.lessons.forEach((l, i) => {
+        if (seenTitles.has(l.title)) l.title = `${l.title} (${i + 1})`;
+        seenTitles.add(l.title);
+      });
+      unit.periods = unit.lessons.reduce((a, l) => a + l.periods, 0);
+      unit.startDay = unit.lessons[0].startDay;
+      unit.endDay = unit.lessons[unit.lessons.length - 1].endDay;
+      unit.checkpoint = unit.lessons.some((l) => l.performanceCount)
+        ? 'Performance checkpoint - observed skills checklist'
+        : 'Knowledge checkpoint - written check';
+    });
+    phase.periods = phase.units.reduce((a, u) => a + u.periods, 0);
+    phase.startDay = phase.units[0].startDay;
+    phase.endDay = phase.units[phase.units.length - 1].endDay;
+  });
+
+  const all = lessons.flatMap((l) => l.items);
+  const rationale = [];
+  legs.forEach((leg, i) => {
+    const from = STD_BY_UID.get(seedStandards[i]);
+    const to = STD_BY_UID.get(seedStandards[i + 1]);
+    if (leg.disconnected) {
+      rationale.push(`${from.id} and ${to.id} share no curated pathway - they are sequenced by course order.`);
+      return;
+    }
+    const steps = leg.edges.length;
+    const threadNames = [...new Set(leg.edges.filter((e) => e.thread).map((e) => THREADS.get(e.thread).label))];
+    rationale.push(`${from.id} ${from.courseTitle.replace('Criminal Justice Operations', 'CJO')} ${leg.directed ? '->' : '<->'} ${to.id} ${to.courseTitle.replace('Criminal Justice Operations', 'CJO')}: ${plural(steps, 'step')}${threadNames.length ? ` along ${threadNames.join(' and ')}` : ''}${leg.directed ? '' : ' (related content, not a prerequisite chain)'}.`);
+    const spirals = leg.edges.filter((e) => e.type === 'spiral');
+    if (spirals.length) rationale.push(`${plural(spirals.length, 'benchmark')} on this path is required again in a later course - teach it once properly, then revisit.`);
+  });
+
+  return {
+    scope,
+    seeds,
+    seedStandards,
+    legs,
+    phases,
+    lessons,
+    rationale,
+    totals: {
+      benchmarks: all.length,
+      programShare: Math.round((all.length / BENCH.length) * 100),
+      lessons: lessons.length,
+      periods: lessons.reduce((a, l) => a + l.periods, 0),
+      performance: all.filter((b) => b.modality === 'performance').length,
+      standards: phases.reduce((a, p) => a + p.units.length, 0),
+      courses: phases.length,
+    },
+  };
+}
+
 /* ------------------------------------------------------------ components */
 const LEVEL_NAME = new Map(F.taxonomy.bloom.map((b) => [b.level, b.name]));
 
@@ -536,6 +819,17 @@ function filterBar() {
   </div>`;
 }
 
+// Plain-language summary of how the current picks relate, shown before building.
+function connectionPreview(items) {
+  const stds = [...new Set(items.map((b) => `${b.courseNumber}:${b.standardId}`))]
+    .sort((a, b) => orderOf(a) - orderOf(b));
+  if (stds.length === 1) return `All within ${STD_BY_UID.get(stds[0]).id} - the sequence will fill in the rest of that standard.`;
+  const leg = standardPath(stds[0], stds[stds.length - 1]);
+  if (leg.disconnected) return 'No shared pathway - they will be sequenced by course order.';
+  const threadNames = [...new Set(leg.edges.filter((e) => e.thread).map((e) => THREADS.get(e.thread).label))];
+  return `${plural(leg.nodes.length - 1, 'step')} apart${threadNames.length ? ` on ${threadNames[0]}` : ''} - ${plural(leg.nodes.length, 'standard')} between them.`;
+}
+
 function selectionPanel() {
   const items = state.selection.map((uid) => BY_UID.get(uid));
   const periods = items.reduce((a, b) => a + b.suggestedPeriods, 0);
@@ -546,10 +840,12 @@ function selectionPanel() {
         <span style="flex:1">${esc(b.text.slice(0, 70))}${b.text.length > 70 ? '...' : ''}</span>
         <button data-add="${b.uid}" title="Remove">&times;</button></div>`).join('')}</div>
       <div class="row">
-        <button class="btn" data-action="goto-lesson">Build lesson</button>
+        <button class="btn" data-action="build-sequence">${items.length > 1 ? 'Connect these' : 'Build sequence'}</button>
+        <button class="btn ghost" data-action="goto-lesson">Lesson plan</button>
         <button class="btn ghost" data-action="new-unit">New unit</button>
         <button class="btn ghost" data-action="clear-selection">Clear</button>
-      </div>`
+      </div>
+      ${items.length > 1 ? `<p class="tiny muted" style="margin:0">${esc(connectionPreview(items))}</p>` : ''}`
       : '<p class="small muted">Add benchmarks with the <strong>+</strong> button to build a lesson, a unit, or an export.</p>'}
   </div>`;
 }
@@ -979,9 +1275,141 @@ function renderProgram() {
   </div>`;
 }
 
+function sequenceMarkdown(seq) {
+  const out = [];
+  const scopeLabel = SCOPES.find((s) => s.id === seq.scope).label;
+  out.push(`# ${P.programTitle} - instructional sequence (${scopeLabel.toLowerCase()})`, '');
+  out.push(`**Built from:** ${seq.seeds.map((b) => `${b.id} ${b.courseNumber}`).join(' + ')}`);
+  out.push(`**Covers:** ${seq.totals.benchmarks} benchmarks (${seq.totals.programShare}% of the program) | ${seq.totals.standards} standards | ${seq.totals.lessons} lessons | ${seq.totals.periods} instructional days | ${seq.totals.performance} performance tasks`, '');
+  if (seq.rationale.length) {
+    out.push('## Why this order', '');
+    seq.rationale.forEach((r) => out.push(`- ${r}`));
+    out.push('');
+  }
+  seq.phases.forEach((phase) => {
+    out.push(`## ${phase.course.title} (${phase.courseNumber}) - days ${phase.startDay}-${phase.endDay}`, '');
+    phase.units.forEach((unit) => {
+      out.push(`### Unit: ${unit.standardId} ${unit.standard.text}`);
+      out.push(`*Days ${unit.startDay}-${unit.endDay} (${unit.periods}) | threads: ${unit.threads.map((t) => THREADS.get(t).label).join(', ') || 'none'}*`, '');
+      if (unit.prereqs.length) {
+        out.push(`Builds on: ${unit.prereqs.map((p) => `${STD_BY_UID.get(p.uid).id} ${STD_BY_UID.get(p.uid).courseTitle}`).join('; ')}`, '');
+      }
+      unit.lessons.forEach((lesson, i) => {
+        out.push(`**Lesson ${i + 1}: ${lesson.title}** - days ${lesson.startDay}-${lesson.endDay}, ${lesson.arc}`);
+        lesson.items.forEach((b) => out.push(`- ${b.id} ${b.text}${b.modality === 'performance' ? ' *(performance)*' : ''}`));
+        if (lesson.links.builds.length) out.push(`  - builds on: ${lesson.links.builds.map((u) => BY_UID.get(u).id).join(', ')}`);
+        if (lesson.links.revisits.length) out.push(`  - revisits: ${lesson.links.revisits.map((u) => `${BY_UID.get(u).id} (${BY_UID.get(u).courseNumber})`).join(', ')}`);
+        out.push('');
+      });
+      out.push(`_${unit.checkpoint}_`, '');
+    });
+  });
+  out.push('---', `*Sequence generated from the FLDOE ${P.programTitle} framework (program ${P.programNumber}). Standards and benchmarks are framework text; the ordering, lesson grouping and day counts come from the curated pathways in data/pathways.json and are a teaching judgement to adapt.*`);
+  return out.join('\n');
+}
+
+function renderSequence() {
+  const seeds = state.selection;
+  const scope = state.sequence.scope;
+
+  const header = `<div class="card stack seq-head">
+    <div class="row">
+      <h2 style="margin:0">Instructional sequence</h2>
+      <span class="right row no-print">
+        ${seeds.length ? `<button class="btn ghost" data-action="seq-density">${state.sequence.density === 'outline' ? 'Show benchmarks' : 'Outline only'}</button>
+        <button class="btn ghost" data-action="seq-save">Save as units</button>
+        <button class="btn ghost" data-action="seq-export">Export</button>
+        <button class="btn ghost" data-action="print">Print</button>` : ''}
+      </span>
+    </div>
+    ${seeds.length
+      ? `<div class="row small"><span class="muted">Connecting</span>
+          ${seeds.map((uid) => { const b = BY_UID.get(uid); return `<span class="seed"><a href="#/b/${uid}"><code>${esc(b.id)}</code></a> ${esc(b.text.slice(0, 44))}${b.text.length > 44 ? '...' : ''}<button data-add="${uid}" title="Remove">&times;</button></span>`; }).join('<span class="muted">+</span>')}
+        </div>
+        <div class="chips">${SCOPES.map((s) => `<button class="chip" data-action="seq-scope" data-value="${s.id}" aria-pressed="${scope === s.id}" title="${esc(s.hint)}">${esc(s.label)}</button>`).join('')}</div>
+        ${scope === 'program' ? `<div class="row tiny"><span class="muted">Fourth credit</span>
+          <div class="chips">${OPTION_COURSES.map((n) => `<button class="chip" data-action="seq-option" data-value="${n}" aria-pressed="${(state.sequence.option || OPTION_COURSES[0]) === n}">${esc(COURSE_BY_NUM.get(n).title)}</button>`).join('')}</div>
+          <span class="muted">students take one</span></div>` : ''}`
+      : `<p class="small muted">Pick benchmarks anywhere in the app - two is enough - then come back here. The sequence finds what connects them, fills in what has to be taught between, and can expand out to the full program.</p>
+         <div class="row no-print">
+           <button class="btn" data-action="seq-demo">Show me an example</button>
+           <button class="btn ghost" data-action="seq-program">Build the whole program</button>
+         </div>`}
+  </div>`;
+
+  if (!seeds.length) {
+    return `<div class="stack">${header}
+      <div class="card stack">
+        <h3>The pathways this is built on</h3>
+        <p class="small muted">${esc(F.notes.find((n) => n.kind === 'pathways').detail)}</p>
+        <div class="threadgrid">${G.threads.map((t) => `<button class="threadcard" data-action="seq-thread" data-value="${t.id}">
+          <strong class="small">${esc(t.label)}</strong>
+          <span class="tiny muted">${t.standards.length} standards across ${new Set(t.standards.map((s) => s.split(':')[0])).size} courses</span>
+          <span class="tiny">${esc(t.rationale)}</span>
+          <span class="tiny mono">${t.standards.map((s) => esc(STD_BY_UID.get(s).id)).join(' &rarr; ')}</span>
+        </button>`).join('')}</div>
+      </div></div>`;
+  }
+
+  const seq = buildSequence(seeds, scope);
+  state.lastSequence = seq;
+
+  const stats = `<div class="grid stats">
+    ${[['Benchmarks', `${seq.totals.benchmarks}`, scope === 'program' ? '3 core courses + 1 option' : `${seq.totals.programShare}% of the framework`],
+       ['Lessons', seq.totals.lessons, `${seq.totals.standards} standards`],
+       ['Instructional days', seq.totals.periods, `${seq.totals.courses} course${seq.totals.courses > 1 ? 's' : ''}`],
+       ['Performance tasks', seq.totals.performance, 'need lab time']]
+      .map(([l, n, sub]) => `<div class="card stat"><div class="n">${n}</div><div class="l">${esc(l)}</div><div class="tiny muted">${esc(sub)}</div></div>`).join('')}
+  </div>`;
+
+  const why = seq.rationale.length ? `<div class="card answer stack">
+    <h3 style="margin:0">How these connect</h3>
+    ${seq.rationale.map((r) => `<p class="small" style="margin:0">${esc(r)}</p>`).join('')}
+  </div>` : '';
+
+  const rail = seq.phases.map((phase) => `<section class="phase">
+    <div class="phase-head">
+      <div><strong>${esc(phase.course.title)}</strong> <span class="tiny muted">${esc(phase.courseNumber)} &middot; credit ${phase.course.credit}</span></div>
+      <span class="tiny muted">days ${phase.startDay}-${phase.endDay}</span>
+    </div>
+    ${phase.units.map((unit) => `<div class="unitblock${unit.onPath ? ' on-path' : ''}">
+      <div class="unit-head">
+        <span class="sid">${esc(unit.standardId)}</span>
+        <div style="flex:1">
+          <div class="small"><strong>${esc(unit.standard.text)}</strong></div>
+          <div class="tiny muted">days ${unit.startDay}-${unit.endDay} &middot; ${plural(unit.lessons.length, 'lesson')}
+            ${unit.threads.map((t) => `<span class="tag thread">${esc(THREADS.get(t).label)}</span>`).join('')}</div>
+          ${unit.prereqs.length ? `<div class="tiny muted">builds on ${unit.prereqs.map((p) => `<a href="#/standard/${p.uid}"><code>${esc(STD_BY_UID.get(p.uid).id)}</code></a>`).join(', ')}</div>` : ''}
+        </div>
+      </div>
+      <ol class="lessons">
+        ${unit.lessons.map((lesson) => `<li class="lesson arc-${lesson.arc}">
+          <div class="lesson-head">
+            <span class="days">d${lesson.startDay}${lesson.periods > 1 ? `-${lesson.endDay}` : ''}</span>
+            <strong class="small">${esc(lesson.title)}</strong>
+            <span class="tag ${lesson.arc === 'performance' ? 'perf' : ''}">${esc(lesson.arc)}</span>
+            <span class="right no-print"><button class="iconbtn" data-action="seq-lesson" data-value="${lesson.uids.join(',')}">Lesson plan</button></span>
+          </div>
+          ${state.sequence.density === 'outline'
+            ? `<div class="tiny muted">${lesson.items.map((b) => `<a href="#/b/${b.uid}"><code>${esc(b.id)}</code></a>`).join(' ')}</div>`
+            : `<ul class="lesson-items">${lesson.items.map((b) => `<li><a href="#/b/${b.uid}"><code>${esc(b.id)}</code></a> ${esc(b.text)}</li>`).join('')}</ul>`}
+          ${lesson.links.builds.length || lesson.links.revisits.length ? `<div class="tiny links">
+            ${lesson.links.builds.length ? `<span class="muted">builds on</span> ${lesson.links.builds.map((u) => `<a href="#/b/${u}"><code>${esc(BY_UID.get(u).id)}</code></a>`).join(' ')}` : ''}
+            ${lesson.links.revisits.length ? `<span class="muted">revisits</span> ${lesson.links.revisits.map((u) => `<a href="#/b/${u}"><code>${esc(BY_UID.get(u).id)}</code></a> <span class="muted">${esc(BY_UID.get(u).courseNumber)}</span>`).join(' ')}` : ''}
+          </div>` : ''}
+        </li>`).join('')}
+      </ol>
+      <div class="checkpoint tiny">${esc(unit.checkpoint)}</div>
+    </div>`).join('')}
+  </section>`).join('');
+
+  return `<div class="stack">${header}${why}${stats}<div class="rail">${rail}</div></div>`;
+}
+
 const VIEWS = {
   ask: { label: 'Ask', render: renderAsk },
   browse: { label: 'Browse', render: renderBrowse },
+  sequence: { label: 'Sequence', render: renderSequence, badge: () => (state.selection.length > 1 ? state.selection.length : 0) },
   plan: { label: 'Units', render: renderPlan },
   lesson: { label: 'Lesson', render: renderLesson, badge: () => state.selection.length },
   coverage: { label: 'Coverage', render: renderCoverage },
@@ -1034,6 +1462,69 @@ function focusOn(type, id) {
 /* --------------------------------------------------------------- actions */
 const ACTIONS = {
   'clear-query': () => setQuery(''),
+  'seq-option': (value) => { state.sequence.option = value; persist.sequence(); render(); },
+  'seq-density': () => {
+    state.sequence.density = state.sequence.density === 'outline' ? 'full' : 'outline';
+    persist.sequence();
+    render();
+  },
+  'seq-scope': (value) => { state.sequence.scope = value; persist.sequence(); render(); },
+  'seq-demo': () => {
+    // A connection that spans courses and shows a real spiral.
+    state.selection = ['8918020:13.05', '8918030:22.18'];
+    persist.selection();
+    state.sequence.scope = 'bridge';
+    persist.sequence();
+    render();
+    toast('Connected 13.05 and 22.18');
+  },
+  'seq-thread': (id) => {
+    const t = THREADS.get(id);
+    const first = STD_BY_UID.get(t.standards[0]);
+    const last = STD_BY_UID.get(t.standards[t.standards.length - 1]);
+    state.selection = [first.benchmarks[0].uid, last.benchmarks[last.benchmarks.length - 1].uid];
+    persist.selection();
+    state.sequence.scope = 'thread';
+    persist.sequence();
+    render();
+  },
+  'seq-program': () => {
+    const first = STD_BY_UID.get(G.programOrder[0]);
+    const last = STD_BY_UID.get(G.programOrder[G.programOrder.length - 1]);
+    state.selection = [first.benchmarks[0].uid, last.benchmarks[last.benchmarks.length - 1].uid];
+    persist.selection();
+    state.sequence.scope = 'program';
+    persist.sequence();
+    render();
+  },
+  'seq-lesson': (value) => {
+    state.selection = value.split(',');
+    persist.selection();
+    const items = state.selection.map((uid) => BY_UID.get(uid));
+    state.lesson.title = items[0].topics[0] ? TOPIC_LABEL.get(items[0].topics[0]) : `${items[0].standardId} lesson`;
+    persist.lesson();
+    location.hash = '#/lesson';
+  },
+  'seq-save': () => {
+    const seq = state.lastSequence;
+    if (!seq) return;
+    seq.phases.forEach((phase) => phase.units.forEach((unit) => {
+      state.units.push({
+        id: `u${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
+        name: `${unit.standardId} ${unit.standard.text.slice(0, 56)}`,
+        days: unit.periods,
+        uids: unit.lessons.flatMap((l) => l.uids),
+      });
+    }));
+    persist.units();
+    toast(`${plural(seq.phases.reduce((a, p) => a + p.units.length, 0), 'unit')} saved to the planner`);
+    location.hash = '#/plan';
+  },
+  'seq-export': () => {
+    if (state.lastSequence) download('instructional-sequence.md', sequenceMarkdown(state.lastSequence), 'text/markdown');
+  },
+  'build-sequence': () => { location.hash = '#/sequence'; },
+
   'close-export': () => { const o = $('#export-overlay'); if (o) o.remove(); },
   'copy-export': () => copy($('#export-text').value, 'Copied - paste into a file'),
   'clear-filters': () => { Object.values(state.filters).forEach((s) => s.clear()); render(); },

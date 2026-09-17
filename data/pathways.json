@@ -1,0 +1,101 @@
+{
+  "note": "Curated instructional threads: the order in which standards build on one another across the four credits. Edit freely - build/validate.mjs checks that every standard id here exists, and the app derives sequencing, prerequisites and program build-out from these threads plus the framework's own numbering.",
+  "threads": [
+    {
+      "id": "system-foundations",
+      "label": "How the system works",
+      "rationale": "Students cannot reason about procedure until they can place an agency, a court and a corrections system on the map.",
+      "standards": ["8918010:01.0", "8918010:03.0", "8918010:04.0", "8918010:05.0", "8918010:06.0"]
+    },
+    {
+      "id": "ethics",
+      "label": "Ethics and professional conduct",
+      "rationale": "The code of ethics introduced in course 1 is the standard every later performance task is judged against.",
+      "standards": ["8918010:02.0", "8918050:37.0", "8918050:45.0", "8918060:32.0", "8918060:34.0", "8918070:31.0"]
+    },
+    {
+      "id": "communication",
+      "label": "Communication and community",
+      "rationale": "Interpersonal skills, then radio and report-bearing interviews, then communication with specific populations, then the security and code-enforcement settings.",
+      "standards": ["8918010:07.0", "8918020:10.0", "8918020:14.0", "8918030:27.0", "8918050:49.0", "8918050:59.0", "8918050:60.0", "8918060:33.0"]
+    },
+    {
+      "id": "report-writing",
+      "label": "Report writing",
+      "rationale": "The six interrogatives and note taking in course 2 carry into investigative reports, crash reports, security incident reports and code violations.",
+      "standards": ["8918020:13.0", "8918030:18.0", "8918050:35.0", "8918050:39.0", "8918050:48.0", "8918070:28.0"]
+    },
+    {
+      "id": "patrol",
+      "label": "Patrol operations",
+      "rationale": "Patrol fundamentals precede calls for service and crime prevention, and are the basis for public-service and private-security patrol.",
+      "standards": ["8918020:09.0", "8918020:11.0", "8918020:12.0", "8918050:38.0", "8918050:47.0", "8918050:51.0"]
+    },
+    {
+      "id": "use-of-force",
+      "label": "Authority, force and arrest",
+      "rationale": "Constitutional limits first, then the force continuum and arrest mechanics, then the narrower authority of a security officer.",
+      "standards": ["8918010:03.0", "8918020:15.0", "8918050:42.0", "8918050:58.0"]
+    },
+    {
+      "id": "investigation",
+      "label": "Criminal investigation",
+      "rationale": "Goals and legal limits of investigation come before information gathering, case types, and hands-on scene procedure.",
+      "standards": ["8918030:16.0", "8918030:17.0", "8918030:19.0", "8918030:20.0", "8918030:22.0", "8918050:40.0"]
+    },
+    {
+      "id": "crime-scene",
+      "label": "Crime scene to crime lab",
+      "rationale": "Scene safety gates scene processing; processing gates forensic examination; everything ends in property control and chain of custody.",
+      "standards": ["8918030:21.0", "8918030:22.0", "8918030:23.0", "8918030:24.0", "8918050:52.0"]
+    },
+    {
+      "id": "courts",
+      "label": "Courts and testimony",
+      "rationale": "Court structure and roles, then case preparation and mock trial, then testifying as a crash investigator, security officer or code officer.",
+      "standards": ["8918010:04.0", "8918030:22.0", "8918050:36.0", "8918050:57.0", "8918070:30.0"]
+    },
+    {
+      "id": "traffic",
+      "label": "Traffic and crash investigation",
+      "rationale": "Traffic stops in patrol, then directing traffic, then crash scene management, causation, on-site investigation and the crash report.",
+      "standards": ["8918020:09.0", "8918050:28.0", "8918050:29.0", "8918050:30.0", "8918050:31.0", "8918050:32.0", "8918050:33.0", "8918050:34.0", "8918050:35.0", "8918050:61.0"]
+    },
+    {
+      "id": "emergency",
+      "label": "Critical incidents and life safety",
+      "rationale": "Response to calls and critical incidents, then first aid, emergency procedures, fire and life safety, terrorism and workplace violence.",
+      "standards": ["8918020:11.0", "8918050:43.0", "8918050:44.0", "8918050:50.0", "8918050:53.0", "8918050:64.0", "8918050:65.0"]
+    },
+    {
+      "id": "security-industry",
+      "label": "Private security practice",
+      "rationale": "Chapter 493 licensure and regulation frame every other security duty, from access control to crowd control.",
+      "standards": ["8918050:41.0", "8918050:45.0", "8918050:46.0", "8918050:47.0", "8918050:56.0", "8918050:62.0", "8918050:63.0"]
+    },
+    {
+      "id": "code-enforcement",
+      "label": "Code enforcement practice",
+      "rationale": "Report writing, then the administrative machinery, then the legal process and board hearing, then field safety.",
+      "standards": ["8918070:28.0", "8918070:29.0", "8918070:30.0", "8918070:31.0"]
+    },
+    {
+      "id": "legal-office",
+      "label": "Legal office practice",
+      "rationale": "Legal literacy and systems, then office functions and documents, then accounting, supervision and employment.",
+      "standards": ["8918060:28.0", "8918060:29.0", "8918060:30.0", "8918060:31.0", "8918060:32.0", "8918060:33.0", "8918060:35.0", "8918060:36.0", "8918060:37.0"]
+    },
+    {
+      "id": "technology",
+      "label": "Technology and records",
+      "rationale": "Criminal justice computer applications, then legal information systems and records management.",
+      "standards": ["8918030:25.0", "8918030:26.0", "8918060:29.0", "8918060:35.0"]
+    },
+    {
+      "id": "employability",
+      "label": "Career and employability",
+      "rationale": "Career awareness in course 1 is revisited as job-seeking, entrepreneurship and workplace performance in the capstone options.",
+      "standards": ["8918010:01.0", "8918010:08.0", "8918050:54.0", "8918050:55.0", "8918060:38.0"]
+    }
+  ]
+}

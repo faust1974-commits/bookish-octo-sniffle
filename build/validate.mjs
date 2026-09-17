@@ -71,6 +71,32 @@ files.forEach((file) => {
   });
 });
 
+// ------------------------------------------------------------- pathways
+const pathways = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/pathways.json'), 'utf8'));
+const allStandardUids = new Set();
+files.forEach((file) => {
+  const { meta, standards } = parseCourse(path.join(ROOT, 'data/courses', file));
+  standards.forEach((s) => allStandardUids.add(`${meta.course}:${s.id}`));
+});
+const onThread = new Set();
+const threadIds = new Set();
+pathways.threads.forEach((t) => {
+  if (threadIds.has(t.id)) fail(`pathways.json: duplicate thread id "${t.id}"`);
+  threadIds.add(t.id);
+  if (!t.label || !t.rationale) fail(`pathways.json: thread "${t.id}" needs a label and a rationale`);
+  if (t.standards.length < 2) fail(`pathways.json: thread "${t.id}" needs at least two standards`);
+  const seenInThread = new Set();
+  t.standards.forEach((uid) => {
+    if (!allStandardUids.has(uid)) fail(`pathways.json: thread "${t.id}" references unknown standard ${uid}`);
+    if (seenInThread.has(uid)) fail(`pathways.json: thread "${t.id}" lists ${uid} twice`);
+    seenInThread.add(uid);
+    onThread.add(uid);
+  });
+});
+[...allStandardUids].filter((uid) => !onThread.has(uid)).forEach((uid) => {
+  warn(`standard ${uid} is not on any instructional thread - sequences will place it by course order only`);
+});
+
 // The core sequence 01.0-27.0 must run once, unbroken, across the three core courses.
 for (let n = 1; n <= 27; n += 1) {
   const id = `${String(n).padStart(2, '0')}.0`;
@@ -104,6 +130,14 @@ if (!fs.existsSync(dist)) {
       if (s.benchmarks.some((b) => b.suggestedPeriods === undefined)) fail(`${c.courseNumber} ${s.id}: pacing not computed`);
     });
   });
+  if (!F.graph) fail('dist/framework.json has no graph - run `npm run build`');
+  else {
+    if (F.graph.cycles.length) fail(`instructional graph has ${F.graph.cycles.length} standard(s) in a dependency cycle: ${F.graph.cycles.join(', ')}`);
+    if (F.graph.programOrder.length !== totalStandards) fail(`program order covers ${F.graph.programOrder.length} of ${totalStandards} standards`);
+    F.graph.standardEdges.forEach((e) => {
+      if (!allStandardUids.has(e.from) || !allStandardUids.has(e.to)) fail(`graph edge references a standard that does not exist: ${e.from} -> ${e.to}`);
+    });
+  }
 }
 
 console.log(`checked ${files.length} course files: ${totalStandards} standards, ${totalBenchmarks} benchmarks`);

@@ -7,6 +7,7 @@ import {
   BLOOM, TOPICS, classify, citations, topics as topicsOf, keywords,
   weight, fullText, normalizeForMatch, jaccard,
 } from './enrich.mjs';
+import { buildGraph } from './graph.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -18,6 +19,7 @@ const out = (p, body) => {
 };
 
 const program = JSON.parse(read('data/program.json'));
+const pathways = JSON.parse(read('data/pathways.json'));
 const courseFiles = fs.readdirSync(path.join(ROOT, 'data/courses')).filter((f) => f.endsWith('.cjo')).sort();
 
 const PERIODS_PER_COURSE = 170; // 180-day year less assessment/review days
@@ -153,6 +155,19 @@ allBenchmarks.forEach((b) => {
   b.clusterId = cluster ? cluster.id : null;
 });
 
+// ---------------------------------------------------------------- graph
+const graph = buildGraph({ courses, threads: pathways.threads, clusters: repeatedClusters });
+if (graph.cycles.length) console.log(`  note: ${graph.cycles.length} standard(s) placed by framework order after a dependency cycle`);
+
+// Surface each standard's graph position on the standard itself.
+courses.forEach((c) => c.standards.forEach((s) => {
+  const m = graph.standardMeta[s.uid];
+  s.threads = m.threads;
+  s.programOrder = m.order;
+  s.teachingDepth = m.depth;
+  s.prereqCount = m.prereqs.length;
+}));
+
 // ---------------------------------------------------------------- indexes
 const byTopic = {};
 TOPICS.forEach((t) => {
@@ -237,6 +252,10 @@ const notes = [
     detail: 'Benchmark text is transcribed verbatim, including source typos (e.g. 33.11 "Determining how the crash occurred.", 36.01 stray list marker "q) restitution", 42.05 "the circumstances and officer must consider").',
   },
   {
+    kind: 'pathways',
+    detail: 'Instructional threads, prerequisites and the canonical program order come from data/pathways.json (curated) plus the framework\'s own numbering. They are a teaching judgement, not an FLDOE mandate - edit the file and rebuild to change how sequences are generated.',
+  },
+  {
     kind: 'derived-fields',
     detail: 'cognitiveLevel, modality, topics, weight and suggestedPeriods are derived heuristics for planning support - they are not part of the FLDOE framework.',
   },
@@ -252,9 +271,10 @@ const framework = {
   program,
   courses,
   crosswalk: { clusters: repeatedClusters, pairs },
+  graph,
   indexes: { topics: byTopic, citations: citationIndex, keywords: keywordIndex },
   taxonomy: { bloom: BLOOM.map(({ level, name }) => ({ level, name })), topics: TOPICS.map(({ id, label }) => ({ id, label })) },
-  stats,
+  stats: { ...stats, threads: pathways.threads.length, standardEdges: graph.standardEdges.length },
   notes,
 };
 

@@ -15,6 +15,7 @@ questions instead of being a PDF you scroll through.
 | Benchmarks | 535, plus 223 sub-points |
 | Legal references indexed | 44 Florida Statutes, F.A.C. rules, CFR, 3 cases, 20 named references |
 | Topic tags | 32 |
+| Instructional threads | 16, covering all 80 standards |
 
 ## Use it
 
@@ -30,6 +31,15 @@ npm run serve        # or just double-click docs/index.html
   `CIP number` returns a direct answer card plus ranked benchmark matches.
 * **Browse** — course → standard → benchmark, with filters for course, cognitive level,
   performance vs knowledge, optional, mock activities, statute citations and topic.
+* **Sequence** — the connective layer. Pick two benchmarks anywhere in the app and it finds
+  the instructional path between them, says *why* they connect ("4 steps along Report writing
+  and Criminal investigation"), fills in the benchmarks that have to be taught between, and
+  groups the result into lessons and units with day ranges, prerequisite links ("builds on
+  13.04") and spiral markers ("revisits 13.04 in 8918020"). Five scopes widen the same
+  sequence: **Bridge** (just the connection) → **Full standards** → **Whole thread** (the
+  pathway end to end across courses) → **Whole course** → **Whole program** (all four credits
+  with one capstone option, ~690 instructional days). Save it into the planner, export it, or
+  open any generated lesson as a full lesson plan.
 * **Units** — build units from a selection (or scaffold one unit per standard for a whole
   course), with day counts seeded from framework-weighted pacing. Exports Markdown.
 * **Lesson** — turn any selection of benchmarks into a lesson plan: objectives written from the
@@ -79,9 +89,11 @@ node tools/cjo.mjs stats               # program totals
 
 ```
 data/program.json          program metadata, sequence, front matter  (source of truth)
+data/pathways.json         curated instructional threads: what builds on what
 data/courses/*.cjo         one file per course, verbatim standards and benchmarks
 build/parse.mjs            .cjo -> structured objects
 build/enrich.mjs           derived fields: Bloom level, modality, topics, citations, weights
+build/graph.mjs            prerequisites, spirals and the canonical teaching order
 build/build.mjs            assembles indexes, crosswalk, stats -> dist/ + docs/
 build/validate.mjs         structural checks (npm test)
 build/artifact.mjs         packages docs/ for publishing as a hosted page
@@ -132,6 +144,12 @@ consider"). Course `8918050` is titled *Police Service Officer* on its standards
 | `citations` | Pattern extraction of F.S., F.A.C., CFR, case names and named references (Miranda, Baker Act, CPTED, AFIS…); subsection detail is kept when the source spells it out |
 | `weight` / `suggestedPeriods` | Weight = modality + sub-point count + length, with a bump for mock/scenario work and a reduction for optional; distributed across 170 instructional periods per 1-credit course |
 | `crosswalk` | Normalized-text comparison across different course numbers, 0.7 token-overlap threshold |
+| `graph` / sequencing | Prerequisite edges come from the 16 curated threads in `data/pathways.json`; the framework's own numbering is the tie-break, not a prerequisite. Spiral edges come from the crosswalk. Lessons group consecutive benchmarks (same standard, ≤6 benchmarks, ≤3.5 periods, breaking on a topic shift); day numbers run off a cumulative pacing total so rounding never compounds |
+
+Sequencing is the most opinionated layer here — it encodes a teaching judgement about what has
+to come first. `data/pathways.json` is where that judgement lives: 16 threads, each with a
+rationale, covering all 80 standards. Reorder a thread, add one, or split one, run
+`npm run check`, and every generated sequence changes with it.
 
 Treat pacing as a starting point, not a mandate — adjust for your schedule, lab access and
 students. The `4 optional` benchmarks (15.05, 15.12, 22.14, 25.01) are the only ones the
