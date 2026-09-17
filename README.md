@@ -48,6 +48,11 @@ Deep links work everywhere: `#/b/8918030:22.15`, `#/standard/8918020:13.0`,
 Selections, units and coverage marks are stored in the browser (localStorage) — nothing leaves
 the machine. Export the CSV/Markdown for anything that needs to be kept or shared.
 
+The app is also published as a private hosted page (same code, built by
+`build/artifact.mjs` into `dist/artifact/`): <https://claude.ai/artifact/6rUJPmh2rmiMPVedeNCerY>.
+File downloads are blocked inside that embedded viewer, so every export there opens a copy
+panel instead of saving a file.
+
 **Command line**
 
 ```bash
@@ -79,6 +84,7 @@ build/parse.mjs            .cjo -> structured objects
 build/enrich.mjs           derived fields: Bloom level, modality, topics, citations, weights
 build/build.mjs            assembles indexes, crosswalk, stats -> dist/ + docs/
 build/validate.mjs         structural checks (npm test)
+build/artifact.mjs         packages docs/ for publishing as a hosted page
 tools/cjo.mjs              CLI
 docs/                      the app (index.html, app.js, styles.css, framework-data.js)
 ```

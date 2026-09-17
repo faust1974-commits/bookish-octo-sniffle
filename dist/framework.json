@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-09-17T13:33:22.352Z",
+    "generated": "2026-09-17T13:35:51.339Z",
     "generator": "build/build.mjs",
     "sourceOfTruth": "data/program.json + data/courses/*.cjo",
     "schemaVersion": 1
