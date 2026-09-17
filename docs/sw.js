@@ -1,6 +1,6 @@
 /* Offline shell for the Criminal Justice Operations framework.
    Everything the app needs is local, so once installed it works with no network. */
-const VERSION = '1.535.mu5s1fqc';
+const VERSION = '1.535.mu5sbbyv';
 const CACHE = `cjo-${VERSION}`;
 const SHELL = [
   './', './index.html', './app.js', './styles.css', './framework-data.js',

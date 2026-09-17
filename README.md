@@ -87,6 +87,12 @@ The app is also published as a private hosted page (same code, built by
 File downloads are blocked inside that embedded viewer, so every export there opens a copy
 panel instead of saving a file.
 
+**One self-contained file** — `npm run build` also writes
+`dist/Criminal Justice Operations.html`: the entire app, data and all, inlined into a single
+0.8 MB file with no external references. Put it anywhere and double-click it. No server, no
+install, no account, no internet — verified by loading it from disk with the network disabled
+and confirming zero outbound requests.
+
 **Command line**
 
 ```bash
