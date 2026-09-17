@@ -165,19 +165,19 @@ This course is to introduce the student to the characteristics and procedures of
 - **11.02** Describe Natural Disaster response.
 - **11.03** Describe response to Weapons of Mass Destruction.
 - **11.04** Describe calls for service, to include:
-    - Community service
-      - Assisting the public
-      - Well-being checks
-      - Responding to alarms
-      - Animal complaints
-      - Noncustodial transports
-    - Responding to Disturbances
-      - Crowd control
-      - Civil disturbances
-    - Responding to a person in crisis
-      - Crisis situations
-      - Intervention and referral
-      - Transportation and documentation
+  - Community service
+    - Assisting the public
+    - Well-being checks
+    - Responding to alarms
+    - Animal complaints
+    - Noncustodial transports
+  - Responding to Disturbances
+    - Crowd control
+    - Civil disturbances
+  - Responding to a person in crisis
+    - Crisis situations
+    - Intervention and referral
+    - Transportation and documentation
 
 ### 12.0 Describe crime prevention programs and demonstrate their development and implementation.
 
@@ -216,10 +216,10 @@ This course is to introduce the student to the characteristics and procedures of
 ### 15.0 Describe the use-of-force guidelines as it applies to Federal, State, and local laws and physical proficiency skills.
 
 - **15.01** Describe the totality of circumstances as it relates to:
-    - Subject resistance
-    - Situational Factors
-    - Justification
-    - Officer Response
+  - Subject resistance
+  - Situational Factors
+  - Justification
+  - Officer Response
 - **15.02** Describe legal issues pertaining to objective reasonableness as it pertains to the use of force that include Tennessee v. Garner and Graham v. Conner cases.
 - **15.03** Identify potential weapons.
 - **15.04** Describe and demonstrate stop and frisk as it relates to Terry v. Ohio.
@@ -277,17 +277,17 @@ This course is to introduce the student to the crime scene safety, conducting cr
 ### 20.0 Examine various types of criminal investigations.
 
 - **20.01** Describe the different types of investigations including;
-    - Death investigations
-    - Assault and battery
-    - Domestic violence
-    - Sexual offenses
-    - Crimes against children
-    - Crimes against elderly
-    - Robbery and theft
-    - Burglary
-    - Arson
-    - White collar crime
-    - Computer crimes
+  - Death investigations
+  - Assault and battery
+  - Domestic violence
+  - Sexual offenses
+  - Crimes against children
+  - Crimes against elderly
+  - Robbery and theft
+  - Burglary
+  - Arson
+  - White collar crime
+  - Computer crimes
 
 ### 21.0 Evaluate crime scene safety protocol.
 
@@ -372,89 +372,89 @@ The purpose of this program is to prepare students for employment as a Private S
 - **28.02** List the qualifications of a traffic control officer (TCO).
 - **28.03** Explain the responsibilities of a traffic control officer.
 - **28.04** List the limitations of a traffic control officer are not authorized to include:
-    - carry a firearm or any other weapon
-    - write any citations
-    - make any arrests
-    - conduct any investigations
+  - carry a firearm or any other weapon
+  - write any citations
+  - make any arrests
+  - conduct any investigations
 - **28.05** Define "traffic control devices" according to s. 316.003 (23), F.S.
 - **28.06** Define "traffic signals" according to s. 316.003(24), F.S.
 - **28.07** Describe the main objectives of traffic direction and control to include:
-    - increase safety
-    - increase traffic flow
-    - divert traffic flow
+  - increase safety
+  - increase traffic flow
+  - divert traffic flow
 - **28.08** List methods for controlling traffic to include:
-    - Deployment of traffic control devices
-    - Direction by an officer
-    - Manual control of traffic signals following agency policies and procedures.
+  - Deployment of traffic control devices
+  - Direction by an officer
+  - Manual control of traffic signals following agency policies and procedures.
 - **28.09** Identify when traffic direction and control are applicable pursuant to agency protocol to include:
-    - rush hours
-    - traffic light failures
-    - vehicle crashes
-    - special events
-    - major disasters
-    - missing or absent traffic control devices
-    - funeral procession or dignitary motorcade
-    - cooperation with other public service agency
+  - rush hours
+  - traffic light failures
+  - vehicle crashes
+  - special events
+  - major disasters
+  - missing or absent traffic control devices
+  - funeral procession or dignitary motorcade
+  - cooperation with other public service agency
 - **28.10** List equipment available to an officer for use in directing traffic:
-    - Whistle
-    - high visibility glove
-    - lighted baton
-    - reflective slip-over vest
-    - barricades or cones
-    - flares, electronic markers, or chemical light sticks
-    - variable message boards, including arrow boards
+  - Whistle
+  - high visibility glove
+  - lighted baton
+  - reflective slip-over vest
+  - barricades or cones
+  - flares, electronic markers, or chemical light sticks
+  - variable message boards, including arrow boards
 - **28.11** Evaluate a traffic situation before intervening to direct traffic to include:
-    - Determine if intervention is necessary.
-    - Consider the safety of the officer and the public.
-    - Maintain traffic flow or divert traffic.
+  - Determine if intervention is necessary.
+  - Consider the safety of the officer and the public.
+  - Maintain traffic flow or divert traffic.
 - **28.12** Identify factors that should be considered when planning to direct traffic to include:
-    - Determine how to improve the traffic situation before entering the roadway.
-    - Assess whether additional officers and/or resources are needed.
-    - Decide where to stand in the roadway.
+  - Determine how to improve the traffic situation before entering the roadway.
+  - Assess whether additional officers and/or resources are needed.
+  - Decide where to stand in the roadway.
 - **28.13** List the safety precautions that an officer should follow when directing traffic to include:
-    - Always check safety measures; be alert and ready to move out of the way of a vehicle.
-    - Never move without making sure it is safe.
-    - Never permit vehicles or pedestrians to start from a stopped position until approaching traffic is stopped.
+  - Always check safety measures; be alert and ready to move out of the way of a vehicle.
+  - Never move without making sure it is safe.
+  - Never permit vehicles or pedestrians to start from a stopped position until approaching traffic is stopped.
 - **28.14** Identify the correct place that an officer should stand while directing traffic.
 - **28.15** List basic conduct for officers directing traffic to include:
-    - Engage the attention of drivers at all times.
-      - Make eye contact with a stopped or stopping motorist.
-      - Use hand signals, such as pointing, to gain a motorist's attention.
-    - Keep your hands free.
-    - Do not engage in idle conversation.
-    - Do not smoke.
-    - Do not twirl a chain or other objects.
-    - Do not use electronic devices such as cell phones.
+  - Engage the attention of drivers at all times.
+    - Make eye contact with a stopped or stopping motorist.
+    - Use hand signals, such as pointing, to gain a motorist's attention.
+  - Keep your hands free.
+  - Do not engage in idle conversation.
+  - Do not smoke.
+  - Do not twirl a chain or other objects.
+  - Do not use electronic devices such as cell phones.
 - **28.16** Describe appropriate procedures when an emergency vehicle is approaching an intersection where an officer is directing traffic to include:
-    - Stop traffic in all directions.
-    - Clear a path for the emergency vehicle if needed.
-    - Wave the emergency vehicle through the intersection.
-    - Communicate with a supervisor when circumstances are beyond the duties of a TCO.
+  - Stop traffic in all directions.
+  - Clear a path for the emergency vehicle if needed.
+  - Wave the emergency vehicle through the intersection.
+  - Communicate with a supervisor when circumstances are beyond the duties of a TCO.
 - **28.17** Explain why voice commands are seldom used in directing traffic to include:
-    - Verbal directions are not easy for drivers to hear or understand.
-    - Voice commands might be misinterpreted by motorist or pedestrian.
-    - Words may antagonize motorist or pedestrian.
+  - Verbal directions are not easy for drivers to hear or understand.
+  - Voice commands might be misinterpreted by motorist or pedestrian.
+  - Words may antagonize motorist or pedestrian.
 - **28.18** List procedures to follow if voice commands must be used to include:
-    - Move reasonably close to the pedestrian or driver.
-    - Be polite and brief.
-    - Address as miss, ma'am, or sir.
-    - Do not lose your temper.
+  - Move reasonably close to the pedestrian or driver.
+  - Be polite and brief.
+  - Address as miss, ma'am, or sir.
+  - Do not lose your temper.
 - **28.19** List procedures to follow when assisting pedestrians across the street including:
-    - Be firm but polite.
-    - Verbally direct pedestrians.
-    - Do not permit crossing until it is safe.
-    - Take extra caution with children, the elderly, or persons with disabilities.
+  - Be firm but polite.
+  - Verbally direct pedestrians.
+  - Do not permit crossing until it is safe.
+  - Take extra caution with children, the elderly, or persons with disabilities.
 - **28.20** Describe the various whistle signals to get the attention of the driver or pedestrian including:
-    - one long blast for the vehicle to stop.
-    - two short blasts for the vehicle to go.
-    - several short blasts to get the attention of a driver or pedestrian who does not respond to a hand signal.
+  - one long blast for the vehicle to stop.
+  - two short blasts for the vehicle to go.
+  - several short blasts to get the attention of a driver or pedestrian who does not respond to a hand signal.
 - **28.21** List the various hand signals used in conjunction with the whistle signals to include:
-    - Stop
-    - turn right
-    - turn left
-    - start
-    - keep moving
-    - resume traffic signal control
+  - Stop
+  - turn right
+  - turn left
+  - start
+  - keep moving
+  - resume traffic signal control
 - **28.22** Demonstrate the various hand signals used in conjunction with the whistle signals.
 - **28.23** Demonstrate the proper use of an illuminated baton and a flashlight with traffic wand attached.
 - **28.24** Describe how to use a flare safely, including lighting the flare, positioning it, and extinguishing it.
@@ -526,20 +526,20 @@ The purpose of this program is to prepare students for employment as a Private S
 
 - **35.01** Define the uses of a traffic crash report.
 - **35.02** Identify the statutes governing crash reporting, and summarize the process to include:
-    - 316.061, F.S., Crashes involving damage to vehicle or property.
-    - 316.062, F.S., Duty to give information and render aid.
-    - 316.062, F.S., Duty upon damaging unattended vehicle or other property.
-    - 316.066, F.S., Written reports of crashes.
+  - 316.061, F.S., Crashes involving damage to vehicle or property.
+  - 316.062, F.S., Duty to give information and render aid.
+  - 316.062, F.S., Duty upon damaging unattended vehicle or other property.
+  - 316.066, F.S., Written reports of crashes.
 - **35.03** Identify statutes outlining special circumstances that may apply to crash reporting in the following statutes to include:
-    - 316.027, F.S., Crash involving death or personal injuries.
-    - 316.064, F.S., When driver unable to report.
-    - 316.065, F.S., Crashes; reports; penalties.
-    - 316.067, F.S., False reports.
-    - 316.068, F.S., Crash report forms.
-    - 316.070, F.S., Exchange of information at scene of crash.
-    - 316.193, F.S., Driving under the influence; penalties.
-    - 316.1932, F.S., Tests for alcohol, chemical substances, or controlled substances; implied consent; refusal.
-    - 316.1933, F.S., Blood test for impairment or intoxication in cases of death or serious bodily injury; right to use reasonable force.
+  - 316.027, F.S., Crash involving death or personal injuries.
+  - 316.064, F.S., When driver unable to report.
+  - 316.065, F.S., Crashes; reports; penalties.
+  - 316.067, F.S., False reports.
+  - 316.068, F.S., Crash report forms.
+  - 316.070, F.S., Exchange of information at scene of crash.
+  - 316.193, F.S., Driving under the influence; penalties.
+  - 316.1932, F.S., Tests for alcohol, chemical substances, or controlled substances; implied consent; refusal.
+  - 316.1933, F.S., Blood test for impairment or intoxication in cases of death or serious bodily injury; right to use reasonable force.
 - **35.04** Locate essential definitions common to the job duties of a traffic crash investigator found in 316.003, F.S. and Department of Highway Safety and Motor Vehicles (DHSMV) Traffic Crash Report Manual.
 - **35.05** Identify basic terms related to injuries and their definitions found in statute 316.1933(1)(b), F.S.
 - **35.06** Identify the crash report form as a standardized means for storing crash-related information.
@@ -554,28 +554,28 @@ The purpose of this program is to prepare students for employment as a Private S
 ### 36.0 Describe courtroom demeanor and testimony.
 
 - **36.01** Define the following legal definitions relative to the traffic crash investigation:
-    - admission: a confession, settlement, or acknowledgement made by a party which could be offered against that party in court [90.803(18), F.S.].
-    - arrest: to legally deprive a person of liberty or freedom to go as one chooses, or taking a person into custody to be held to answer for a crime.
-    - contraband: goods, property, or other things possessed in violation of the law.
-    - deposition: a form of pretrial discovery, in which the witness is placed under oath and must answer questions asked by an attorney; may be transcribed for use in impeaching the witness at trial or, in special cases, to perpetuate testimony.
-    - duces tecum: ("bring with you") a type of subpoena which requires the witness to bring specified documents or other evidence.
-    - evidence: proof of allegations at issue between parties which may be direct, indirect, substantive, intrinsic, original, or derivative.
-    - felony: a criminal offense committed within a state in which the maximum penalty is death or incarceration in a state correctional facility for a period exceeding one year.
-    - FCIC/NCIC: Florida Crime Information Center (FCIC)/National Crime Information Center (NCIC) (misuse of a secure database is a criminal offense).
-    - forfeiture: the loss of some right or property as a penalty for some illegal act.
-    - infraction: in Florida state courts, a non-criminal violation punishable by no other penalty than a fine, forfeiture or other civil penalty [775.08(3), F.S.].
-    - jurisdiction: the territorial range over which an authority extends.
-    - jury: a body of citizens sworn to deliver a true verdict upon evidence submitted to them in a trial.
-    - misdemeanor: in Florida state courts, any criminal offense punishable by a term of imprisonment in a county correctional facility (jail) not in excess of one year; does not include any violation of municipal or county ordinance [775.02(2), F.S.].
-    - ordinance: a law, statute, or legislative enactment, particularly the legislative enactments or statutes of a municipal corporation.
-    - probable cause: reasonable grounds for suspicion, supported by circumstance sufficiently strong to warrant a cautious person to believe that an accused individual is guilty of the offense with which he or she is charged.
-    - reasonable doubt: a doubt based on reason regarding an element of the state's proof of a defendant's guilt.
-    - q) restitution: the restoring of monetary or non-monetary property to a victim for damage or loss caused directly or indirectly by the defendant.
-    - search: an exploration or inspection of an individual's premises (such as a house, business, motel room), papers (business records, documents, etc.), effects (cars, luggage) or person.
-    - seizure: the act of taking possession of property, things, or persons, including evidence and contraband.
-    - subpoena: a document issued under the authority of the court or statute, compelling attendance at a deposition, hearing, trial or other proceeding, which provides that the subpoenaed person is subject to penalty for failure to comply.
-    - venue: the circuit or county in which a particular trial may be conducted.
-    - witness: one who observes an incident or has knowledge of facts or information.
+  - admission: a confession, settlement, or acknowledgement made by a party which could be offered against that party in court [90.803(18), F.S.].
+  - arrest: to legally deprive a person of liberty or freedom to go as one chooses, or taking a person into custody to be held to answer for a crime.
+  - contraband: goods, property, or other things possessed in violation of the law.
+  - deposition: a form of pretrial discovery, in which the witness is placed under oath and must answer questions asked by an attorney; may be transcribed for use in impeaching the witness at trial or, in special cases, to perpetuate testimony.
+  - duces tecum: ("bring with you") a type of subpoena which requires the witness to bring specified documents or other evidence.
+  - evidence: proof of allegations at issue between parties which may be direct, indirect, substantive, intrinsic, original, or derivative.
+  - felony: a criminal offense committed within a state in which the maximum penalty is death or incarceration in a state correctional facility for a period exceeding one year.
+  - FCIC/NCIC: Florida Crime Information Center (FCIC)/National Crime Information Center (NCIC) (misuse of a secure database is a criminal offense).
+  - forfeiture: the loss of some right or property as a penalty for some illegal act.
+  - infraction: in Florida state courts, a non-criminal violation punishable by no other penalty than a fine, forfeiture or other civil penalty [775.08(3), F.S.].
+  - jurisdiction: the territorial range over which an authority extends.
+  - jury: a body of citizens sworn to deliver a true verdict upon evidence submitted to them in a trial.
+  - misdemeanor: in Florida state courts, any criminal offense punishable by a term of imprisonment in a county correctional facility (jail) not in excess of one year; does not include any violation of municipal or county ordinance [775.02(2), F.S.].
+  - ordinance: a law, statute, or legislative enactment, particularly the legislative enactments or statutes of a municipal corporation.
+  - probable cause: reasonable grounds for suspicion, supported by circumstance sufficiently strong to warrant a cautious person to believe that an accused individual is guilty of the offense with which he or she is charged.
+  - reasonable doubt: a doubt based on reason regarding an element of the state's proof of a defendant's guilt.
+  - q) restitution: the restoring of monetary or non-monetary property to a victim for damage or loss caused directly or indirectly by the defendant.
+  - search: an exploration or inspection of an individual's premises (such as a house, business, motel room), papers (business records, documents, etc.), effects (cars, luggage) or person.
+  - seizure: the act of taking possession of property, things, or persons, including evidence and contraband.
+  - subpoena: a document issued under the authority of the court or statute, compelling attendance at a deposition, hearing, trial or other proceeding, which provides that the subpoenaed person is subject to penalty for failure to comply.
+  - venue: the circuit or county in which a particular trial may be conducted.
+  - witness: one who observes an incident or has knowledge of facts or information.
 - **36.02** Define important elements of court preparation for the traffic crash investigator.
 - **36.03** Explain the pretrial hearing responsibilities of the traffic crash investigator.
 - **36.04** Explain the importance of depositions.
@@ -714,13 +714,13 @@ The purpose of this program is to prepare students for employment as a Private S
 - **50.02** Define fire, highlighting the necessary ingredients.
 - **50.03** Explain the responsibilities of the security officer regarding: fire prevention and fire extinguishing.
 - **50.04** Explain how to prevent and control fires and notify the fire department.
-    - Describe sodium fires and acids.
-    - Describe procedures for controlling small fires.
-    - Identify extinguishing methods (cooling, smothering, and starving), list extinguishing agents, and identify markings on containers of extinguishing agents for use with different fires.
+  - Describe sodium fires and acids.
+  - Describe procedures for controlling small fires.
+  - Identify extinguishing methods (cooling, smothering, and starving), list extinguishing agents, and identify markings on containers of extinguishing agents for use with different fires.
 - **50.05** Be familiar with life safety issues, such as:
-    - Life safety plans.
-    - Fire detection, location and intensity.
-    - Evacuation.
+  - Life safety plans.
+  - Fire detection, location and intensity.
+  - Evacuation.
 - **50.06** Explain Section 877.15, F.S., failure to control or report a dangerous fire.
 
 ### 51.0 Perform crime and accident prevention techniques.
@@ -736,9 +736,9 @@ The purpose of this program is to prepare students for employment as a Private S
 - **52.01** Define a crime scene.
 - **52.02** Understand the value of crime/accident scene integrity to investigators, etc.
 - **52.03** Define the duties of the first security officer on the scene to:
-    - Determine what makes up the crime/accident scene.
-    - Isolate and protect the crime/accident scene.
-    - Identify witnesses.
+  - Determine what makes up the crime/accident scene.
+  - Isolate and protect the crime/accident scene.
+  - Identify witnesses.
 - **52.04** Identify work habits of successful employees.
 - **52.05** Understand evidence preservation and define "chain of custody".
 - **52.06** Discuss effects of contamination of evidence.
@@ -796,11 +796,11 @@ The purpose of this program is to prepare students for employment as a Private S
 - **58.01** Explain the use of cognitive and affective skills in expressing calmness, courtesy, patience, and self-control.
 - **58.02** Describe techniques for diffusing hostility.
 - **58.03** Describe safety concerns and steps to follow when responding to potentially violent situations and violent crimes.
-    - Evasive tactics.
-    - Describe weapons safety practices and ways to decrease the accidental or deliberate use of weapons.
-    - Describe the types of weapons--such as batons, chemical weapons, knives, and guns--that might be used against a security officer or other individuals in violent situations.
-    - Identify unarmed methods for responding to violent crimes, discouraging the use of weapons, and enhancing weapon safety.
-    - Review the security officer's use of weapons as outlined in Chapter 493, F.S.
+  - Evasive tactics.
+  - Describe weapons safety practices and ways to decrease the accidental or deliberate use of weapons.
+  - Describe the types of weapons--such as batons, chemical weapons, knives, and guns--that might be used against a security officer or other individuals in violent situations.
+  - Identify unarmed methods for responding to violent crimes, discouraging the use of weapons, and enhancing weapon safety.
+  - Review the security officer's use of weapons as outlined in Chapter 493, F.S.
 
 ### 59.0 Demonstrate interpersonal communication skills.
 
@@ -849,16 +849,16 @@ The purpose of this program is to prepare students for employment as a Private S
 - **64.03** Physical security and access control.
 - **64.04** Bomb incident response.
 - **64.05** Mail screening:
-    - Biological/Chemical
-    - Explosive
+  - Biological/Chemical
+  - Explosive
 - **64.06** Types of attacks and responses (BENICE):
-    - Biological
-    - Explosive
-    - Nuclear
-    - Incendiary
-    - Chemical
-    - Energetic
-    - Samples of Florida incidents
+  - Biological
+  - Explosive
+  - Nuclear
+  - Incendiary
+  - Chemical
+  - Energetic
+  - Samples of Florida incidents
 
 ### 65.0 Develop an awareness of violence in the workplace.
 
@@ -961,112 +961,112 @@ This course prepares the student for a career as a Code Enforcement Officer. The
 ### 28.0 Demonstrate proper report writing techniques.
 
 - **28.01** Prepare written reports
-    - Identify the "who-what-when-where-why-how" elements of a report.
-    - Describe and demonstrate interviewing a person.
-    - Describe and demonstrate accurate note taking.
-    - Describe the purpose of different types of reports.
-    - Create a factual report with accuracy, completeness, conciseness, objectivity, and clarity and use proper grammar, spelling, punctuation, and legibility.
-    - Describe and demonstrate organizing information for a report.
-    - Describe and demonstrate mechanics of a report.
-    - Describe and demonstrate the elements and principles of effective report writing.
-    - Describe and demonstrate evaluating a report prior to submission.
-    - Identify and locate state statutes as they pertain to situations being reported.
-    - Define and write a code violation.
+  - Identify the "who-what-when-where-why-how" elements of a report.
+  - Describe and demonstrate interviewing a person.
+  - Describe and demonstrate accurate note taking.
+  - Describe the purpose of different types of reports.
+  - Create a factual report with accuracy, completeness, conciseness, objectivity, and clarity and use proper grammar, spelling, punctuation, and legibility.
+  - Describe and demonstrate organizing information for a report.
+  - Describe and demonstrate mechanics of a report.
+  - Describe and demonstrate the elements and principles of effective report writing.
+  - Describe and demonstrate evaluating a report prior to submission.
+  - Identify and locate state statutes as they pertain to situations being reported.
+  - Define and write a code violation.
 
 ### 29.0 Examine the administrative aspects of code enforcement.
 
 - **29.01** Manager's Role in Code Enforcement.
-    - Describe how to respond to complaints of violations of county codes.
-    - Describe how to conduct staff conferences to discuss policies and procedures.
-    - Describe hiring and discipline procedures.
+  - Describe how to respond to complaints of violations of county codes.
+  - Describe how to conduct staff conferences to discuss policies and procedures.
+  - Describe hiring and discipline procedures.
 - **29.02** Media Relations.
-    - Understand Chapter 119, F.S. Public Records.
-    - Describe and demonstrate the elements of a press release.
-    - Understand the importance of media relations.
+  - Understand Chapter 119, F.S. Public Records.
+  - Describe and demonstrate the elements of a press release.
+  - Understand the importance of media relations.
 - **29.03** Records Management.
-    - Identify elements of code enforcement software.
-    - Demonstrate maintaining records, scheduling, issuing notices, and tracking violations.
+  - Identify elements of code enforcement software.
+  - Demonstrate maintaining records, scheduling, issuing notices, and tracking violations.
 - **29.04** Employment Laws.
-    - Understand the Fair Labor Standards Act (FLSA).
+  - Understand the Fair Labor Standards Act (FLSA).
 - **29.05** Performance Management.
-    - Define performance management as a tool to define organizational goals.
+  - Define performance management as a tool to define organizational goals.
 - **29.06** Stress Management.
-    - Define stress
-    - Identify stress unique to code enforcement.
-    - Identify signs and symptoms of stress.
-    - Identify techniques of stress management.
-    - Understand the importance of health and wellness.
+  - Define stress
+  - Identify stress unique to code enforcement.
+  - Identify signs and symptoms of stress.
+  - Identify techniques of stress management.
+  - Understand the importance of health and wellness.
 - **29.07** Time Management.
-    - Define time management.
-    - Identify time management tools.
-    - Understand prioritization and scheduling.
-    - Identify goal setting.
-    - Understand self-motivation skills as it relates to time management.
+  - Define time management.
+  - Identify time management tools.
+  - Understand prioritization and scheduling.
+  - Identify goal setting.
+  - Understand self-motivation skills as it relates to time management.
 - **29.08** Public Speaking.
-    - Understand how to present a code violation
-    - Identify the stated purpose of the violation
-    - Understand how to arrange the material and summarize the main point
-    - Identify the barriers to good communication skills
+  - Understand how to present a code violation
+  - Identify the stated purpose of the violation
+  - Understand how to arrange the material and summarize the main point
+  - Identify the barriers to good communication skills
 
 ### 30.0 Describe legal issues as it pertains to code enforcement.
 
 - **30.01** Case Development.
-    - Understand how to initiate and investigate a code enforcement violation.
-    - Demonstrate how to professionally write a code violation citation.
+  - Understand how to initiate and investigate a code enforcement violation.
+  - Demonstrate how to professionally write a code violation citation.
 - **30.02** Special Issues.
-    - Identify repeat violations.
-    - Understand right of entry to private property.
-    - Understand fines, forfeitures, and recovery costs.
+  - Identify repeat violations.
+  - Understand right of entry to private property.
+  - Understand fines, forfeitures, and recovery costs.
 - **30.03** Code Enforcement Board.
-    - Understand Chapter 162, F.S.
-    - Define:
-      - Local government code enforcement boards; organizations
-      - Enforcement procedures
-      - Conducting a hearing
-      - Powers of enforcement
-      - Administrative fines; cost of repair; liens
-      - Appeals
+  - Understand Chapter 162, F.S.
+  - Define:
+    - Local government code enforcement boards; organizations
+    - Enforcement procedures
+    - Conducting a hearing
+    - Powers of enforcement
+    - Administrative fines; cost of repair; liens
+    - Appeals
 - **30.04** Mock Code Board Hearing.
-    - Conduct a mock code board hearing.
+  - Conduct a mock code board hearing.
 - **30.05** Evidentiary Issues.
-    - Identify the chain of custody for evidence.
-    - Explain how photographic evidence is submitted.
+  - Identify the chain of custody for evidence.
+  - Explain how photographic evidence is submitted.
 - **30.06** Local Government Ordinances.
-    - Identify the commonly used ordinances and how they affect the community.
+  - Identify the commonly used ordinances and how they affect the community.
 - **30.07** Other Legal Options.
-    - Explain all the options available to the code enforcement officer and board.
+  - Explain all the options available to the code enforcement officer and board.
 - **30.08** Mock Citation Trial.
-    - Conduct a mock citation trial.
+  - Conduct a mock citation trial.
 - **30.09** Testifying and Demeanor.
-    - Describe how to prepare for court testimony.
-    - Prepare a code enforcement case for trial.
+  - Describe how to prepare for court testimony.
+  - Prepare a code enforcement case for trial.
 
 ### 31.0 Demonstrate an awareness of Officer Safety and Field Applications.
 
 - **31.01** Presence and Stance.
-    - Demonstrate command presence.
-    - Explain body language for a code enforcement officer.
+  - Demonstrate command presence.
+  - Explain body language for a code enforcement officer.
 - **31.02** Practical Application Skills.
-    - Demonstrate a mock code enforcement violation.
-    - Demonstrate a response to a conflict with a violator.
-    - Demonstrate verbal conflict resolution skills.
+  - Demonstrate a mock code enforcement violation.
+  - Demonstrate a response to a conflict with a violator.
+  - Demonstrate verbal conflict resolution skills.
 - **31.03** Human Diversity and Culture.
-    - Understand human diversity and how it affects interactions.
+  - Understand human diversity and how it affects interactions.
 - **31.04** Dealing with Persons with Special Concerns.
-    - Explain the difficulties dealing with our older population.
-    - Explain how to interact with violator with disabilities.
+  - Explain the difficulties dealing with our older population.
+  - Explain how to interact with violator with disabilities.
 - **31.05** Substance Abuse.
-    - Understand the signs of substance violations to include: identifying marijuana and equipment used in clandestine labs.
+  - Understand the signs of substance violations to include: identifying marijuana and equipment used in clandestine labs.
 - **31.06** Officer Survival Considerations.
-    - Explain fight or flight.
+  - Explain fight or flight.
 - **31.07** Animal Encounter Issues.
-    - Understand aggressive animals and the signs.
+  - Understand aggressive animals and the signs.
 - **31.08** Hazardous Materials/Situations and Incident Command.
-    - Understand the signs of hazardous materials.
-    - Identify hazardous materials in businesses and residences.
-    - Explain the Incident Command Structure to include ICS 100, 700.
+  - Understand the signs of hazardous materials.
+  - Identify hazardous materials in businesses and residences.
+  - Explain the Incident Command Structure to include ICS 100, 700.
 - **31.09** Defensive Tactics.
-    - Demonstrate tactics to defend yourself and cause a pause in combat.
+  - Demonstrate tactics to defend yourself and cause a pause in combat.
 
 ## Additional Information
 

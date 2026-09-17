@@ -54,5 +54,13 @@ export function parseCourse(path) {
   });
 
   if (!meta.course) throw new Error(`${path}: missing @course`);
+
+  // Normalise bullet nesting so the shallowest bullet of each benchmark is depth 0.
+  standards.forEach((std) => std.benchmarks.forEach((b) => {
+    if (!b.bullets.length) return;
+    const base = Math.min(...b.bullets.map((x) => x.depth));
+    b.bullets.forEach((x) => { x.depth -= base; });
+  }));
+
   return { meta, standards };
 }

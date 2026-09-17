@@ -440,26 +440,30 @@ function buildAnswer(query) {
 /* ------------------------------------------------------------ components */
 const LEVEL_NAME = new Map(F.taxonomy.bloom.map((b) => [b.level, b.name]));
 
+// Flat [{depth, text}] -> nested <ul>. Depth 0 is the outermost bullet.
+function renderBullets(list, tokens = []) {
+  const root = [];
+  const stack = [{ depth: -1, children: root }];
+  list.forEach((item) => {
+    const node = { text: item.text, children: [] };
+    while (stack[stack.length - 1].depth >= item.depth) stack.pop();
+    stack[stack.length - 1].children.push(node);
+    stack.push({ depth: item.depth, children: node.children });
+  });
+  const draw = (nodes) => `<ul>${nodes.map((n) => `<li>${highlight(n.text, tokens)}${n.children.length ? draw(n.children) : ''}</li>`).join('')}</ul>`;
+  return draw(root);
+}
+
 function benchmarkCard(b, tokens = [], opts = {}) {
   const selected = state.selection.includes(b.uid);
   const cov = state.coverage[b.uid] || '';
-  const bullets = (list, depth = 0) => {
-    const here = list.filter((x) => x.depth === depth);
-    if (!here.length) return '';
-    return `<ul>${here.map((x) => {
-      const idx = list.indexOf(x);
-      const children = [];
-      for (let i = idx + 1; i < list.length && list[i].depth > depth; i += 1) children.push(list[i]);
-      return `<li>${highlight(x.text, tokens)}${bullets(children.filter((c) => c.depth === depth + 1).length ? children : [], depth + 1)}</li>`;
-    }).join('')}</ul>`;
-  };
   return `<div class="bench" id="${domId('b', b.uid)}" data-uid="${b.uid}">
     ${opts.context ? `<div class="ctx">${esc(b._course.title)} <span class="muted">/</span> ${esc(b.standardId)} ${esc(b._std.text.slice(0, 90))}${b._std.text.length > 90 ? '...' : ''}</div>` : ''}
     <div class="head">
       <span class="bid">${esc(b.id)}</span>
       <div class="btext">
         <div>${highlight(b.text, tokens)}</div>
-        ${b.bullets.length ? bullets(b.bullets) : ''}
+        ${b.bullets.length ? renderBullets(b.bullets, tokens) : ''}
         <div class="meta tiny">
           <span class="tag lvl">${esc(b.cognitiveLabel)}</span>
           ${b.modality === 'performance' ? '<span class="tag perf">performance</span>' : ''}
@@ -656,7 +660,8 @@ function lessonMarkdown() {
   out.push(`# ${L.title || `${topicLabels[0] || 'Criminal Justice Operations'} - lesson plan`}`, '');
   out.push(`**Program:** ${P.programTitle} (${P.programNumber}) | **CIP:** ${P.cipNumber} | **Cluster:** ${P.careerCluster}`);
   out.push(`**Course(s):** ${coursesUsed.map((c) => `${c.title} (${c.courseNumber})`).join('; ')}`);
-  out.push(`**Date:** ${L.date || '______'} | **Length:** ${L.periods || `${periods} period(s) (framework-weighted estimate)`}`, '');
+  out.push(`**Date:** ${L.date || '______'} | **Length:** ${L.periods || '______'}`);
+  out.push('', `*Framework pacing allocation for these ${plural(items.length, 'benchmark')}: about ${periods} instructional period(s) of the ${COURSES[0].periodsPerCourse} in a 1-credit course. That is a share of the year's time, not the length of one class - split it across as many lessons as the work needs.*`, '');
 
   out.push('## Standards and benchmarks addressed', '');
   stdsUsed.forEach((s) => {
@@ -672,8 +677,12 @@ function lessonMarkdown() {
   items.forEach((b) => out.push(`- ${titleCase(lowerFirst(b.text.replace(/\s*\(optional\)\s*/i, '')))} *(${b.id}, ${b.cognitiveLabel})*`));
   out.push('');
 
-  out.push('## Essential question', '');
-  out.push(`- ${topicLabels.length ? `How does a criminal justice professional apply ${topicLabels.slice(0, 2).join(' and ').toLowerCase()} correctly, lawfully, and safely?` : 'What does this task require of a criminal justice professional?'}`, '');
+  out.push('## Essential questions', '');
+  stdsUsed.slice(0, 2).forEach((s) => {
+    out.push(`- What does "${s.text.replace(/\.$/, '')}" require of a criminal justice professional on the job?`);
+  });
+  if (topicLabels.length) out.push(`- Where do ${topicLabels.slice(0, 2).join(' and ').toLowerCase()} decisions go wrong, and what prevents it?`);
+  out.push('');
 
   if (cites.length || cases.length || named.length) {
     out.push('## Legal authority and key references', '');
@@ -753,7 +762,7 @@ function renderLesson() {
       </div>` : ''}
     </div>
     ${items.length
-      ? `<div class="card"><textarea readonly style="min-height:520px">${esc(md)}</textarea></div>`
+      ? `<div class="card"><textarea id="lesson-md" readonly style="min-height:520px">${esc(md)}</textarea></div>`
       : '<div class="empty">Your selection is empty. Add benchmarks from <a href="#/ask">Ask</a> or <a href="#/browse">Browse</a>, then come back.</div>'}
   </div><div class="stack">${selectionPanel()}</div></div>`;
 }
@@ -1188,7 +1197,13 @@ document.addEventListener('toggle', (e) => {
 document.addEventListener('input', (e) => {
   if (e.target.id === 'q') { debouncedSearch(e.target.value); return; }
   const lesson = e.target.closest('[data-lesson]');
-  if (lesson) { state.lesson[lesson.dataset.lesson] = lesson.value; persist.lesson(); return; }
+  if (lesson) {
+    state.lesson[lesson.dataset.lesson] = lesson.value;
+    persist.lesson();
+    const box = $('#lesson-md');
+    if (box) box.value = lessonMarkdown();
+    return;
+  }
   const unit = e.target.closest('[data-unit]');
   if (unit) {
     const u = state.units.find((x) => x.id === unit.dataset.unit);

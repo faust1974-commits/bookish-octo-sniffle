@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-09-17T13:29:20.580Z",
+    "generated": "2026-09-17T13:33:22.352Z",
     "generator": "build/build.mjs",
     "sourceOfTruth": "data/program.json + data/courses/*.cjo",
     "schemaVersion": 1
@@ -4224,55 +4224,55 @@
               "text": "Describe calls for service, to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Community service"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Assisting the public"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Well-being checks"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Responding to alarms"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Animal complaints"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Noncustodial transports"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Responding to Disturbances"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Crowd control"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Civil disturbances"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Responding to a person in crisis"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Crisis situations"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Intervention and referral"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Transportation and documentation"
                 }
               ],
@@ -5533,19 +5533,19 @@
               "text": "Describe the totality of circumstances as it relates to:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Subject resistance"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Situational Factors"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Justification"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Officer Response"
                 }
               ],
@@ -7258,47 +7258,47 @@
               "text": "Describe the different types of investigations including;",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Death investigations"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Assault and battery"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Domestic violence"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Sexual offenses"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Crimes against children"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Crimes against elderly"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Robbery and theft"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Burglary"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Arson"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "White collar crime"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Computer crimes"
                 }
               ],
@@ -9942,19 +9942,19 @@
               "text": "List the limitations of a traffic control officer are not authorized to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "carry a firearm or any other weapon"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "write any citations"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "make any arrests"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "conduct any investigations"
                 }
               ],
@@ -10104,15 +10104,15 @@
               "text": "Describe the main objectives of traffic direction and control to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "increase safety"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "increase traffic flow"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "divert traffic flow"
                 }
               ],
@@ -10164,15 +10164,15 @@
               "text": "List methods for controlling traffic to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Deployment of traffic control devices"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Direction by an officer"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Manual control of traffic signals following agency policies and procedures."
                 }
               ],
@@ -10229,35 +10229,35 @@
               "text": "Identify when traffic direction and control are applicable pursuant to agency protocol to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "rush hours"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "traffic light failures"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "vehicle crashes"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "special events"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "major disasters"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "missing or absent traffic control devices"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "funeral procession or dignitary motorcade"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "cooperation with other public service agency"
                 }
               ],
@@ -10329,31 +10329,31 @@
               "text": "List equipment available to an officer for use in directing traffic:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Whistle"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "high visibility glove"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "lighted baton"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "reflective slip-over vest"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "barricades or cones"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "flares, electronic markers, or chemical light sticks"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "variable message boards, including arrow boards"
                 }
               ],
@@ -10425,15 +10425,15 @@
               "text": "Evaluate a traffic situation before intervening to direct traffic to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Determine if intervention is necessary."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Consider the safety of the officer and the public."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Maintain traffic flow or divert traffic."
                 }
               ],
@@ -10492,15 +10492,15 @@
               "text": "Identify factors that should be considered when planning to direct traffic to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Determine how to improve the traffic situation before entering the roadway."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Assess whether additional officers and/or resources are needed."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Decide where to stand in the roadway."
                 }
               ],
@@ -10563,15 +10563,15 @@
               "text": "List the safety precautions that an officer should follow when directing traffic to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Always check safety measures; be alert and ready to move out of the way of a vehicle."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Never move without making sure it is safe."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Never permit vehicles or pedestrians to start from a stopped position until approaching traffic is stopped."
                 }
               ],
@@ -10685,35 +10685,35 @@
               "text": "List basic conduct for officers directing traffic to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Engage the attention of drivers at all times."
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Make eye contact with a stopped or stopping motorist."
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Use hand signals, such as pointing, to gain a motorist's attention."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Keep your hands free."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Do not engage in idle conversation."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Do not smoke."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Do not twirl a chain or other objects."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Do not use electronic devices such as cell phones."
                 }
               ],
@@ -10789,19 +10789,19 @@
               "text": "Describe appropriate procedures when an emergency vehicle is approaching an intersection where an officer is directing traffic to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Stop traffic in all directions."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Clear a path for the emergency vehicle if needed."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Wave the emergency vehicle through the intersection."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Communicate with a supervisor when circumstances are beyond the duties of a TCO."
                 }
               ],
@@ -10867,15 +10867,15 @@
               "text": "Explain why voice commands are seldom used in directing traffic to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Verbal directions are not easy for drivers to hear or understand."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Voice commands might be misinterpreted by motorist or pedestrian."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Words may antagonize motorist or pedestrian."
                 }
               ],
@@ -10935,19 +10935,19 @@
               "text": "List procedures to follow if voice commands must be used to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Move reasonably close to the pedestrian or driver."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Be polite and brief."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Address as miss, ma'am, or sir."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Do not lose your temper."
                 }
               ],
@@ -11007,19 +11007,19 @@
               "text": "List procedures to follow when assisting pedestrians across the street including:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Be firm but polite."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Verbally direct pedestrians."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Do not permit crossing until it is safe."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Take extra caution with children, the elderly, or persons with disabilities."
                 }
               ],
@@ -11085,15 +11085,15 @@
               "text": "Describe the various whistle signals to get the attention of the driver or pedestrian including:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "one long blast for the vehicle to stop."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "two short blasts for the vehicle to go."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "several short blasts to get the attention of a driver or pedestrian who does not respond to a hand signal."
                 }
               ],
@@ -11152,27 +11152,27 @@
               "text": "List the various hand signals used in conjunction with the whistle signals to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Stop"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "turn right"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "turn left"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "start"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "keep moving"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "resume traffic signal control"
                 }
               ],
@@ -13554,19 +13554,19 @@
               "text": "Identify the statutes governing crash reporting, and summarize the process to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.061, F.S., Crashes involving damage to vehicle or property."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.062, F.S., Duty to give information and render aid."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.062, F.S., Duty upon damaging unattended vehicle or other property."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.066, F.S., Written reports of crashes."
                 }
               ],
@@ -13639,39 +13639,39 @@
               "text": "Identify statutes outlining special circumstances that may apply to crash reporting in the following statutes to include:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.027, F.S., Crash involving death or personal injuries."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.064, F.S., When driver unable to report."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.065, F.S., Crashes; reports; penalties."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.067, F.S., False reports."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.068, F.S., Crash report forms."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.070, F.S., Exchange of information at scene of crash."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.193, F.S., Driving under the influence; penalties."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.1932, F.S., Tests for alcohol, chemical substances, or controlled substances; implied consent; refusal."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "316.1933, F.S., Blood test for impairment or intoxication in cases of death or serious bodily injury; right to use reasonable force."
                 }
               ],
@@ -14288,91 +14288,91 @@
               "text": "Define the following legal definitions relative to the traffic crash investigation:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "admission: a confession, settlement, or acknowledgement made by a party which could be offered against that party in court [90.803(18), F.S.]."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "arrest: to legally deprive a person of liberty or freedom to go as one chooses, or taking a person into custody to be held to answer for a crime."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "contraband: goods, property, or other things possessed in violation of the law."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "deposition: a form of pretrial discovery, in which the witness is placed under oath and must answer questions asked by an attorney; may be transcribed for use in impeaching the witness at trial or, in special cases, to perpetuate testimony."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "duces tecum: (\"bring with you\") a type of subpoena which requires the witness to bring specified documents or other evidence."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "evidence: proof of allegations at issue between parties which may be direct, indirect, substantive, intrinsic, original, or derivative."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "felony: a criminal offense committed within a state in which the maximum penalty is death or incarceration in a state correctional facility for a period exceeding one year."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "FCIC/NCIC: Florida Crime Information Center (FCIC)/National Crime Information Center (NCIC) (misuse of a secure database is a criminal offense)."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "forfeiture: the loss of some right or property as a penalty for some illegal act."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "infraction: in Florida state courts, a non-criminal violation punishable by no other penalty than a fine, forfeiture or other civil penalty [775.08(3), F.S.]."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "jurisdiction: the territorial range over which an authority extends."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "jury: a body of citizens sworn to deliver a true verdict upon evidence submitted to them in a trial."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "misdemeanor: in Florida state courts, any criminal offense punishable by a term of imprisonment in a county correctional facility (jail) not in excess of one year; does not include any violation of municipal or county ordinance [775.02(2), F.S.]."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "ordinance: a law, statute, or legislative enactment, particularly the legislative enactments or statutes of a municipal corporation."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "probable cause: reasonable grounds for suspicion, supported by circumstance sufficiently strong to warrant a cautious person to believe that an accused individual is guilty of the offense with which he or she is charged."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "reasonable doubt: a doubt based on reason regarding an element of the state's proof of a defendant's guilt."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "q) restitution: the restoring of monetary or non-monetary property to a victim for damage or loss caused directly or indirectly by the defendant."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "search: an exploration or inspection of an individual's premises (such as a house, business, motel room), papers (business records, documents, etc.), effects (cars, luggage) or person."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "seizure: the act of taking possession of property, things, or persons, including evidence and contraband."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "subpoena: a document issued under the authority of the court or statute, compelling attendance at a deposition, hearing, trial or other proceeding, which provides that the subpoenaed person is subject to penalty for failure to comply."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "venue: the circuit or county in which a particular trial may be conducted."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "witness: one who observes an incident or has knowledge of facts or information."
                 }
               ],
@@ -19314,15 +19314,15 @@
               "text": "Explain how to prevent and control fires and notify the fire department.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe sodium fires and acids."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe procedures for controlling small fires."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify extinguishing methods (cooling, smothering, and starving), list extinguishing agents, and identify markings on containers of extinguishing agents for use with different fires."
                 }
               ],
@@ -19384,15 +19384,15 @@
               "text": "Be familiar with life safety issues, such as:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Life safety plans."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Fire detection, location and intensity."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Evacuation."
                 }
               ],
@@ -19856,15 +19856,15 @@
               "text": "Define the duties of the first security officer on the scene to:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Determine what makes up the crime/accident scene."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Isolate and protect the crime/accident scene."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify witnesses."
                 }
               ],
@@ -21729,23 +21729,23 @@
               "text": "Describe safety concerns and steps to follow when responding to potentially violent situations and violent crimes.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Evasive tactics."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe weapons safety practices and ways to decrease the accidental or deliberate use of weapons."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe the types of weapons--such as batons, chemical weapons, knives, and guns--that might be used against a security officer or other individuals in violent situations."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify unarmed methods for responding to violent crimes, discouraging the use of weapons, and enhancing weapon safety."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Review the security officer's use of weapons as outlined in Chapter 493, F.S."
                 }
               ],
@@ -23234,11 +23234,11 @@
               "text": "Mail screening:",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Biological/Chemical"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explosive"
                 }
               ],
@@ -23284,31 +23284,31 @@
               "text": "Types of attacks and responses (BENICE):",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Biological"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explosive"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Nuclear"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Incendiary"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Chemical"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Energetic"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Samples of Florida incidents"
                 }
               ],
@@ -26188,47 +26188,47 @@
               "text": "Prepare written reports",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify the \"who-what-when-where-why-how\" elements of a report."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe and demonstrate interviewing a person."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe and demonstrate accurate note taking."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe the purpose of different types of reports."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Create a factual report with accuracy, completeness, conciseness, objectivity, and clarity and use proper grammar, spelling, punctuation, and legibility."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe and demonstrate organizing information for a report."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe and demonstrate mechanics of a report."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe and demonstrate the elements and principles of effective report writing."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe and demonstrate evaluating a report prior to submission."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify and locate state statutes as they pertain to situations being reported."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Define and write a code violation."
                 }
               ],
@@ -26348,15 +26348,15 @@
               "text": "Manager's Role in Code Enforcement.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe how to respond to complaints of violations of county codes."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe how to conduct staff conferences to discuss policies and procedures."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe hiring and discipline procedures."
                 }
               ],
@@ -26419,15 +26419,15 @@
               "text": "Media Relations.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand Chapter 119, F.S. Public Records."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe and demonstrate the elements of a press release."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand the importance of media relations."
                 }
               ],
@@ -26484,11 +26484,11 @@
               "text": "Records Management.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify elements of code enforcement software."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Demonstrate maintaining records, scheduling, issuing notices, and tracking violations."
                 }
               ],
@@ -26546,7 +26546,7 @@
               "text": "Employment Laws.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand the Fair Labor Standards Act (FLSA)."
                 }
               ],
@@ -26597,7 +26597,7 @@
               "text": "Performance Management.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Define performance management as a tool to define organizational goals."
                 }
               ],
@@ -26645,23 +26645,23 @@
               "text": "Stress Management.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Define stress"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify stress unique to code enforcement."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify signs and symptoms of stress."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify techniques of stress management."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand the importance of health and wellness."
                 }
               ],
@@ -26718,23 +26718,23 @@
               "text": "Time Management.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Define time management."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify time management tools."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand prioritization and scheduling."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify goal setting."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand self-motivation skills as it relates to time management."
                 }
               ],
@@ -26789,19 +26789,19 @@
               "text": "Public Speaking.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand how to present a code violation"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify the stated purpose of the violation"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand how to arrange the material and summarize the main point"
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify the barriers to good communication skills"
                 }
               ],
@@ -26889,11 +26889,11 @@
               "text": "Case Development.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand how to initiate and investigate a code enforcement violation."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Demonstrate how to professionally write a code violation citation."
                 }
               ],
@@ -26950,15 +26950,15 @@
               "text": "Special Issues.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify repeat violations."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand right of entry to private property."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand fines, forfeitures, and recovery costs."
                 }
               ],
@@ -27014,35 +27014,35 @@
               "text": "Code Enforcement Board.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand Chapter 162, F.S."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Define:"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Local government code enforcement boards; organizations"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Enforcement procedures"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Conducting a hearing"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Powers of enforcement"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Administrative fines; cost of repair; liens"
                 },
                 {
-                  "depth": 2,
+                  "depth": 1,
                   "text": "Appeals"
                 }
               ],
@@ -27108,7 +27108,7 @@
               "text": "Mock Code Board Hearing.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Conduct a mock code board hearing."
                 }
               ],
@@ -27157,11 +27157,11 @@
               "text": "Evidentiary Issues.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify the chain of custody for evidence."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explain how photographic evidence is submitted."
                 }
               ],
@@ -27213,7 +27213,7 @@
               "text": "Local Government Ordinances.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify the commonly used ordinances and how they affect the community."
                 }
               ],
@@ -27263,7 +27263,7 @@
               "text": "Other Legal Options.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explain all the options available to the code enforcement officer and board."
                 }
               ],
@@ -27314,7 +27314,7 @@
               "text": "Mock Citation Trial.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Conduct a mock citation trial."
                 }
               ],
@@ -27361,11 +27361,11 @@
               "text": "Testifying and Demeanor.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Describe how to prepare for court testimony."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Prepare a code enforcement case for trial."
                 }
               ],
@@ -27445,11 +27445,11 @@
               "text": "Presence and Stance.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Demonstrate command presence."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explain body language for a code enforcement officer."
                 }
               ],
@@ -27503,15 +27503,15 @@
               "text": "Practical Application Skills.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Demonstrate a mock code enforcement violation."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Demonstrate a response to a conflict with a violator."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Demonstrate verbal conflict resolution skills."
                 }
               ],
@@ -27566,7 +27566,7 @@
               "text": "Human Diversity and Culture.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand human diversity and how it affects interactions."
                 }
               ],
@@ -27614,11 +27614,11 @@
               "text": "Dealing with Persons with Special Concerns.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explain the difficulties dealing with our older population."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explain how to interact with violator with disabilities."
                 }
               ],
@@ -27671,7 +27671,7 @@
               "text": "Substance Abuse.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand the signs of substance violations to include: identifying marijuana and equipment used in clandestine labs."
                 }
               ],
@@ -27724,7 +27724,7 @@
               "text": "Officer Survival Considerations.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explain fight or flight."
                 }
               ],
@@ -27772,7 +27772,7 @@
               "text": "Animal Encounter Issues.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand aggressive animals and the signs."
                 }
               ],
@@ -27821,15 +27821,15 @@
               "text": "Hazardous Materials/Situations and Incident Command.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Understand the signs of hazardous materials."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Identify hazardous materials in businesses and residences."
                 },
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Explain the Incident Command Structure to include ICS 100, 700."
                 }
               ],
@@ -27885,7 +27885,7 @@
               "text": "Defensive Tactics.",
               "bullets": [
                 {
-                  "depth": 1,
+                  "depth": 0,
                   "text": "Demonstrate tactics to defend yourself and cause a pause in combat."
                 }
               ],
