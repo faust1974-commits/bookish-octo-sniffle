@@ -1,0 +1,15 @@
+{
+  "name": "criminal-justice-operations-framework",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Indexed, searchable Florida DOE Criminal Justice Operations curriculum framework (program 8918000) with planning, coverage and crosswalk tools.",
+  "type": "module",
+  "scripts": {
+    "build": "node build/build.mjs",
+    "test": "node build/validate.mjs",
+    "check": "npm run build && npm test",
+    "cjo": "node tools/cjo.mjs",
+    "serve": "npx --yes http-server docs -p 8080 -c-1 -o"
+  },
+  "engines": { "node": ">=18" }
+}

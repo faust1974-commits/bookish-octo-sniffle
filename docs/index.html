@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Criminal Justice Operations Framework</title>
+<meta name="description" content="Indexed, searchable Florida DOE Criminal Justice Operations curriculum framework (program 8918000) with lesson, unit, coverage and crosswalk tools.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9878;</text></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <h1>Criminal Justice Operations</h1>
+      <span class="sub">FLDOE curriculum framework &middot; program 8918000 &middot; CIP 0743010305</span>
+      <span class="spacer"></span>
+      <span class="sub" id="totals"></span>
+      <button class="iconbtn" data-action="theme" title="Toggle light/dark">&#9681;</button>
+    </div>
+    <div class="searchrow">
+      <div class="searchwrap">
+        <span class="mag">&#9906;</span>
+        <input id="q" type="text" autocomplete="off" spellcheck="false"
+          placeholder="Search benchmarks, standards, statutes, topics - or ask: how many credits, teacher certification, 15.04, Miranda&hellip;"
+          aria-label="Search the framework">
+        <button class="clear" data-action="clear-query" title="Clear">&times;</button>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:6px">
+      <span class="kbdhint"><kbd>/</kbd> to search &middot; <kbd>Esc</kbd> to clear</span>
+      <span class="kbdhint right" id="filtercount"></span>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div>
+</header>
+
+<main id="views"></main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer class="no-print" style="max-width:1180px;margin:0 auto;padding:8px 16px 40px">
+  <p class="tiny muted">Framework text is transcribed verbatim from the Florida Department of Education
+  <em>Criminal Justice Operations</em> curriculum framework. Cognitive levels, topic tags, pacing estimates
+  and planning scaffolds are derived aids, not FLDOE requirements. Selections, units and coverage marks are
+  stored in this browser only.</p>
+</footer>
+
+<script src="framework-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
