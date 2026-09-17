@@ -9,6 +9,8 @@ if (!F) { document.body.innerHTML = '<p style="padding:2rem">framework-data.js f
 
 /* ------------------------------------------------------------------ data */
 const COURSES = F.courses;
+const SEQUENCED = COURSES.filter((c) => c.track !== 'program-wide');
+const PROGRAM_WIDE = COURSES.filter((c) => c.track === 'program-wide');
 const COURSE_BY_NUM = new Map(COURSES.map((c) => [c.courseNumber, c]));
 const STANDARDS = COURSES.flatMap((c) => c.standards);
 const STD_BY_UID = new Map(STANDARDS.map((s) => [s.uid, s]));
@@ -100,13 +102,18 @@ async function copy(text, label = 'Copied to clipboard') {
 }
 
 /* ----------------------------------------------------------------- state */
+// Storage is namespaced per program. Two programs opened on one machine share an
+// origin (all file:// pages do, and two folders on one site certainly do), so an
+// un-namespaced key would let one program read and overwrite the other's work.
+const STORE_NS = `cjo:${F.program.programNumber}`;
 const store = {
+  key: (key) => `${STORE_NS}:${key}`,
   get(key, fallback) {
-    try { const v = localStorage.getItem(`cjo:${key}`); return v ? JSON.parse(v) : fallback; }
+    try { const v = localStorage.getItem(store.key(key)); return v ? JSON.parse(v) : fallback; }
     catch { return fallback; }
   },
   set(key, value) {
-    try { localStorage.setItem(`cjo:${key}`, JSON.stringify(value)); } catch { /* private mode */ }
+    try { localStorage.setItem(store.key(key), JSON.stringify(value)); } catch { /* private mode */ }
   },
 };
 
@@ -240,12 +247,15 @@ const ANSWERS = [
       title: 'Program structure',
       html: `${dl([
         ['Program', `${esc(P.programTitle)} (${esc(P.programNumber)})`],
-        ['Length', `${esc(P.programLength)} - a planned sequence of four 1-credit courses`],
+        ['Type', esc(P.programType)],
+        ['Length', `${esc(P.programLength)} - ${plural(SEQUENCED.length - (HAS_OPTIONS ? OPTION_COURSES.length - 1 : 0), 'course')} of ${[...new Set(SEQUENCED.map((c) => c.credit))].join(' / ')} credit each`],
         ['Grades', esc(P.gradeLevel)],
-        ['Fourth credit', 'Three options; students take <strong>one</strong>'],
+        ...(HAS_OPTIONS ? [['Final credit', `${plural(OPTION_COURSES.length, 'option')}; students take <strong>one</strong>`]] : []),
+        ...(P.alternates || []).map((a) => [`Alternate for ${a.courseNumber}`, `${esc(a.alternateTitle)} (${esc(a.alternateNumber)})`]),
+        ...(PROGRAM_WIDE.length ? [['Program-wide', PROGRAM_WIDE.map((c) => `${esc(c.title)} (${esc(c.standardRange)})`).join('; ')]] : []),
       ])}
       <table><thead><tr><th>#</th><th>Course</th><th>Title</th><th class="num">Standards</th><th class="num">Benchmarks</th><th>Level</th></tr></thead><tbody>
-      ${COURSES.map((c) => `<tr><td>${c.position}${c.track === 'capstone-option' ? ' (option)' : ''}</td><td><code>${c.courseNumber}</code></td><td>${courseLink(c)}</td><td class="num">${c.standardCount}</td><td class="num">${c.benchmarkCount}</td><td>${c.level}</td></tr>`).join('')}
+      ${COURSES.map((c) => `<tr><td>${c.track === 'program-wide' ? 'all' : c.position}${c.track === 'capstone-option' ? ' (option)' : ''}</td><td><code>${c.courseNumber}</code></td><td>${courseLink(c)}</td><td class="num">${c.standardCount}</td><td class="num">${c.benchmarkCount}</td><td>${c.level || '-'}</td></tr>`).join('')}
       </tbody></table>`,
     }),
   },
@@ -254,9 +264,11 @@ const ANSWERS = [
     test: (q) => /\b(certif|teacher|who can teach|endorsement|qualif\w* to teach)\b/.test(q),
     build: () => ({
       title: 'Teacher certification',
-      html: `<p>Instructors must hold <strong>at least one</strong> of the following for every course in this program:</p>
-      <ul>${P.teacherCertifications.map((c) => `<li><code>${esc(c)}</code></li>`).join('')}</ul>
-      <p class="small muted">Source: Program Structure section of the framework.</p>`,
+      html: `<p>Instructors must hold <strong>at least one</strong> of the certifications listed for that course:</p>
+      <table><thead><tr><th>Course</th><th>Certification</th></tr></thead><tbody>
+      ${SEQUENCED.map((c) => `<tr><td>${esc(c.title)} <code>${esc(c.courseNumber)}</code></td><td>${(c.certifications || P.teacherCertifications).map((x) => `<code>${esc(x)}</code>`).join(' ')}</td></tr>`).join('')}
+      </tbody></table>
+      <p class="small muted">Source: the Course Structure section of the framework.</p>`,
     }),
   },
   {
@@ -271,11 +283,11 @@ const ANSWERS = [
         ['Program type', esc(P.programType)],
         ['Graduation requirement', 'CT - Career &amp; Technical Education (all six courses)'],
       ])}
-      <table><thead><tr><th>SOC</th><th>Occupational title</th><th>Attached to course</th></tr></thead><tbody>
+      ${P.socCodes.length ? `<table><thead><tr><th>SOC</th><th>Occupational title</th><th>Attached to course</th></tr></thead><tbody>
       ${P.socCodes.map((s) => {
         const cs = COURSES.filter((c) => c.soc === s.code);
         return `<tr><td><code>${esc(s.code)}</code></td><td>${esc(s.title)}</td><td>${cs.map((c) => `${esc(c.title)} (${c.courseNumber})`).join(', ') || '-'}</td></tr>`;
-      }).join('')}</tbody></table>`,
+      }).join('')}</tbody></table>` : '<p class="small muted">This framework lists no SOC occupational codes.</p>'}`,
     }),
   },
   {
@@ -319,7 +331,7 @@ const ANSWERS = [
   },
   {
     id: 'crp',
-    test: (q) => /\b(career ready|crp|employability practice|common career technical core|cctc)\b/.test(q),
+    test: (q) => /\b(career ready|crp|employability practice|common career technical core|cctc)\b/.test(q) && !!P.careerReadyPractices,
     build: () => ({
       title: 'Career Ready Practices',
       html: `<p class="small muted">${esc(P.careerReadyPractices.note)}</p><ol>${P.careerReadyPractices.practices.map((p) => `<li>${esc(p)}</li>`).join('')}</ol>`,
@@ -589,6 +601,7 @@ function lessonLinks(lesson, taughtBefore) {
 }
 
 const OPTION_COURSES = COURSES.filter((c) => c.track === 'capstone-option').map((c) => c.courseNumber);
+const HAS_OPTIONS = OPTION_COURSES.length > 0;
 
 const SCOPES = [
   { id: 'bridge', label: 'Bridge', hint: 'Only what connects the picks' },
@@ -612,7 +625,9 @@ function buildSequence(seedUids, scope) {
 
   let standardUids;
   if (scope === 'program') {
-    const option = state.sequence.option || seeds.map((b) => b.courseNumber).find((n) => OPTION_COURSES.includes(n)) || OPTION_COURSES[0];
+    const option = HAS_OPTIONS
+      ? (state.sequence.option || seeds.map((b) => b.courseNumber).find((n) => OPTION_COURSES.includes(n)) || OPTION_COURSES[0])
+      : null;
     standardUids = G.programOrder.filter((uid) => {
       const num = uid.split(':')[0];
       return !OPTION_COURSES.includes(num) || num === option;
@@ -803,14 +818,17 @@ function filterBar() {
   return `<div class="card no-print stack">
     <div class="row"><h3 style="margin:0">Filters</h3>
       <button class="iconbtn right" data-action="clear-filters">Reset</button></div>
-    <div><div class="tiny muted">Course</div><div class="chips">${COURSES.map((c) => chip('course', c.courseNumber, `${c.title.replace('Criminal Justice Operations', 'CJO')}`, c.benchmarkCount)).join('')}</div></div>
+    <div><div class="tiny muted">Course</div><div class="chips">${COURSES.map((c) => {
+      const short = c.title.replace('Criminal Justice Operations', 'CJO').replace(/ and Experiential Learning in Public Service/, '');
+      return chip('course', c.courseNumber, short, c.benchmarkCount);
+    }).join('')}</div></div>
     <div><div class="tiny muted">Cognitive level (derived)</div><div class="chips">${F.taxonomy.bloom.map((b) => chip('level', String(b.level), b.name, BENCH.filter((x) => x.cognitiveLevel === b.level).length)).join('')}</div></div>
     <div><div class="tiny muted">Type</div><div class="chips">${chip('modality', 'performance', 'Performance', F.stats.performanceBenchmarks)}${chip('modality', 'knowledge', 'Knowledge', F.stats.knowledgeBenchmarks)}</div></div>
     <div><div class="tiny muted">Flags</div><div class="chips">
-      ${chip('flags', 'optional', 'Optional', F.stats.optionalBenchmarks)}
-      ${chip('flags', 'mock', 'Mock activity', F.stats.mockActivities)}
-      ${chip('flags', 'cited', 'Cites law', F.stats.benchmarksWithCitations)}
-      ${chip('flags', 'repeat', 'Repeats across courses', F.stats.repeatedBenchmarks)}
+      ${F.stats.optionalBenchmarks ? chip('flags', 'optional', 'Optional', F.stats.optionalBenchmarks) : ''}
+      ${F.stats.mockActivities ? chip('flags', 'mock', 'Mock activity', F.stats.mockActivities) : ''}
+      ${F.stats.benchmarksWithCitations ? chip('flags', 'cited', 'Cites law', F.stats.benchmarksWithCitations) : ''}
+      ${F.stats.repeatedBenchmarks ? chip('flags', 'repeat', 'Repeats across courses', F.stats.repeatedBenchmarks) : ''}
       ${chip('flags', 'selected', 'In my selection', state.selection.length)}
       ${chip('flags', 'untaught', 'Not yet taught', BENCH.filter((b) => !state.coverage[b.uid]).length)}
     </div></div>
@@ -850,6 +868,25 @@ function selectionPanel() {
   </div>`;
 }
 
+// Every prompt the app suggests comes from this program's own content - no
+// examples from another framework can appear here.
+function exampleQueries() {
+  const out = [];
+  const mid = BENCH[Math.floor(BENCH.length * 0.45)];
+  if (mid) out.push(mid.id);
+  const topCites = Object.values(F.indexes.citations)
+    .sort((a, b) => b.benchmarks.length - a.benchmarks.length).slice(0, 2);
+  topCites.forEach((c) => out.push(c.value));
+  Object.values(F.indexes.topics).sort((a, b) => b.count - a.count).slice(0, 3)
+    .forEach((t) => out.push(t.label.toLowerCase()));
+  out.push('how many credits', 'teacher certification', 'CIP number');
+  if (F.stats.optionalBenchmarks) out.push('optional benchmarks');
+  if (F.stats.mockActivities) out.push('mock');
+  const biggest = [...SEQUENCED].sort((a, b) => b.benchmarkCount - a.benchmarkCount)[0];
+  if (biggest) out.push(biggest.title.toLowerCase());
+  return [...new Set(out)].slice(0, 12);
+}
+
 /* ----------------------------------------------------------------- views */
 function renderAsk() {
   const { tokens, results } = search(state.query);
@@ -860,30 +897,44 @@ function renderAsk() {
   if (!state.query.trim()) {
     body.push(`<div class="card stack">
       <h2>Ask the framework</h2>
-      <p class="small muted">Search all ${F.stats.benchmarks} benchmarks, ${F.stats.standards} standards and the program's administrative sections at once. Try a benchmark number, a statute, a topic, or a plain question.</p>
-      <div class="chips">${['15.04', 'Miranda', '493, F.S.', 'report writing', 'how many credits', 'teacher certification', 'CIP number', 'mock trial', 'use of force', 'optional benchmarks', 'fingerprints', 'crash investigation']
+      <p class="small muted">Search all ${F.stats.benchmarks} benchmarks, ${F.stats.standards} standards and the program's administrative sections at once. Try a benchmark number, ${F.stats.distinctStatutes ? 'a statute, ' : ''}a topic, or a plain question.</p>
+      <div class="chips">${exampleQueries()
         .map((q) => `<button class="chip" data-action="example" data-value="${esc(q)}">${esc(q)}</button>`).join('')}</div>
     </div>`);
-    body.push(`<div class="grid stats">${[
-      ['Courses', F.stats.courses], ['Standards', F.stats.standards], ['Benchmarks', F.stats.benchmarks],
-      ['Performance', F.stats.performanceBenchmarks], ['Statutes cited', F.stats.distinctStatutes], ['Repeat clusters', F.stats.repeatedClusters],
-    ].map(([l, n]) => `<div class="card stat"><div class="n">${n}</div><div class="l">${esc(l)}</div></div>`).join('')}</div>`);
+    const tiles = [
+      ['Courses', SEQUENCED.length],
+      ['Standards', F.stats.standards],
+      ['Benchmarks', F.stats.benchmarks],
+      ['Performance', F.stats.performanceBenchmarks],
+    ];
+    if (F.stats.distinctStatutes) tiles.push(['Statutes cited', F.stats.distinctStatutes]);
+    if (PROGRAM_WIDE.length) tiles.push(['Program-wide benchmarks', PROGRAM_WIDE.reduce((a, c) => a + c.benchmarkCount, 0)]);
+    tiles.push(['Repeat clusters', F.stats.repeatedClusters]);
+    body.push(`<div class="grid stats">${tiles
+      .map(([l, n]) => `<div class="card stat"><div class="n">${n}</div><div class="l">${esc(l)}</div></div>`).join('')}</div>`);
 
-    const seq = [1, 2, 3, 4];
-    body.push(`<div class="card stack" style="margin-top:14px"><h3>The four credits</h3>
+    const seq = [...new Set(SEQUENCED.map((c) => c.position))].sort((a, b) => a - b);
+    body.push(`<div class="card stack" style="margin-top:14px"><h3>${esc(P.programLength)}</h3>
       ${seq.map((pos) => {
-        const cs = COURSES.filter((c) => c.position === pos);
+        const cs = SEQUENCED.filter((c) => c.position === pos);
         return `<div class="row" style="align-items:stretch">
-          <div class="tiny muted" style="width:62px;padding-top:10px">Credit ${pos}${cs.length > 1 ? '<br>choose 1' : ''}</div>
+          <div class="tiny muted" style="width:62px;padding-top:10px">${cs[0].credit === 1 ? `Credit ${pos}` : `Course ${pos}`}${cs.length > 1 ? '<br>choose 1' : ''}</div>
           <div style="flex:1;display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">
           ${cs.map((c) => `<a href="#/course/${c.courseNumber}" style="text-decoration:none;color:inherit">
             <div class="bench" style="margin:0;height:100%">
               <strong class="small">${esc(c.title)}</strong>
-              <div class="tiny muted">${esc(c.courseNumber)} &middot; standards ${esc(c.standardRange)}</div>
+              <div class="tiny muted">${esc(c.courseNumber)} &middot; ${c.credit} credit &middot; standards ${esc(c.standardRange)}</div>
               <div class="tiny muted">${c.benchmarkCount} benchmarks &middot; ${c.standards.flatMap((s) => s.benchmarks).filter((b) => b.modality === 'performance').length} performance</div>
             </div></a>`).join('')}
           </div></div>`;
       }).join('')}
+      ${PROGRAM_WIDE.map((c) => `<div class="row" style="align-items:stretch">
+        <div class="tiny muted" style="width:62px;padding-top:10px">All courses</div>
+        <div style="flex:1"><a href="#/course/${c.courseNumber}" style="text-decoration:none;color:inherit">
+          <div class="bench" style="margin:0">
+            <strong class="small">${esc(c.title)}</strong>
+            <div class="tiny muted">standards ${esc(c.standardRange)} &middot; ${c.benchmarkCount} benchmarks &middot; applies across the whole program</div>
+          </div></a></div></div>`).join('')}
     </div>`);
   }
 
@@ -939,26 +990,11 @@ function renderBrowse() {
 }
 
 /* -------------------------------------------------- lesson + unit output */
-const TOPIC_SUPPORT = {
-  'report-writing': { materials: ['Agency incident/offense report forms', 'Sample redacted reports', 'Field notebooks'], activities: ['Write a report from a staged incident, then peer-edit against the six interrogatives'] },
-  'courts-testimony': { materials: ['Mock courtroom setup', 'Subpoena and deposition samples', 'Testimony rubric'], activities: ['Mock trial with assigned courtroom roles and a direct/cross examination round'] },
-  forensics: { materials: ['Fingerprint ink/powder kits, lift tape, ten-print cards', 'Magnifiers', 'Camera with scale'], activities: ['Roll a full set of ten prints, then lift and classify latents from a processed surface'] },
-  'crime-scene': { materials: ['Scene tape, evidence bags, markers, measuring tape', 'Evidence log and chain-of-custody forms'], activities: ['Process a staged scene: secure, document, sketch, photograph, collect, log'] },
-  'use-of-force': { materials: ['Use-of-force continuum handout', 'Case briefs: Graham v. Connor, Tennessee v. Garner, Terry v. Ohio'], activities: ['Scenario sort: justify officer response against the totality of circumstances'] },
-  'traffic-control': { materials: ['Traffic vest, whistle, cones, flashlight/wand, inert flares', 'Open lot or gym space'], activities: ['Practice hand and whistle signal sets at a marked intersection'] },
-  'crash-investigation': { materials: ['Florida crash report form and DHSMV Traffic Crash Report Manual', 'Measuring wheel', 'Diagram templates'], activities: ['Measure and diagram a staged two-vehicle crash, then complete the report form'] },
-  'law-legal': { materials: ['Online Florida Statutes (leg.state.fl.us)', 'Statute look-up worksheet'], activities: ['Statute scavenger hunt: locate the cited section and paraphrase the element list'] },
-  communication: { materials: ['Two-way radios or radio simulator', 'Phonetic alphabet and ten-code reference'], activities: ['Timed radio traffic drill with dispatch and field roles'] },
-  'emergency-response': { materials: ['First aid supplies and manikins', 'Agency emergency action plan samples'], activities: ['Table-top critical incident walkthrough with role cards'] },
-  'fire-life-safety': { materials: ['Extinguisher types chart and trainer unit', 'Life safety plan sample'], activities: ['Identify extinguishing agent by fire class and stage an evacuation route check'] },
-  ethics: { materials: ['Agency code of ethics/code of conduct samples', 'Case study packet'], activities: ['Ethical dilemma panel: defend a decision against the published code'] },
-  employability: { materials: ['Job announcements from local agencies', 'Resume and application templates'], activities: ['Mock interview panel with a scored rubric'] },
-  'security-industry': { materials: ['Chapter 493, F.S. and 5N-1, F.A.C. excerpts', 'Sample D/G license application'], activities: ['Licensure pathway map: match duties to license class and prohibitions'] },
-  'code-enforcement': { materials: ['Local code/ordinance excerpts', 'Notice of violation and citation forms', 'Camera'], activities: ['Document a mock violation, issue the notice, then argue it at a mock code board hearing'] },
-  'legal-office': { materials: ['Legal document templates', 'Case management or word processing software'], activities: ['Prepare and proofread a filing packet against a formatting checklist'] },
-  technology: { materials: ['Lab computers', 'Spreadsheet and word-processing software', 'CAD or scene-diagram software'], activities: ['Build a crime-scene sketch and a data table from field measurements'] },
-  diversity: { materials: ['Community demographic data', 'Scenario cards for varied populations'], activities: ['Structured role-play with debrief on perception and de-escalation'] },
-};
+// Teaching suggestions live with the topic in each program's topics.json.
+const TOPIC_SUPPORT = Object.fromEntries(F.taxonomy.topics
+  .filter((t) => (t.materials && t.materials.length) || (t.activities && t.activities.length))
+  .map((t) => [t.id, { materials: t.materials || [], activities: t.activities || [] }]));
+
 
 function lessonMarkdown() {
   const items = state.selection.map((uid) => BY_UID.get(uid));
@@ -983,7 +1019,8 @@ function lessonMarkdown() {
   out.push(`**Program:** ${P.programTitle} (${P.programNumber}) | **CIP:** ${P.cipNumber} | **Cluster:** ${P.careerCluster}`);
   out.push(`**Course(s):** ${coursesUsed.map((c) => `${c.title} (${c.courseNumber})`).join('; ')}`);
   out.push(`**Date:** ${L.date || '______'} | **Length:** ${L.periods || '______'}`);
-  out.push('', `*Framework pacing allocation for these ${plural(items.length, 'benchmark')}: about ${periods} instructional period(s) of the ${COURSES[0].periodsPerCourse} in a 1-credit course. That is a share of the year's time, not the length of one class - split it across as many lessons as the work needs.*`, '');
+  const pacingBasis = coursesUsed.find((c) => c.periodsPerCourse) || SEQUENCED[0];
+  out.push('', `*Framework pacing allocation for these ${plural(items.length, 'benchmark')}: about ${periods} instructional period(s) of the ${pacingBasis.periodsPerCourse} in a ${pacingBasis.credit}-credit course. That is a share of the course's time, not the length of one class - split it across as many lessons as the work needs.*`, '');
 
   out.push('## Standards and benchmarks addressed', '');
   stdsUsed.forEach((s) => {
@@ -1119,7 +1156,7 @@ function renderPlan() {
           <button class="btn ghost" data-action="scaffold-units">Scaffold units from a course</button>
           <button class="btn ghost" data-action="export-plan">Export plan</button>
         </span></div>
-      <p class="small muted">Units are saved in this browser. Day counts default to the framework-weighted pacing estimate (${COURSES[0].periodsPerCourse} instructional periods per 1-credit course).</p>
+      <p class="small muted">Units are saved in this browser. Day counts default to the framework-weighted pacing estimate (${SEQUENCED[0].periodsPerCourse} instructional periods for a ${SEQUENCED[0].credit}-credit course).</p>
       <table class="small"><thead><tr><th>Course</th><th class="num">Benchmarks not yet in a unit</th><th class="num">Planned days</th></tr></thead><tbody>
       ${unassignedByCourse.map(({ course, left }) => {
         const days = units.filter((u) => u.uids.some((uid) => uid.startsWith(`${course.courseNumber}:`)))
@@ -1247,21 +1284,22 @@ function renderProgram() {
         ['Program length', esc(P.programLength)],
         ['Teacher certification', P.teacherCertifications.map((c) => `<code>${esc(c)}</code>`).join(', ')],
         ['CTSO', esc(P.ctso.join(', '))],
-        ['SOC codes', P.socCodes.map((s) => `<code>${esc(s.code)}</code> ${esc(s.title)}`).join('<br>')],
+        ...(P.socCodes.length ? [['SOC codes', P.socCodes.map((s) => `<code>${esc(s.code)}</code> ${esc(s.title)}`).join('<br>')]] : []),
+        ...(P.frameworkYear ? [['Framework year', esc(P.frameworkYear)]] : []),
         ['Resources', `<a href="${esc(P.resourcesUrl)}" target="_blank" rel="noopener">CTE Program Resources</a>`],
       ])}
     </div>
     <div class="card stack"><h3>Purpose</h3><p class="small">${esc(P.purpose)}</p>
       <h3>Program structure</h3><p class="small">${esc(P.programStructure)}</p>
       <table><thead><tr><th>Course</th><th>Title</th><th class="num">Credit</th><th>SOC</th><th class="num">Level</th><th>Grad req</th></tr></thead><tbody>
-      ${COURSES.map((c) => `<tr><td><code>${esc(c.courseNumber)}</code></td><td>${courseLink(c)}${c.altTitle ? `<br><span class="tiny muted">also titled ${esc(c.altTitle)}</span>` : ''}</td>
-        <td class="num">${c.credit}</td><td><code>${esc(c.soc)}</code></td><td class="num">${c.level}</td><td>${esc(c.graduationRequirement)}</td></tr>`).join('')}
+      ${COURSES.map((c) => `<tr><td><code>${esc(c.courseNumber)}</code></td><td>${courseLink(c)}${c.altTitle ? `<br><span class="tiny muted">also titled ${esc(c.altTitle)}</span>` : ''}${c.alternate ? `<br><span class="tiny muted">or ${esc(c.alternate)}</span>` : ''}${c.summaryRange ? `<br><span class="tiny muted">listed as ${esc(c.summaryRange)} in the summary list</span>` : ''}</td>
+        <td class="num">${c.credit}</td><td>${c.soc ? `<code>${esc(c.soc)}</code>` : '-'}</td><td class="num">${c.level || '-'}</td><td>${esc(c.graduationRequirement)}</td></tr>`).join('')}
       </tbody></table>
       <p class="tiny muted">Graduation requirement codes: ${Object.entries(P.graduationRequirementCodes).map(([k, v]) => `${k} = ${esc(v)}`).join(' &middot; ')}</p>
     </div>
-    <div class="card stack"><h3>${esc(P.careerReadyPractices.title)}</h3>
+    ${P.careerReadyPractices ? `<div class="card stack"><h3>${esc(P.careerReadyPractices.title)}</h3>
       <p class="small muted">${esc(P.careerReadyPractices.note)}</p>
-      <ol class="small">${P.careerReadyPractices.practices.map((p) => `<li>${esc(p)}</li>`).join('')}</ol></div>
+      <ol class="small">${P.careerReadyPractices.practices.map((p) => `<li>${esc(p)}</li>`).join('')}</ol></div>` : ''}
     ${P.additionalInformation.map((s) => `<div class="card stack"><h3>${esc(s.heading)}</h3><p class="small">${esc(s.body)}</p></div>`).join('')}
     <div class="card stack"><h3>Data notes</h3>
       <ul class="small">${F.notes.map((n) => `<li><strong>${esc(n.kind)}:</strong> ${esc(n.detail)}</li>`).join('')}</ul>
@@ -1327,7 +1365,7 @@ function renderSequence() {
           ${seeds.map((uid) => { const b = BY_UID.get(uid); return `<span class="seed"><a href="#/b/${uid}"><code>${esc(b.id)}</code></a> ${esc(b.text.slice(0, 44))}${b.text.length > 44 ? '...' : ''}<button data-add="${uid}" title="Remove">&times;</button></span>`; }).join('<span class="muted">+</span>')}
         </div>
         <div class="chips">${SCOPES.map((s) => `<button class="chip" data-action="seq-scope" data-value="${s.id}" aria-pressed="${scope === s.id}" title="${esc(s.hint)}">${esc(s.label)}</button>`).join('')}</div>
-        ${scope === 'program' ? `<div class="row tiny"><span class="muted">Fourth credit</span>
+        ${scope === 'program' && HAS_OPTIONS ? `<div class="row tiny"><span class="muted">Final credit</span>
           <div class="chips">${OPTION_COURSES.map((n) => `<button class="chip" data-action="seq-option" data-value="${n}" aria-pressed="${(state.sequence.option || OPTION_COURSES[0]) === n}">${esc(COURSE_BY_NUM.get(n).title)}</button>`).join('')}</div>
           <span class="muted">students take one</span></div>` : ''}`
       : `<p class="small muted">Pick benchmarks anywhere in the app - two is enough - then come back here. The sequence finds what connects them, fills in what has to be taught between, and can expand out to the full program.</p>
@@ -1854,6 +1892,7 @@ window.addEventListener('hashchange', route);
 if (!store.get('open', null)) { state.open = new Set([domId('c', COURSES[0].courseNumber)]); persist.open(); }
 const savedTheme = store.get('theme', null);
 if (savedTheme) document.documentElement.dataset.theme = savedTheme;
-$('#totals').textContent = `${F.stats.courses} courses · ${F.stats.standards} standards · ${F.stats.benchmarks} benchmarks`;
+$('#totals').textContent = `${SEQUENCED.length} courses · ${F.stats.standards} standards · ${F.stats.benchmarks} benchmarks`;
+$('#q').placeholder = `Search ${F.program.programTitle} - or ask: ${exampleQueries().slice(0, 3).join(', ')}\u2026`;
 route();
 })();

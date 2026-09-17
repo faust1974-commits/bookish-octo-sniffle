@@ -1,8 +1,8 @@
 {
-  "name": "Criminal Justice Operations Framework",
-  "short_name": "CJ Ops",
-  "description": "The Florida Department of Education Criminal Justice Operations framework (program 8918000), indexed and searchable.",
-  "id": "criminal-justice-framework",
+  "name": "Careers in Public Service Framework",
+  "short_name": "PS Careers",
+  "description": "The Florida Department of Education Careers in Public Service framework (program 8607100), indexed and searchable.",
+  "id": "public-service-framework",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

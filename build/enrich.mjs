@@ -21,40 +21,17 @@ const PERFORMANCE_VERBS = new Set([
   'measure','record','document','obtain','facilitate','assist','issue','develop','plot','enter','plan',
 ]);
 
-export const TOPICS = [
-  { id: 'patrol', label: 'Patrol Operations', patterns: [/\bpatrol/i, /\bzone/i, /fixed post/i, /police hazard/i] },
-  { id: 'traffic-control', label: 'Traffic Direction & Control', patterns: [/traffic (control|direction|signal|device)/i, /direct(ing)? traffic/i, /hand signal/i, /whistle/i, /\bflare/i, /baton/i, /light stick/i, /crossing/i, /pedestrian/i, /traffic controller/i] },
-  { id: 'crash-investigation', label: 'Traffic Crash Investigation', patterns: [/\bcrash/i, /collision/i, /skid mark/i, /tow truck/i, /DHSMV/i, /uniform traffic citation/i, /\bUTC\b/i, /vehicular speed/i] },
-  { id: 'use-of-force', label: 'Use of Force & Arrest', patterns: [/use[- ]of[- ]force/i, /use of force/i, /deadly force/i, /reasonable force/i, /defensive tactics/i, /\barrest/i, /custody/i, /prisoner/i, /booking/i, /frisk/i, /Garner/i, /Graham/i, /Terry v/i, /de-escalation/i, /subject resistance/i, /firearm/i, /\bweapon/i] },
-  { id: 'investigations', label: 'Criminal Investigation', patterns: [/investigat/i, /interrogat/i, /confession/i, /search warrant/i, /seizure/i, /exclusionary/i, /polygraph/i, /\bsuspect/i, /levels of proof/i, /probable[- ]cause/i] },
-  { id: 'forensics', label: 'Forensic Science', patterns: [/fingerprint/i, /latent/i, /\bDNA\b/i, /hair and fiber/i, /broken glass/i, /crime lab/i, /\bAFIS\b/i, /Henry Modified/i, /blood type/i, /impression/i, /Plaster of Paris/i, /photo laboratory/i] },
-  { id: 'crime-scene', label: 'Crime Scene & Evidence', patterns: [/crime scene/i, /\bevidence/i, /chain of custody/i, /property control/i, /contaminat/i, /preserv/i, /mock crime scene/i, /field sketch/i] },
-  { id: 'report-writing', label: 'Report Writing & Documentation', patterns: [/\breport/i, /note taking/i, /field notes/i, /narrative/i, /affidavit/i, /diagram/i, /who-what-when/i, /interrogatives/i, /bullet-style/i] },
-  { id: 'courts-testimony', label: 'Courts & Testimony', patterns: [/\bcourt/i, /\btrial/i, /testimony/i, /testif/i, /deposition/i, /subpoena/i, /\bjury\b/i, /\bjudge\b/i, /prosecutor/i, /defense attorney/i, /demeanor/i, /cross[- ]examination/i, /hearing/i, /pretrial/i, /venue/i, /duces tecum/i] },
-  { id: 'law-legal', label: 'Law & Legal Authority', patterns: [/\bstatute/i, /F\.S\./, /F\.A\.C\./, /ordinance/i, /constitutional/i, /misdemeanor/i, /felony/i, /\bchapter \d/i, /\blegal\b/i, /Miranda/i, /jurisdiction/i, /civil and criminal/i, /rights of/i, /right-to-know/i, /liabilit/i, /Good Samaritan/i] },
-  { id: 'juvenile', label: 'Juvenile Justice', patterns: [/juvenile/i, /delinquen/i] },
-  { id: 'corrections', label: 'Corrections', patterns: [/correction/i, /\binmate/i, /\bprison/i, /\bjail\b/i] },
-  { id: 'communication', label: 'Communication Skills', patterns: [/communicat/i, /\bradio\b/i, /telephone/i, /interview/i, /rapport/i, /etiquette/i, /interpersonal/i, /phonetic/i, /listening/i, /public speaking/i, /body language/i, /\bmessage/i] },
-  { id: 'diversity', label: 'Human Diversity & Community', patterns: [/diversit/i, /cultural/i, /minority/i, /bias[- ]based/i, /disabilit/i, /elderly/i, /homeless/i, /veteran/i, /human relations/i, /special concerns/i, /older population/i, /community relations/i, /transient/i] },
-  { id: 'ethics', label: 'Ethics & Professionalism', patterns: [/\bethic/i, /professionalism/i, /professional conduct/i, /integrity/i, /harassment/i, /discriminat/i, /command presence/i, /grooming/i, /\buniform\b(?!\s+(?:traffic|crime))/i, /honesty/i, /code of conduct/i, /discipline/i] },
-  { id: 'employability', label: 'Employability & Career', patterns: [/employ/i, /\bjob\b/i, /resume/i, /job application/i, /\bcareer/i, /training opportunit/i, /work habits/i, /performance evaluation/i, /letter of introduction/i, /prerequisite/i] },
-  { id: 'crime-prevention', label: 'Crime Prevention', patterns: [/crime prevention/i, /CPTED/i, /security survey/i, /prevention of/i, /preventive patrol/i, /crime analysis/i] },
-  { id: 'security-industry', label: 'Private Security Industry', patterns: [/security officer/i, /private security/i, /493/, /DOACS/i, /licens/i, /access control/i, /CCTV/i, /\bTWIC\b/i, /security vehicle/i, /security business/i, /security patrol/i] },
-  { id: 'emergency-response', label: 'Emergency & Crisis Response', patterns: [/emergency/i, /first aid/i, /bloodborne/i, /disaster/i, /hurricane/i, /active shooter/i, /weapons of mass destruction/i, /evacuation/i, /\bcrisis/i, /Baker Act/i, /Marchman/i, /mental illness/i, /suicide/i, /trauma team/i, /medical response/i] },
-  { id: 'fire-life-safety', label: 'Fire & Life Safety', patterns: [/\bfire\b/i, /fires/i, /extinguish/i, /life safety/i, /fire watch/i, /incendiary/i] },
-  { id: 'terrorism', label: 'Terrorism Awareness', patterns: [/terror/i, /OPSEC/i, /\bbomb\b/i, /BENICE/i, /threat level/i, /mail screening/i] },
-  { id: 'crowd-control', label: 'Crowd Control', patterns: [/\bcrowd/i, /\briot/i, /protest/i, /demonstration/i, /civil disturbance/i, /disturbance/i] },
-  { id: 'technology', label: 'Technology & Records', patterns: [/computer/i, /software/i, /database/i, /spreadsheet/i, /word processor/i, /\bCAD\b/i, /technolog/i, /e-mail/i, /keyboarding/i, /\bFCIC\b/i, /\bNCIC\b/i, /records management/i, /electronic/i, /internet/i, /networking/i, /3D model/i, /cell phone/i] },
-  { id: 'math', label: 'Applied Math', patterns: [/\bmath\b/i, /arithmetic/i, /measurement/i, /estimat/i, /\bgraph\b/i, /dollar amount/i, /fractions/i, /decimals/i, /computations/i] },
-  { id: 'code-enforcement', label: 'Code Enforcement', patterns: [/code enforcement/i, /code violation/i, /code board/i, /\blien/i, /county code/i, /right of entry/i, /forfeiture/i] },
-  { id: 'legal-office', label: 'Legal Office Practice', patterns: [/legal office/i, /notary/i, /filing/i, /accounting/i, /legal document/i, /\bclient/i, /legal terminolog/i, /legal business/i, /legal professional/i, /legal workplace/i, /legal operating system/i, /trust bank/i] },
-  { id: 'safety-wellness', label: 'Officer Safety & Wellness', patterns: [/officer safety/i, /\bstress/i, /wellness/i, /\bhazard/i, /OSHA/i, /HAZMAT/i, /protective equipment/i, /substance/i, /aggressive animal/i, /fight or flight/i, /safety precaution/i, /officer survival/i, /right-to-know/i, /workplace violence/i, /violence in the workplace/i] },
-  { id: 'entrepreneurship', label: 'Entrepreneurship', patterns: [/entrepreneur/i, /starting a .*business/i, /business investment/i] },
-  { id: 'ctso', label: 'CTSO & Leadership', patterns: [/\bFPSA\b/i, /\bCTSO\b/i, /SkillsUSA/i, /leadership/i, /supervision/i, /managerial/i, /performance management/i] },
-  { id: 'time-management', label: 'Time & Task Management', patterns: [/time management/i, /scheduling/i, /prioritization/i, /goal setting/i, /self-motivation/i] },
-  { id: 'public-relations', label: 'Media & Public Relations', patterns: [/\bmedia\b/i, /press release/i, /public relations/i, /public records/i, /courtesy and etiquette/i] },
-  { id: 'system-overview', label: 'CJ System Overview', patterns: [/criminal justice system/i, /branches/i, /history and goals/i, /history of/i, /roles and responsibilities/i, /court system/i] },
-];
+// Topic tags come from each program's data/programs/<n>/topics.json, never from
+// code: one program's vocabulary must not tag another program's benchmarks.
+export function compileTopics(list) {
+  return list.map((t) => ({
+    id: t.id,
+    label: t.label,
+    materials: t.materials || [],
+    activities: t.activities || [],
+    patterns: t.patterns.map((p) => new RegExp(p, 'i')),
+  }));
+}
 
 const NAMED_REFERENCES = [
   ['Miranda', /Miranda/i], ['Baker Act', /Baker Act/i], ['Marchman Act', /Marchman Act/i],
@@ -147,8 +124,8 @@ export function citations(text) {
   };
 }
 
-export function topics(text) {
-  return TOPICS.filter((t) => t.patterns.some((p) => p.test(text))).map((t) => t.id);
+export function topics(text, compiled) {
+  return compiled.filter((t) => t.patterns.some((p) => p.test(text))).map((t) => t.id);
 }
 
 export function keywords(text) {

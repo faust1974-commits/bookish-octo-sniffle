@@ -1,7 +1,8 @@
 /* Offline shell for the Criminal Justice Operations framework.
    Everything the app needs is local, so once installed it works with no network. */
-const VERSION = '1.535.mu5sbbyv';
-const CACHE = `cjo-${VERSION}`;
+const VERSION = '1.535.mu5t0jox';
+const SCOPE = 'criminal-justice';
+const CACHE = `cjo-${SCOPE}-${VERSION}`;
 const SHELL = [
   './', './index.html', './app.js', './styles.css', './framework-data.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png',
@@ -19,7 +20,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter((k) => k.startsWith('cjo-') && k !== CACHE).map((k) => caches.delete(k)));
+    await Promise.all(keys.filter((k) => k.startsWith(`cjo-${SCOPE}-`) && k !== CACHE).map((k) => caches.delete(k)));
     await self.clients.claim();
   })());
 });

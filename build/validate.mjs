@@ -10,30 +10,46 @@ const warnings = [];
 const fail = (m) => errors.push(m);
 const warn = (m) => warnings.push(m);
 
-const EXPECTED = { courses: 6, standards: 80, benchmarks: 535 };
+const EXPECTED = {
+  '8918000': { sections: 6, standards: 80, benchmarks: 535 },
+  '8607100': { sections: 5, standards: 71, benchmarks: 332 },
+};
 
-const program = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/program.json'), 'utf8'));
-const files = fs.readdirSync(path.join(ROOT, 'data/courses')).filter((f) => f.endsWith('.cjo')).sort();
+const programDirs = fs.readdirSync(path.join(ROOT, 'data/programs'))
+  .filter((d) => fs.existsSync(path.join(ROOT, 'data/programs', d, 'program.json')))
+  .sort();
+
+programDirs.forEach(checkProgram);
+
+function checkProgram(dir) {
+const base = `data/programs/${dir}`;
+const program = JSON.parse(fs.readFileSync(path.join(ROOT, base, 'program.json'), 'utf8'));
+const files = fs.readdirSync(path.join(ROOT, base, 'courses')).filter((f) => f.endsWith('.cjo')).sort();
+const where0 = `${program.programTitle} (${program.programNumber})`;
 
 let totalStandards = 0;
 let totalBenchmarks = 0;
 const seenStandardNumbers = new Map();
 
 files.forEach((file) => {
-  const { meta, standards } = parseCourse(path.join(ROOT, 'data/courses', file));
-  const where = `${file}`;
+  const { meta, standards } = parseCourse(path.join(ROOT, base, 'courses', file));
+  const where = `${dir}/${file}`;
 
-  ['course', 'title', 'credit', 'level', 'soc', 'grad', 'description'].forEach((k) => {
+  // @soc is only required where the framework assigns occupational codes.
+  const required = ['course', 'title', 'credit', 'grad', 'description'];
+  if (program.socCodes.length) required.push('soc');
+  required.forEach((k) => {
     if (meta[k] === undefined || meta[k] === '') fail(`${where}: missing @${k}`);
   });
-  if (!program.sequence.some((s) => s.courseNumber === meta.course)) {
-    fail(`${where}: course ${meta.course} is not listed in data/program.json sequence`);
+  if (meta.track !== 'program-wide' && !program.sequence.some((s) => s.courseNumber === meta.course)) {
+    fail(`${where}: course ${meta.course} is not listed in the program sequence`);
   }
   const seq = program.sequence.find((s) => s.courseNumber === meta.course);
   if (seq && seq.title !== meta.title && seq.title !== meta.altTitle) {
     warn(`${where}: title "${meta.title}" differs from program.json "${seq.title}" (recorded as altTitle: ${meta.altTitle || 'none'})`);
   }
-  if (seq && seq.soc !== meta.soc) fail(`${where}: SOC ${meta.soc} differs from program.json ${seq.soc}`);
+  if (seq && seq.soc && seq.soc !== meta.soc) fail(`${where}: SOC ${meta.soc} differs from program.json ${seq.soc}`);
+  if (seq && seq.credit !== meta.credit) fail(`${where}: credit ${meta.credit} differs from program.json ${seq.credit}`);
 
   totalStandards += standards.length;
   const stdNumbers = standards.map((s) => Number(s.id.split('.')[0]));
@@ -72,11 +88,15 @@ files.forEach((file) => {
 });
 
 // ------------------------------------------------------------- pathways
-const pathways = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/pathways.json'), 'utf8'));
+const pathways = JSON.parse(fs.readFileSync(path.join(ROOT, base, 'pathways.json'), 'utf8'));
 const allStandardUids = new Set();
+const sequencedUids = new Set();
 files.forEach((file) => {
-  const { meta, standards } = parseCourse(path.join(ROOT, 'data/courses', file));
-  standards.forEach((s) => allStandardUids.add(`${meta.course}:${s.id}`));
+  const { meta, standards } = parseCourse(path.join(ROOT, base, 'courses', file));
+  standards.forEach((s) => {
+    allStandardUids.add(`${meta.course}:${s.id}`);
+    if (meta.track !== 'program-wide') sequencedUids.add(`${meta.course}:${s.id}`);
+  });
 });
 const onThread = new Set();
 const threadIds = new Set();
@@ -93,11 +113,14 @@ pathways.threads.forEach((t) => {
     onThread.add(uid);
   });
 });
-[...allStandardUids].filter((uid) => !onThread.has(uid)).forEach((uid) => {
+// Program-wide sections (career readiness) are not course-sequenced, so they are
+// deliberately off the threads.
+[...sequencedUids].filter((uid) => !onThread.has(uid)).forEach((uid) => {
   warn(`standard ${uid} is not on any instructional thread - sequences will place it by course order only`);
 });
 
-// The core sequence 01.0-27.0 must run once, unbroken, across the three core courses.
+// Criminal Justice: the core sequence 01.0-27.0 must run once across the three core courses.
+if (program.programNumber === '8918000') {
 for (let n = 1; n <= 27; n += 1) {
   const id = `${String(n).padStart(2, '0')}.0`;
   const owners = seenStandardNumbers.get(id) || [];
@@ -111,20 +134,29 @@ for (let n = 1; n <= 27; n += 1) {
     if (!options.includes(o)) fail(`standard ${id} appears in ${o}, which is not a fourth-credit option`);
   });
 });
+} else {
+  // Every other framework numbers its standards once, straight through.
+  [...seenStandardNumbers.entries()].forEach(([id, owners]) => {
+    if (owners.length > 1) fail(`standard ${id} appears in more than one course: ${owners.join(', ')}`);
+  });
+}
 
-if (totalStandards !== EXPECTED.standards) fail(`expected ${EXPECTED.standards} standards, parsed ${totalStandards}`);
-if (totalBenchmarks !== EXPECTED.benchmarks) fail(`expected ${EXPECTED.benchmarks} benchmarks, parsed ${totalBenchmarks}`);
-if (files.length !== EXPECTED.courses) fail(`expected ${EXPECTED.courses} course files, found ${files.length}`);
+const expected = EXPECTED[program.programNumber];
+if (expected) {
+  if (totalStandards !== expected.standards) fail(`${where0}: expected ${expected.standards} standards, parsed ${totalStandards}`);
+  if (totalBenchmarks !== expected.benchmarks) fail(`${where0}: expected ${expected.benchmarks} benchmarks, parsed ${totalBenchmarks}`);
+  if (files.length !== expected.sections) fail(`${where0}: expected ${expected.sections} course files, found ${files.length}`);
+}
 
 // Built artifacts should be in step with the source.
-const dist = path.join(ROOT, 'dist/framework.json');
+const dist = path.join(ROOT, `dist/${program.slug}/framework.json`);
 if (!fs.existsSync(dist)) {
   warn('dist/framework.json not built yet - run `npm run build`');
 } else {
   const F = JSON.parse(fs.readFileSync(dist, 'utf8'));
   if (F.stats.benchmarks !== totalBenchmarks) fail(`dist/framework.json is stale (${F.stats.benchmarks} benchmarks vs ${totalBenchmarks} in source) - run \`npm run build\``);
-  const webData = path.join(ROOT, 'docs/framework-data.js');
-  if (!fs.existsSync(webData)) fail('docs/framework-data.js is missing - run `npm run build`');
+  const webData = path.join(ROOT, program.webRoot, 'framework-data.js');
+  if (!fs.existsSync(webData)) fail(`${program.webRoot}/framework-data.js is missing - run \`npm run build\``);
   F.courses.forEach((c) => {
     c.standards.forEach((s) => {
       if (s.benchmarks.some((b) => b.suggestedPeriods === undefined)) fail(`${c.courseNumber} ${s.id}: pacing not computed`);
@@ -133,14 +165,18 @@ if (!fs.existsSync(dist)) {
   if (!F.graph) fail('dist/framework.json has no graph - run `npm run build`');
   else {
     if (F.graph.cycles.length) fail(`instructional graph has ${F.graph.cycles.length} standard(s) in a dependency cycle: ${F.graph.cycles.join(', ')}`);
-    if (F.graph.programOrder.length !== totalStandards) fail(`program order covers ${F.graph.programOrder.length} of ${totalStandards} standards`);
+    // Program-wide sections sit outside the course sequence by design.
+    if (F.graph.programOrder.length !== sequencedUids.size) {
+      fail(`${where0}: program order covers ${F.graph.programOrder.length} of ${sequencedUids.size} sequenced standards`);
+    }
     F.graph.standardEdges.forEach((e) => {
-      if (!allStandardUids.has(e.from) || !allStandardUids.has(e.to)) fail(`graph edge references a standard that does not exist: ${e.from} -> ${e.to}`);
+      if (!allStandardUids.has(e.from) || !allStandardUids.has(e.to)) fail(`${where0}: graph edge references a standard that does not exist: ${e.from} -> ${e.to}`);
     });
   }
 }
 
-console.log(`checked ${files.length} course files: ${totalStandards} standards, ${totalBenchmarks} benchmarks`);
+console.log(`${where0}: ${files.length} files, ${totalStandards} standards, ${totalBenchmarks} benchmarks`);
+}
 warnings.forEach((w) => console.log(`  warn  ${w}`));
 errors.forEach((e) => console.log(`  ERROR ${e}`));
 if (errors.length) { console.log(`\n${errors.length} error(s).`); process.exit(1); }

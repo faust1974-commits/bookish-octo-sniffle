@@ -1,0 +1,83 @@
+{
+  "note": "Curated instructional threads for Careers in Public Service. The civic standards (origins of government, citizenship, structure of government) repeat in all four courses by design - those threads are where the spiral lives.",
+  "threads": [
+    {
+      "id": "leadership",
+      "label": "Public service leadership",
+      "rationale": "Leadership traits, then the civic dispositions behind public service, then leading a group to a goal, then the expertise and active practice that make it real.",
+      "standards": ["8607110:16.0", "8607110:17.0", "8607110:18.0", "8607110:19.0", "8607110:22.0"]
+    },
+    {
+      "id": "civic-foundations",
+      "label": "Origins and purposes of government",
+      "rationale": "The same founding-documents standard is required in all four courses; teach it once in Leadership, then deepen it rather than restart it.",
+      "standards": ["8607110:23.0", "8607120:35.0", "8607130:60.0", "8607140:69.0"]
+    },
+    {
+      "id": "citizenship",
+      "label": "Citizenship and civic participation",
+      "rationale": "Roles, rights and responsibilities of citizens recur in every course, growing from explanation toward evaluation and advocacy.",
+      "standards": ["8607110:24.0", "8607120:36.0", "8607130:61.0", "8607140:70.0"]
+    },
+    {
+      "id": "government-structure",
+      "label": "Structure and functions of government",
+      "rationale": "The branches, federalism and regulatory agencies repeat across all four courses; Leadership carries the fullest treatment.",
+      "standards": ["8607110:25.0", "8607120:37.0", "8607130:62.0", "8607140:71.0"]
+    },
+    {
+      "id": "world-affairs",
+      "label": "World affairs and foreign policy",
+      "rationale": "Foreign policy builds directly on the origins-of-government work in the same course.",
+      "standards": ["8607120:35.0", "8607120:38.0"]
+    },
+    {
+      "id": "communication",
+      "label": "Communication and debate",
+      "rationale": "Interpersonal skills, then ELA expectations, then genre and technique, then the Florida Civics and Debate Initiative, then formal oral presentation of research.",
+      "standards": ["8607120:26.0", "8607120:28.0", "8607120:32.0", "8607120:33.0", "8607120:34.0", "8607140:65.0"]
+    },
+    {
+      "id": "writing",
+      "label": "Argument and analysis in writing",
+      "rationale": "Argumentative writing and informational analysis in Communication become the research writing and ELA expectations of the capstone.",
+      "standards": ["8607120:29.0", "8607120:30.0", "8607140:63.0", "8607140:64.0", "8607140:68.0"]
+    },
+    {
+      "id": "research",
+      "label": "Research practice",
+      "rationale": "Research to answer a question, first in Communication, then as the full investigative project in Public Service Research.",
+      "standards": ["8607120:31.0", "8607140:66.0"]
+    },
+    {
+      "id": "technology",
+      "label": "Technology and work products",
+      "rationale": "Word processing, slides and spreadsheets recur in every course; each pass should raise the standard of the product, not reteach the tool.",
+      "standards": ["8607110:20.0", "8607120:27.0", "8607130:39.0", "8607140:67.0"]
+    },
+    {
+      "id": "problem-solving",
+      "label": "Problem solving and decision making",
+      "rationale": "Public leadership information gathering, then a decision-making model applied to a community policy issue, then project-management problem-solving tools.",
+      "standards": ["8607110:21.0", "8607130:40.0", "8607130:45.0"]
+    },
+    {
+      "id": "pm-foundations",
+      "label": "Project management foundations",
+      "rationale": "Terminology, then planning concepts, roles, tools and plan-based approaches, ending in the schedule.",
+      "standards": ["8607130:41.0", "8607130:42.0", "8607130:43.0", "8607130:44.0", "8607130:46.0", "8607130:47.0"]
+    },
+    {
+      "id": "pm-execution",
+      "label": "Running a project",
+      "rationale": "Implementation, situation classification, plan attributes, team roles and document controls - the work between the plan and the deliverable.",
+      "standards": ["8607130:47.0", "8607130:48.0", "8607130:49.0", "8607130:50.0", "8607130:51.0", "8607130:52.0", "8607130:53.0", "8607130:54.0"]
+    },
+    {
+      "id": "pm-closeout",
+      "label": "Stakeholders and closeout",
+      "rationale": "Frameworks and stakeholder communication, information gathering, milestones, and finally the completed deliverable.",
+      "standards": ["8607130:55.0", "8607130:56.0", "8607130:57.0", "8607130:58.0", "8607130:59.0"]
+    }
+  ]
+}

@@ -133,6 +133,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 16px; }
 .chip {
   background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
   padding: 3px 10px; font-size: 12px; cursor: pointer; color: var(--text-dim); white-space: nowrap;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis;
 }
 .chip:hover { border-color: var(--accent); color: var(--text); }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }

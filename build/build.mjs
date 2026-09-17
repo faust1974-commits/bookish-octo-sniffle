@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseCourse } from './parse.mjs';
 import {
-  BLOOM, TOPICS, classify, citations, topics as topicsOf, keywords,
+  BLOOM, compileTopics, classify, citations, topics as topicsOf, keywords,
   weight, fullText, normalizeForMatch, jaccard,
 } from './enrich.mjs';
 import { buildGraph } from './graph.mjs';
@@ -18,14 +18,25 @@ const out = (p, body) => {
   console.log(`  wrote ${p} (${kb} KB)`);
 };
 
-const program = JSON.parse(read('data/program.json'));
-const pathways = JSON.parse(read('data/pathways.json'));
-const courseFiles = fs.readdirSync(path.join(ROOT, 'data/courses')).filter((f) => f.endsWith('.cjo')).sort();
+const PERIODS_PER_CREDIT = 170; // a 180-day year less assessment and review days
 
-const PERIODS_PER_COURSE = 170; // 180-day year less assessment/review days
+const programDirs = fs.readdirSync(path.join(ROOT, 'data/programs'))
+  .filter((d) => fs.existsSync(path.join(ROOT, 'data/programs', d, 'program.json')))
+  .sort();
+
+programDirs.forEach((dir) => buildProgram(dir));
+
+function buildProgram(dir) {
+const base = `data/programs/${dir}`;
+const program = JSON.parse(read(`${base}/program.json`));
+const pathways = JSON.parse(read(`${base}/pathways.json`));
+const TOPICS = compileTopics(JSON.parse(read(`${base}/topics.json`)).topics);
+const courseFiles = fs.readdirSync(path.join(ROOT, base, 'courses')).filter((f) => f.endsWith('.cjo')).sort();
+
+console.log(`\n${program.programTitle} (${program.programNumber})`);
 
 const courses = courseFiles.map((file) => {
-  const { meta, standards } = parseCourse(path.join(ROOT, 'data/courses', file));
+  const { meta, standards } = parseCourse(path.join(ROOT, base, 'courses', file));
   const seq = program.sequence.find((s) => s.courseNumber === meta.course) || {};
 
   const builtStandards = standards.map((std) => {
@@ -48,7 +59,7 @@ const courses = courseFiles.map((file) => {
         mockActivity: /\bmock\b/i.test(text),
         citations: cite,
         citationCount: cite.statutes.length + cite.rules.length + cite.federal.length + cite.cases.length,
-        topics: topicsOf(text),
+        topics: topicsOf(text, TOPICS),
         keywords: keywords(text),
         weight: w,
         sourceLine: b.line,
@@ -76,10 +87,11 @@ const courses = courseFiles.map((file) => {
   });
 
   const totalWeight = builtStandards.reduce((a, s) => a + s.weight, 0);
+  const periodsPerCourse = Math.round((meta.credit || 0) * PERIODS_PER_CREDIT);
   builtStandards.forEach((s) => {
-    s.suggestedPeriods = Math.round((s.weight / totalWeight) * PERIODS_PER_COURSE * 2) / 2;
+    s.suggestedPeriods = periodsPerCourse ? Math.round((s.weight / totalWeight) * periodsPerCourse * 2) / 2 : 0;
     s.benchmarks.forEach((b) => {
-      b.suggestedPeriods = Math.round((b.weight / totalWeight) * PERIODS_PER_COURSE * 4) / 4;
+      b.suggestedPeriods = periodsPerCourse ? Math.round((b.weight / totalWeight) * periodsPerCourse * 4) / 4 : 0;
     });
   });
 
@@ -101,7 +113,10 @@ const courses = courseFiles.map((file) => {
     standardCount: builtStandards.length,
     benchmarkCount: builtStandards.reduce((a, s) => a + s.benchmarkCount, 0),
     totalWeight: Math.round(totalWeight * 10) / 10,
-    periodsPerCourse: PERIODS_PER_COURSE,
+    periodsPerCourse,
+    summaryRange: meta.summaryRange || null,
+    alternate: meta.alternate || null,
+    section: meta.section || null,
     standards: builtStandards,
     ...seq.track ? {} : {},
   };
@@ -156,12 +171,14 @@ allBenchmarks.forEach((b) => {
 });
 
 // ---------------------------------------------------------------- graph
-const graph = buildGraph({ courses, threads: pathways.threads, clusters: repeatedClusters });
+const sequencedCourses = courses.filter((c) => c.track !== 'program-wide');
+const graph = buildGraph({ courses: sequencedCourses, threads: pathways.threads, clusters: repeatedClusters });
 if (graph.cycles.length) console.log(`  note: ${graph.cycles.length} standard(s) placed by framework order after a dependency cycle`);
 
 // Surface each standard's graph position on the standard itself.
 courses.forEach((c) => c.standards.forEach((s) => {
   const m = graph.standardMeta[s.uid];
+  if (!m) { s.threads = []; s.programOrder = null; s.teachingDepth = 0; s.prereqCount = 0; return; }
   s.threads = m.threads;
   s.programOrder = m.order;
   s.teachingDepth = m.depth;
@@ -273,17 +290,24 @@ const framework = {
   crosswalk: { clusters: repeatedClusters, pairs },
   graph,
   indexes: { topics: byTopic, citations: citationIndex, keywords: keywordIndex },
-  taxonomy: { bloom: BLOOM.map(({ level, name }) => ({ level, name })), topics: TOPICS.map(({ id, label }) => ({ id, label })) },
+  taxonomy: {
+    bloom: BLOOM.map(({ level, name }) => ({ level, name })),
+    topics: TOPICS.map(({ id, label, materials, activities }) => ({ id, label, materials, activities })),
+  },
   stats: { ...stats, threads: pathways.threads.length, standardEdges: graph.standardEdges.length },
   notes,
 };
 
-out('dist/framework.json', `${JSON.stringify(framework, null, 2)}\n`);
-out('docs/framework-data.js', `window.CJO_FRAMEWORK = ${JSON.stringify(framework)};\n`);
+const distDir = `dist/${program.slug}`;
+const web = program.webRoot;
+out(`${distDir}/framework.json`, `${JSON.stringify(framework, null, 2)}\n`);
+out(`${web}/framework-data.js`, `window.CJO_FRAMEWORK = ${JSON.stringify(framework)};\n`);
 
 // ------------------------------------------------------- offline shell (PWA)
 const swVersion = `${framework.meta.schemaVersion}.${stats.benchmarks}.${Date.now().toString(36)}`;
-out('docs/sw.js', read('build/sw-template.js').replace('__VERSION__', swVersion));
+out(`${web}/sw.js`, read('build/sw-template.js')
+  .replace('__VERSION__', () => swVersion)
+  .replace('__SCOPE__', () => program.slug));
 
 // ---------------------------------------------------------------- flat CSV
 const csvCell = (v) => {
@@ -304,7 +328,7 @@ courses.forEach((c) => c.standards.forEach((s) => s.benchmarks.forEach((b) => {
     b.repeatsIn, b.weight, b.suggestedPeriods,
   ]);
 })));
-out('dist/benchmarks.csv', `${csvRows.map((r) => r.map(csvCell).join(',')).join('\n')}\n`);
+out(`${distDir}/benchmarks.csv`, `${csvRows.map((r) => r.map(csvCell).join(',')).join('\n')}\n`);
 
 // ---------------------------------------------------------------- markdown
 const md = [];
@@ -313,11 +337,13 @@ md.push(`${program.agency} | Program ${program.programNumber} | CIP ${program.ci
 md.push('## Purpose', '', program.purpose, '');
 md.push('## Program Structure', '', program.programStructure, '');
 md.push('| Course | Title | Credit | SOC | Level | Grad Req |', '| --- | --- | --- | --- | --- | --- |');
-courses.forEach((c) => md.push(`| ${c.courseNumber} | ${c.title} | ${c.credit} | ${c.soc} | ${c.level} | ${c.graduationRequirement} |`));
+courses.forEach((c) => md.push(`| ${c.courseNumber} | ${c.title} | ${c.credit} | ${c.soc || '-'} | ${c.level || '-'} | ${c.graduationRequirement} |`));
 md.push('');
-md.push('## Career Ready Practices', '');
-program.careerReadyPractices.practices.forEach((p, i) => md.push(`${i + 1}. ${p}`));
-md.push('');
+if (program.careerReadyPractices) {
+  md.push(`## ${program.careerReadyPractices.title}`, '');
+  program.careerReadyPractices.practices.forEach((p, i) => md.push(`${i + 1}. ${p}`));
+  md.push('');
+}
 courses.forEach((c) => {
   md.push(`## ${c.title} (${c.courseNumber}) - ${c.credit} credit`, '');
   md.push(`**Standards ${c.standardRange}** | ${c.standardCount} standards | ${c.benchmarkCount} benchmarks`, '');
@@ -333,8 +359,31 @@ courses.forEach((c) => {
 });
 md.push('## Additional Information', '');
 program.additionalInformation.forEach((s) => md.push(`### ${s.heading}`, '', s.body, ''));
-out('dist/framework.md', `${md.join('\n')}\n`);
+out(`${distDir}/framework.md`, `${md.join('\n')}\n`);
 
-console.log(`\n  ${stats.courses} courses | ${stats.standards} standards | ${stats.benchmarks} benchmarks | ${stats.bullets} bullets`);
-console.log(`  ${stats.performanceBenchmarks} performance / ${stats.knowledgeBenchmarks} knowledge | ${stats.optionalBenchmarks} optional | ${stats.mockActivities} mock activities`);
-console.log(`  ${stats.distinctStatutes} distinct statutes | ${stats.distinctCases} cases | ${stats.repeatedClusters} cross-course repeat clusters`);
+// Each program gets its own self-contained web root: same app code, its own data.
+{
+  const shellFiles = ['app.js', 'styles.css'];
+  shellFiles.forEach((f) => out(`${web}/${f}`, read(`build/shell/${f}`)));
+  if (web !== 'docs') {
+    fs.mkdirSync(path.join(ROOT, web, 'icons'), { recursive: true });
+    fs.readdirSync(path.join(ROOT, 'docs/icons')).forEach((f) => {
+      fs.copyFileSync(path.join(ROOT, 'docs/icons', f), path.join(ROOT, web, 'icons', f));
+    });
+  }
+  const manifest = JSON.parse(read('build/shell/manifest.webmanifest'));
+  manifest.name = `${program.programTitle} Framework`;
+  manifest.short_name = program.shortName || program.programTitle.split(' ').slice(0, 2).join(' ');
+  manifest.description = `The ${program.agency} ${program.programTitle} framework (program ${program.programNumber}), indexed and searchable.`;
+  manifest.id = `${program.slug}-framework`;
+  out(`${web}/manifest.webmanifest`, `${JSON.stringify(manifest, null, 2)}\n`);
+  out(`${web}/index.html`, read('build/shell/index.html')
+    .replace(/__TITLE__/g, `${program.programTitle} Framework`)
+    .replace(/__BRAND__/g, program.programTitle)
+    .replace(/__SUB__/g, `${program.agency.replace('Florida Department of Education', 'FLDOE')} curriculum framework &middot; program ${program.programNumber} &middot; CIP ${program.cipNumber}`)
+    .replace(/__DESCRIPTION__/g, `Indexed, searchable ${program.programTitle} curriculum framework (program ${program.programNumber}) with sequence, lesson, unit and coverage tools.`));
+}
+
+console.log(`  ${stats.courses} sections | ${stats.standards} standards | ${stats.benchmarks} benchmarks | ${stats.bullets} bullets`);
+console.log(`  ${stats.performanceBenchmarks} performance / ${stats.knowledgeBenchmarks} knowledge | ${stats.repeatedClusters} cross-course repeat clusters | ${pathways.threads.length} threads`);
+}

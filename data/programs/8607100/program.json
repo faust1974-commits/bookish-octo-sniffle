@@ -1,30 +1,31 @@
 {
   "agency": "Florida Department of Education",
   "documentType": "Curriculum Framework",
-  "programTitle": "Criminal Justice Operations",
-  "programType": "Career Preparatory",
-  "careerCluster": "Law, Public Safety & Security",
-  "deliveryLevel": "Secondary - Career Preparatory",
-  "programNumber": "8918000",
-  "cipNumber": "0743010305",
+  "frameworkYear": "2026 - 2027",
+  "programTitle": "Careers in Public Service",
+  "programType": "Non-Career Preparatory",
+  "careerCluster": "Government & Public Administration",
+  "deliveryLevel": "Secondary - Non-Career Preparatory",
+  "programNumber": "8607100",
+  "slug": "public-service",
+  "shortName": "PS Careers",
+  "webRoot": "docs/public-service",
+  "cipNumber": "0744040107",
   "gradeLevel": "9-12",
-  "programLength": "4 credits",
-  "teacherCertification": "Refer to the Program Structure section.",
-  "ctso": ["FPSA", "SkillsUSA"],
-  "socCodes": [
-    { "code": "13-1041", "title": "Compliance Officers" },
-    { "code": "33-9090", "title": "Miscellaneous Protective Service Workers" },
-    { "code": "19-4092", "title": "Forensic Science Technicians" },
-    { "code": "23-2011", "title": "Paralegals and Legal Assistants" },
-    { "code": "33-3041", "title": "Parking Enforcement Workers" }
+  "programLength": "2 credits",
+  "teacherCertification": "Refer to the Course Structure section.",
+  "ctso": [
+    "FPSA",
+    "SkillsUSA"
   ],
+  "socCodes": [],
   "resourcesUrl": "http://www.fldoe.org/academics/career-adult-edu/career-tech-edu/program-resources.stml",
-  "purpose": "This program offers a sequence of courses that provides coherent and rigorous content aligned with challenging academic standards and relevant technical knowledge and skills needed to prepare for further education and careers in the Law, Public Safety and Security career cluster; provides technical skill proficiency, and includes competency-based applied learning that contributes to the academic knowledge, higher-order reasoning and problem-solving skills, work attitudes, general employability skills, technical skills, and occupation-specific skills, and knowledge of all aspects of the Law, Public Safety and Security career cluster.",
-  "programStructure": "This program is a planned sequence of instruction consisting of four (4) credits. In the secondary program, the fourth course is comprised of three (3) options and is intended to provide flexibility for students in the last year of the Criminal Justice program. To teach the courses listed below, instructors must hold at least one of the teacher certifications indicated for that course.",
+  "purpose": "This program offers a sequence of courses that provides coherent and rigorous content aligned with challenging academic standards and relevant technical knowledge and skills needed to prepare for further education and careers in the Government & Public Administration career cluster; provides technical skill proficiency, and includes competency-based applied learning that contributes to the academic knowledge, higher-order reasoning and problem-solving skills, work attitudes, general employability skills, technical skills, and occupation-specific skills, and knowledge of all aspects of the Government & Public Administration career cluster.",
+  "programStructure": "This program is a planned sequence of instruction consisting of two credits. To teach the course(s) listed below, instructors must hold at least one of the teacher certifications indicated for that course.",
   "teacherCertifications": [
-    "LAW ENF @7 7 G",
-    "PUB SERV 7 G",
-    "CORR OFF 7 G"
+    "Social Studies 6-12",
+    "ELGLISH 6-12",
+    "BUSINESS ED 6-12"
   ],
   "graduationRequirementCodes": {
     "CT": "Career & Technical Education",
@@ -33,24 +34,14 @@
     "MA": "Mathematics",
     "PL": "Personal Financial Literacy"
   },
-  "careerReadyPractices": {
-    "title": "Common Career Technical Core - Career Ready Practices",
-    "note": "Career Ready Practices describe the career-ready skills that educators should seek to develop in their students. These practices are not exclusive to a Career Pathway, program of study, discipline or level of education. Career Ready Practices should be taught and reinforced in all career exploration and preparation programs with increasingly higher levels of complexity and expectation as a student advances through a program of study.",
-    "practices": [
-      "Act as a responsible and contributing citizen and employee.",
-      "Apply appropriate academic and technical skills.",
-      "Attend to personal health and financial well-being.",
-      "Communicate clearly, effectively and with reason.",
-      "Consider the environmental, social and economic impacts of decisions.",
-      "Demonstrate creativity and innovation.",
-      "Employ valid and reliable research strategies.",
-      "Utilize critical thinking to make sense of problems and persevere in solving them.",
-      "Model integrity, ethical leadership and effective management.",
-      "Plan education and career path aligned to personal goals.",
-      "Use technology to enhance productivity.",
-      "Work productively in teams while using cultural/global competence."
-    ]
-  },
+  "alternates": [
+    {
+      "courseNumber": "8607140",
+      "alternateNumber": "1700510",
+      "alternateTitle": "AP Capstone Research",
+      "note": "The Public Service Research requirement may be fulfilled by completing Advanced Placement Research, provided that the student's final course project focuses on a public service issue."
+    }
+  ],
   "additionalInformation": [
     {
       "heading": "Laboratory Activities",
@@ -62,7 +53,7 @@
     },
     {
       "heading": "Career and Technical Student Organization (CTSO)",
-      "body": "Florida Public Service Association (FPSA) and SkillsUSA are the co-curricular career and technical student organization providing leadership training and reinforcing specific career and technical skills. Career and Technical Student Organizations provide activities for students as an integral part of the instruction offered."
+      "body": "CTSOs are co-curricular career and technical student organizations providing leadership training and reinforcing specific career and technical skills. Career and Technical Student Organizations provide activities for students as an integral part of the instruction offered. Other CTSOs not listed in this curriculum framework or recognized by the Florida Department of Education are permissible provided they support student mastery over the standards and benchmarks of this curriculum framework."
     },
     {
       "heading": "Cooperative Training - OJT",
@@ -74,11 +65,41 @@
     }
   ],
   "sequence": [
-    { "courseNumber": "8918010", "title": "Criminal Justice Operations 1", "credit": 1, "soc": "33-9090", "level": 2, "graduationRequirement": "CT", "position": 1, "track": "core" },
-    { "courseNumber": "8918020", "title": "Criminal Justice Operations 2", "credit": 1, "soc": "33-3041", "level": 2, "graduationRequirement": "CT", "position": 2, "track": "core" },
-    { "courseNumber": "8918030", "title": "Criminal Justice Operations 3", "credit": 1, "soc": "19-4092", "level": 3, "graduationRequirement": "CT", "position": 3, "track": "core" },
-    { "courseNumber": "8918050", "title": "Police Service Officer", "credit": 1, "soc": "13-1041", "level": 3, "graduationRequirement": "CT", "position": 4, "track": "capstone-option" },
-    { "courseNumber": "8918060", "title": "Certified Legal Assistant", "credit": 1, "soc": "23-2011", "level": 3, "graduationRequirement": "CT", "position": 4, "track": "capstone-option" },
-    { "courseNumber": "8918070", "title": "Code Enforcement", "credit": 1, "soc": "13-1041", "level": 2, "graduationRequirement": "CT", "position": 4, "track": "capstone-option" }
+    {
+      "courseNumber": "8607110",
+      "title": "Public Service Leadership",
+      "credit": 0.5,
+      "level": 3,
+      "graduationRequirement": "CT",
+      "position": 1,
+      "track": "core"
+    },
+    {
+      "courseNumber": "8607120",
+      "title": "Public Service Communication",
+      "credit": 0.5,
+      "level": 3,
+      "graduationRequirement": "CT",
+      "position": 2,
+      "track": "core"
+    },
+    {
+      "courseNumber": "8607130",
+      "title": "Project Management and Experiential Learning in Public Service",
+      "credit": 0.5,
+      "level": 3,
+      "graduationRequirement": "CT",
+      "position": 3,
+      "track": "core"
+    },
+    {
+      "courseNumber": "8607140",
+      "title": "Public Service Research",
+      "credit": 0.5,
+      "level": 3,
+      "graduationRequirement": "CT",
+      "position": 4,
+      "track": "core"
+    }
   ]
 }

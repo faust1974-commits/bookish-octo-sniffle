@@ -1,0 +1,159 @@
+{
+  "agency": "Florida Department of Education",
+  "documentType": "Curriculum Framework",
+  "programTitle": "Criminal Justice Operations",
+  "programType": "Career Preparatory",
+  "careerCluster": "Law, Public Safety & Security",
+  "deliveryLevel": "Secondary - Career Preparatory",
+  "programNumber": "8918000",
+  "slug": "criminal-justice",
+  "shortName": "CJ Ops",
+  "webRoot": "docs",
+  "cipNumber": "0743010305",
+  "gradeLevel": "9-12",
+  "programLength": "4 credits",
+  "teacherCertification": "Refer to the Program Structure section.",
+  "ctso": [
+    "FPSA",
+    "SkillsUSA"
+  ],
+  "socCodes": [
+    {
+      "code": "13-1041",
+      "title": "Compliance Officers"
+    },
+    {
+      "code": "33-9090",
+      "title": "Miscellaneous Protective Service Workers"
+    },
+    {
+      "code": "19-4092",
+      "title": "Forensic Science Technicians"
+    },
+    {
+      "code": "23-2011",
+      "title": "Paralegals and Legal Assistants"
+    },
+    {
+      "code": "33-3041",
+      "title": "Parking Enforcement Workers"
+    }
+  ],
+  "resourcesUrl": "http://www.fldoe.org/academics/career-adult-edu/career-tech-edu/program-resources.stml",
+  "purpose": "This program offers a sequence of courses that provides coherent and rigorous content aligned with challenging academic standards and relevant technical knowledge and skills needed to prepare for further education and careers in the Law, Public Safety and Security career cluster; provides technical skill proficiency, and includes competency-based applied learning that contributes to the academic knowledge, higher-order reasoning and problem-solving skills, work attitudes, general employability skills, technical skills, and occupation-specific skills, and knowledge of all aspects of the Law, Public Safety and Security career cluster.",
+  "programStructure": "This program is a planned sequence of instruction consisting of four (4) credits. In the secondary program, the fourth course is comprised of three (3) options and is intended to provide flexibility for students in the last year of the Criminal Justice program. To teach the courses listed below, instructors must hold at least one of the teacher certifications indicated for that course.",
+  "teacherCertifications": [
+    "LAW ENF @7 7 G",
+    "PUB SERV 7 G",
+    "CORR OFF 7 G"
+  ],
+  "graduationRequirementCodes": {
+    "CT": "Career & Technical Education",
+    "EQ": "Equally Rigorous Science",
+    "EC": "Economics",
+    "MA": "Mathematics",
+    "PL": "Personal Financial Literacy"
+  },
+  "careerReadyPractices": {
+    "title": "Common Career Technical Core - Career Ready Practices",
+    "note": "Career Ready Practices describe the career-ready skills that educators should seek to develop in their students. These practices are not exclusive to a Career Pathway, program of study, discipline or level of education. Career Ready Practices should be taught and reinforced in all career exploration and preparation programs with increasingly higher levels of complexity and expectation as a student advances through a program of study.",
+    "practices": [
+      "Act as a responsible and contributing citizen and employee.",
+      "Apply appropriate academic and technical skills.",
+      "Attend to personal health and financial well-being.",
+      "Communicate clearly, effectively and with reason.",
+      "Consider the environmental, social and economic impacts of decisions.",
+      "Demonstrate creativity and innovation.",
+      "Employ valid and reliable research strategies.",
+      "Utilize critical thinking to make sense of problems and persevere in solving them.",
+      "Model integrity, ethical leadership and effective management.",
+      "Plan education and career path aligned to personal goals.",
+      "Use technology to enhance productivity.",
+      "Work productively in teams while using cultural/global competence."
+    ]
+  },
+  "additionalInformation": [
+    {
+      "heading": "Laboratory Activities",
+      "body": "Laboratory investigations that include scientific inquiry, research, measurement, problem solving, emerging technologies, tools and equipment, as well as, experimental, quality, and safety procedures are an integral part of this career and technical program/course. Laboratory investigations benefit all students by developing an understanding of the complexity and ambiguity of empirical work, as well as the skills required to manage, operate, calibrate and troubleshoot equipment/tools used to make observations. Students understand measurement error; and have the skills to aggregate, interpret, and present the resulting data. Equipment and supplies should be provided to enhance hands-on experiences for students."
+    },
+    {
+      "heading": "Florida Standards for English Language Development (ELD)",
+      "body": "English language learners communicate for social and instructional purposes within the school setting. ELD.K12.ELL.SI.1 -- Teachers are required to provide listening, speaking, reading and writing instruction that allows English language learners (ELL) to communicate for social and instructional purposes within the school setting. For the given level of English language proficiency and with visual, graphic, or interactive support, students will interact with grade level words, expressions, sentences and discourse to process or produce language necessary for academic success. The ELD standard should specify a relevant content area concept or topic of study chosen by curriculum developers and teachers which maximizes an ELL's need for communication and social skills. For additional information on the development and implementation of the ELD standards, please contact the Bureau of Student Achievement through Language Acquisition at sala@fldoe.org."
+    },
+    {
+      "heading": "Career and Technical Student Organization (CTSO)",
+      "body": "Florida Public Service Association (FPSA) and SkillsUSA are the co-curricular career and technical student organization providing leadership training and reinforcing specific career and technical skills. Career and Technical Student Organizations provide activities for students as an integral part of the instruction offered."
+    },
+    {
+      "heading": "Cooperative Training - OJT",
+      "body": "On-the-job training is appropriate but not required for this program. Whenever offered, the rules, guidelines, and requirements specified in the OJT framework apply."
+    },
+    {
+      "heading": "Accommodations",
+      "body": "Federal and state legislation requires the provision of accommodations for students with disabilities as identified on the secondary student's Individual Educational Plan (IEP) or 504 plan or postsecondary student's accommodations' plan to meet individual needs and ensure equal access. Accommodations change the way the student is instructed. Students with disabilities may need accommodations in such areas as instructional methods and materials, assignments and assessments, time demands and schedules, learning environment, assistive technology and special communication systems. Documentation of the accommodations requested and provided should be maintained in a confidential file. In addition to accommodations, some secondary students with disabilities (students with an IEP served in Exceptional Student Education (ESE)) will need modifications to meet their needs. Modifications change the outcomes or what the student is expected to learn, e.g., modifying the curriculum of a secondary career and technical education course. Note: postsecondary curriculum and regulated secondary programs cannot be modified. Some secondary students with disabilities (ESE) may need additional time (i.e., longer than the regular school year), to master the student performance standards associated with a regular course or a modified course. If needed, a student may enroll in the same career and technical course more than once. Documentation should be included in the IEP that clearly indicates that it is anticipated that the student may need an additional year to complete a Career and Technical Education (CTE) course. The student should work on different competencies and new applications of competencies each year toward completion of the CTE course. After achieving the competencies identified for the year, the student earns credit for the course. It is important to ensure that credits earned by students are reported accurately. The district's information system must be designed to accept multiple credits for the same course number for eligible students with disabilities."
+    }
+  ],
+  "sequence": [
+    {
+      "courseNumber": "8918010",
+      "title": "Criminal Justice Operations 1",
+      "credit": 1,
+      "soc": "33-9090",
+      "level": 2,
+      "graduationRequirement": "CT",
+      "position": 1,
+      "track": "core"
+    },
+    {
+      "courseNumber": "8918020",
+      "title": "Criminal Justice Operations 2",
+      "credit": 1,
+      "soc": "33-3041",
+      "level": 2,
+      "graduationRequirement": "CT",
+      "position": 2,
+      "track": "core"
+    },
+    {
+      "courseNumber": "8918030",
+      "title": "Criminal Justice Operations 3",
+      "credit": 1,
+      "soc": "19-4092",
+      "level": 3,
+      "graduationRequirement": "CT",
+      "position": 3,
+      "track": "core"
+    },
+    {
+      "courseNumber": "8918050",
+      "title": "Police Service Officer",
+      "credit": 1,
+      "soc": "13-1041",
+      "level": 3,
+      "graduationRequirement": "CT",
+      "position": 4,
+      "track": "capstone-option"
+    },
+    {
+      "courseNumber": "8918060",
+      "title": "Certified Legal Assistant",
+      "credit": 1,
+      "soc": "23-2011",
+      "level": 3,
+      "graduationRequirement": "CT",
+      "position": 4,
+      "track": "capstone-option"
+    },
+    {
+      "courseNumber": "8918070",
+      "title": "Code Enforcement",
+      "credit": 1,
+      "soc": "13-1041",
+      "level": 2,
+      "graduationRequirement": "CT",
+      "position": 4,
+      "track": "capstone-option"
+    }
+  ]
+}

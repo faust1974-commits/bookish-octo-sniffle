@@ -1,0 +1,593 @@
+{
+  "note": "Topic tags for this program. patterns are case-insensitive regular expressions matched against the full benchmark text (including its sub-points). materials and activities are optional teaching suggestions surfaced by the lesson builder.",
+  "topics": [
+    {
+      "id": "leadership",
+      "label": "Leadership",
+      "patterns": [
+        "leader",
+        "leadership",
+        "servant-leadership",
+        "public servant",
+        "exercise leadership",
+        "command"
+      ],
+      "materials": [
+        "Profiles of local public-service leaders",
+        "Leadership style inventory",
+        "Case studies of public decisions"
+      ],
+      "activities": [
+        "Interview or host a public servant, then map their decisions against leadership styles studied"
+      ]
+    },
+    {
+      "id": "civic-dispositions",
+      "label": "Civic Dispositions",
+      "patterns": [
+        "civic",
+        "citizenship",
+        "\\bcitizen",
+        "self-government",
+        "republicanism",
+        "liberalism",
+        "Founders",
+        "civic health",
+        "civic engagement",
+        "civic participation",
+        "public good",
+        "balance the interests",
+        "take and defend",
+        "rights and responsibilities",
+        "responsibilities of citizens"
+      ],
+      "materials": [
+        "Excerpts from the Declaration of Independence and Federalist Papers",
+        "Local civic participation data"
+      ],
+      "activities": [
+        "Structured seminar on a founding text, with students taking and defending evidence-based positions"
+      ]
+    },
+    {
+      "id": "founding-documents",
+      "label": "Founding Documents",
+      "patterns": [
+        "Declaration of Independence",
+        "U\\.S\\. Constitution",
+        "Bill of Rights",
+        "Federalist",
+        "founding document",
+        "amendment",
+        "Enlightenment",
+        "constitutional republic",
+        "primary document"
+      ],
+      "materials": [
+        "Annotated U.S. Constitution",
+        "Declaration of Independence",
+        "Federalist Nos. 10 and 51"
+      ],
+      "activities": [
+        "Trace one political principle (checks and balances, federalism) from a founding text to a current news story"
+      ]
+    },
+    {
+      "id": "government-structure",
+      "label": "Structure of Government",
+      "patterns": [
+        "legislative branch",
+        "executive branch",
+        "judicial branch",
+        "Congress",
+        "presidency",
+        "bureaucracy",
+        "administrative state",
+        "federalism",
+        "Article I",
+        "Article II",
+        "Article III",
+        "regulatory agenc",
+        "expressed, implied",
+        "separation of powers",
+        "branches of government"
+      ],
+      "materials": [
+        "Three-branch organizer",
+        "Article I / II / III text",
+        "Florida Constitution excerpts"
+      ],
+      "activities": [
+        "Map a single policy from proposal to enactment to enforcement across all three branches"
+      ]
+    },
+    {
+      "id": "state-local",
+      "label": "State and Local Government",
+      "patterns": [
+        "state and local",
+        "local, state and national",
+        "Florida",
+        "local government",
+        "state government",
+        "community"
+      ],
+      "materials": [
+        "County and municipal charters",
+        "Local government meeting agendas"
+      ],
+      "activities": [
+        "Attend or stream a local commission meeting and brief the class on one agenda item"
+      ]
+    },
+    {
+      "id": "elections-policy",
+      "label": "Elections and Public Policy",
+      "patterns": [
+        "election",
+        "political part",
+        "interest group",
+        "public policy",
+        "public opinion",
+        "shaping public policy",
+        "policy issue",
+        "social and economic policy",
+        "ballot"
+      ],
+      "materials": [
+        "Sample ballots",
+        "Interest-group position papers",
+        "Polling data"
+      ],
+      "activities": [
+        "Track one bill or ballot measure and chart who is trying to influence it and how"
+      ]
+    },
+    {
+      "id": "media-literacy",
+      "label": "Media Literacy",
+      "patterns": [
+        "\\bmedia\\b",
+        "social media",
+        "bias",
+        "factual accuracy",
+        "emotional appeal",
+        "digital footprint",
+        "political communication",
+        "internet"
+      ],
+      "materials": [
+        "Paired news coverage of one event",
+        "Source-evaluation checklist"
+      ],
+      "activities": [
+        "Evaluate two accounts of the same event for bias, omission and emotional appeal"
+      ]
+    },
+    {
+      "id": "foreign-policy",
+      "label": "Foreign Policy and World Affairs",
+      "patterns": [
+        "foreign policy",
+        "world affairs",
+        "human rights",
+        "other nations",
+        "democratic principles"
+      ],
+      "materials": [
+        "Current foreign policy briefings",
+        "Map of treaty and alliance relationships"
+      ],
+      "activities": [
+        "Position paper on a current foreign policy decision, argued from stated national interests"
+      ]
+    },
+    {
+      "id": "communication",
+      "label": "Communication and Debate",
+      "patterns": [
+        "communicat",
+        "interpersonal",
+        "listening",
+        "speaking",
+        "oral",
+        "audience",
+        "rhetoric",
+        "debate",
+        "presentation",
+        "present information",
+        "voice and tone",
+        "nonverbal",
+        "telephone",
+        "discussion"
+      ],
+      "materials": [
+        "Florida Civics and Debate Initiative materials",
+        "Speech rubric",
+        "Recording device for self-review"
+      ],
+      "activities": [
+        "Run a formal debate round, then have speakers self-assess from the recording"
+      ]
+    },
+    {
+      "id": "writing",
+      "label": "Writing and Argument",
+      "patterns": [
+        "\\bwrite\\b",
+        "\\bwriting",
+        "argument",
+        "claim",
+        "counterclaim",
+        "expository",
+        "grammar",
+        "punctuation",
+        "revis",
+        "draft",
+        "cover letter",
+        "essay"
+      ],
+      "materials": [
+        "Argument writing rubric",
+        "Model student arguments",
+        "Peer-review protocol"
+      ],
+      "activities": [
+        "Write an argument on a public issue, then revise it after a structured peer review"
+      ]
+    },
+    {
+      "id": "reading-analysis",
+      "label": "Reading and Text Analysis",
+      "patterns": [
+        "informational text",
+        "central idea",
+        "inference",
+        "paraphrase",
+        "author's (?:use|choices|purpose)",
+        "comprehend",
+        "text structure",
+        "cite evidence",
+        "grade-level"
+      ],
+      "materials": [
+        "Historical American speeches and essays",
+        "Close-reading protocol"
+      ],
+      "activities": [
+        "Compare two opposing arguments on one topic and judge which uses its evidence better"
+      ]
+    },
+    {
+      "id": "research",
+      "label": "Research",
+      "patterns": [
+        "research",
+        "sources",
+        "investigat",
+        "methodolog",
+        "findings",
+        "synthesiz",
+        "scope of the question",
+        "reliable and valid"
+      ],
+      "materials": [
+        "Research question template",
+        "Source-credibility checklist",
+        "Citation guide"
+      ],
+      "activities": [
+        "Narrow a public-service question, gather sources, and defend the findings in a presentation"
+      ]
+    },
+    {
+      "id": "project-management",
+      "label": "Project Management",
+      "patterns": [
+        "project management",
+        "\\bproject\\b",
+        "milestone",
+        "deliverable",
+        "scope of a project",
+        "work structure",
+        "schedule",
+        "plan-based",
+        "portfolio",
+        "business case",
+        "\\btasks\\b",
+        "task management",
+        "task features"
+      ],
+      "materials": [
+        "Gantt or task-board tool",
+        "Sample project charter",
+        "Work breakdown template"
+      ],
+      "activities": [
+        "Charter a real class or school project: scope it, schedule it, assign roles, then run it"
+      ]
+    },
+    {
+      "id": "project-roles",
+      "label": "Project Roles and Teams",
+      "patterns": [
+        "project manager",
+        "sponsor",
+        "team lead",
+        "team member",
+        "project client",
+        "stakeholder",
+        "roles and responsibilities",
+        "collaborat",
+        "\\bteam\\b"
+      ],
+      "materials": [
+        "RACI chart template",
+        "Team charter form"
+      ],
+      "activities": [
+        "Assign and rotate project roles across a term so every student leads once"
+      ]
+    },
+    {
+      "id": "project-controls",
+      "label": "Monitoring and Controls",
+      "patterns": [
+        "monitor",
+        "control",
+        "measure project",
+        "project progress",
+        "document control",
+        "structural control",
+        "transparency"
+      ],
+      "materials": [
+        "Status report template",
+        "Progress tracking board"
+      ],
+      "activities": [
+        "Run a weekly status check against the plan and log what changed and why"
+      ]
+    },
+    {
+      "id": "problem-solving",
+      "label": "Problem Solving and Decision Making",
+      "patterns": [
+        "problem solv",
+        "problem-solving",
+        "decision",
+        "critical thinking",
+        "creativ",
+        "solution",
+        "conflict",
+        "alternatives",
+        "sound decisions",
+        "^reason\\.?$",
+        "reasoning skills",
+        "critical thinking and reasoning"
+      ],
+      "materials": [
+        "Decision-making model handout",
+        "Community problem scenarios"
+      ],
+      "activities": [
+        "Apply a decision-making model to a real community issue and defend the alternative chosen"
+      ]
+    },
+    {
+      "id": "meetings",
+      "label": "Meetings and Facilitation",
+      "patterns": [
+        "effective meeting",
+        "meeting elements",
+        "lead an effective meeting",
+        "group discussion",
+        "stimulate group"
+      ],
+      "materials": [
+        "Agenda and minutes templates",
+        "Facilitation guide"
+      ],
+      "activities": [
+        "Each student chairs one working meeting with an agenda, minutes and action items"
+      ]
+    },
+    {
+      "id": "information-gathering",
+      "label": "Information Gathering",
+      "patterns": [
+        "information gathering",
+        "information collection",
+        "locate information",
+        "organize information",
+        "analyze information",
+        "gathering tools"
+      ],
+      "materials": [
+        "Interview and survey templates",
+        "Note-organizing tool"
+      ],
+      "activities": [
+        "Gather information on one issue from three different source types and reconcile the differences"
+      ]
+    },
+    {
+      "id": "technology",
+      "label": "Technology and Work Products",
+      "patterns": [
+        "word processing",
+        "spreadsheet",
+        "presentation slides",
+        "computer",
+        "software",
+        "digital presentation",
+        "technolog",
+        "information technology",
+        "e-mail",
+        "modern communication media"
+      ],
+      "materials": [
+        "Word processor, slides and spreadsheet software",
+        "Document formatting standards"
+      ],
+      "activities": [
+        "Produce the same findings as a written brief, a slide deck and a data table, then compare which lands"
+      ]
+    },
+    {
+      "id": "ethics",
+      "label": "Ethics and Professionalism",
+      "patterns": [
+        "ethic",
+        "professionalism",
+        "integrity",
+        "responsib",
+        "professional",
+        "legal responsibilities",
+        "self-discipline",
+        "positive attitude"
+      ],
+      "materials": [
+        "Public-sector codes of ethics",
+        "Ethical dilemma case set"
+      ],
+      "activities": [
+        "Judge a real public-service ethics case against a published code of conduct"
+      ]
+    },
+    {
+      "id": "employability",
+      "label": "Employability and Job Attainment",
+      "patterns": [
+        "employab",
+        "\\bjob\\b",
+        "resume",
+        "interview",
+        "portfolio",
+        "networking",
+        "reference letter",
+        "recommendation",
+        "employer",
+        "workplace",
+        "customer"
+      ],
+      "materials": [
+        "Local public-sector job postings",
+        "Resume and portfolio templates",
+        "Mock interview panel"
+      ],
+      "activities": [
+        "Apply to a real posted position end to end: resume, cover letter, portfolio, mock interview"
+      ]
+    },
+    {
+      "id": "career-planning",
+      "label": "Career and Academic Planning",
+      "patterns": [
+        "career",
+        "postsecondary",
+        "credential",
+        "financial aid",
+        "scholarship",
+        "apprenticeship",
+        "degree",
+        "graduation requirement",
+        "Four Es",
+        "student loan",
+        "budget",
+        "high-demand"
+      ],
+      "materials": [
+        "Regional labor market data",
+        "Program cost and earnings comparisons",
+        "FAFSA overview"
+      ],
+      "activities": [
+        "Build a personal plan comparing two postsecondary pathways on cost, debt and placement"
+      ]
+    },
+    {
+      "id": "experiential",
+      "label": "Experiential Learning",
+      "patterns": [
+        "job shadow",
+        "service learning",
+        "volunteer",
+        "internship",
+        "experiential",
+        "public sector employment",
+        "public works"
+      ],
+      "materials": [
+        "Placement agreements and reflection journals",
+        "Supervisor evaluation form"
+      ],
+      "activities": [
+        "Place students with a local agency and require a structured reflection against the standards"
+      ]
+    },
+    {
+      "id": "economics",
+      "label": "Economics and Public Finance",
+      "patterns": [
+        "national economy",
+        "economic",
+        "economy",
+        "\\bcost",
+        "money or resources",
+        "compensation",
+        "benefits"
+      ],
+      "materials": [
+        "Local government budget documents"
+      ],
+      "activities": [
+        "Trace one line item in a public budget from proposal to approval"
+      ]
+    },
+    {
+      "id": "diversity",
+      "label": "Working Across Difference",
+      "patterns": [
+        "diversity",
+        "diverse",
+        "cultures",
+        "individual strengths",
+        "learning styles",
+        "respect others",
+        "beliefs and values",
+        "target audience"
+      ],
+      "materials": [
+        "Community demographic profile",
+        "Structured discussion protocols"
+      ],
+      "activities": [
+        "Group task that deliberately mixes perspectives, with a debrief on how difference changed the outcome"
+      ]
+    },
+    {
+      "id": "career-readiness",
+      "label": "Career Readiness Skills",
+      "patterns": [
+        "academic skills to workplace",
+        "manage time",
+        "manage systems",
+        "manage materials",
+        "manage personnel",
+        "workplace goals",
+        "professional growth",
+        "take initiative",
+        "willingness to learn",
+        "adapt and show flexibility",
+        "work independently"
+      ],
+      "materials": [
+        "Employability skills rubric"
+      ],
+      "activities": [
+        "Self-assess against the employability rubric at the start and end of the term"
+      ]
+    }
+  ]
+}

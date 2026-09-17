@@ -1,8 +1,23 @@
-# Criminal Justice Operations — indexed curriculum program
+# Florida CTE curriculum frameworks — indexed and queryable
 
-A fully indexed, reactive version of the Florida Department of Education
-**Criminal Justice Operations** curriculum framework (program `8918000`, CIP `0743010305`,
-Law, Public Safety & Security cluster).
+Fully indexed, reactive versions of Florida Department of Education CTE curriculum
+frameworks. Each program is a **completely separate app** — its own data, its own topic
+vocabulary, its own saved work — built from one shared codebase.
+
+| Program | Number | Credits | Standards | Benchmarks |
+| --- | --- | --- | --- | --- |
+| [Criminal Justice Operations](docs/index.html) | `8918000` | 4 | 80 | 535 |
+| [Careers in Public Service](docs/public-service/index.html) | `8607100` | 2 | 71 | 332 |
+
+Nothing is shared at runtime. Saved selections, units and coverage marks are namespaced per
+program (`cjo:8918000:…` / `cjo:8607100:…`), so two programs open on the same machine — and all
+`file://` pages are a single browser origin — cannot read or overwrite each other's work. Topic
+tags come from each program's own `topics.json`, never from code, so one framework's vocabulary
+can never tag another's benchmarks.
+
+## Criminal Justice Operations
+
+Program `8918000`, CIP `0743010305`, Law, Public Safety & Security cluster.
 
 Every standard and benchmark in all six courses is transcribed verbatim, machine-indexed, and
 queryable — so the framework can answer lesson-design, unit-planning and administrative
@@ -87,9 +102,9 @@ The app is also published as a private hosted page (same code, built by
 File downloads are blocked inside that embedded viewer, so every export there opens a copy
 panel instead of saving a file.
 
-**One self-contained file** — `npm run build` also writes
-`dist/Criminal Justice Operations.html`: the entire app, data and all, inlined into a single
-0.8 MB file with no external references. Put it anywhere and double-click it. No server, no
+**One self-contained file per program** — `npm run build` writes
+`dist/<Program Title>.html`: the entire app, data and all, inlined into a single file with no
+external references. Put it anywhere and double-click it. No server, no
 install, no account, no internet — verified by loading it from disk with the network disabled
 and confirming zero outbound requests.
 
@@ -118,9 +133,12 @@ node tools/cjo.mjs stats               # program totals
 ## How it is built
 
 ```
-data/program.json          program metadata, sequence, front matter  (source of truth)
-data/pathways.json         curated instructional threads: what builds on what
-data/courses/*.cjo         one file per course, verbatim standards and benchmarks
+data/programs/<number>/
+  program.json             program metadata, sequence, front matter  (source of truth)
+  pathways.json            curated instructional threads: what builds on what
+  topics.json              topic tags, and the lesson builder's materials per topic
+  courses/*.cjo            one file per course, verbatim standards and benchmarks
+build/shell/               the app itself: one codebase, rendered per program
 build/parse.mjs            .cjo -> structured objects
 build/enrich.mjs           derived fields: Bloom level, modality, topics, citations, weights
 build/graph.mjs            prerequisites, spirals and the canonical teaching order
@@ -187,8 +205,27 @@ Treat pacing as a starting point, not a mandate — adjust for your schedule, la
 students. The `4 optional` benchmarks (15.05, 15.12, 22.14, 25.01) are the only ones the
 framework itself marks optional.
 
+## Careers in Public Service
+
+Program `8607100`, CIP `0744040107`, Government & Public Administration cluster, 2026–2027.
+Two credits across four half-credit courses, plus Florida's Career Readiness Skills (01.0–15.0)
+which apply program-wide rather than to any one course.
+
+**A numbering discrepancy worth knowing about.** The framework's summary Standards list numbers
+the course standards `01.0`–`56.0`, while each course's Student Performance Standards pages
+number the very same standards `16.0`–`71.0` — an offset of exactly 15, the count of the career
+readiness standards that precede them. This app uses the detailed numbering (`16.0`–`71.0`),
+which is what appears on the course pages teachers cite, and records the summary-list range for
+each course alongside it. Source typos are preserved deliberately, including `ELGLISH 6-12` in
+the certification table, `41.09 "Define the issues. risks, assumptions…"`, and the stray
+`"The student will be able to:"` at the end of benchmark `53.02`.
+
+The fourth course may be replaced by **AP Capstone Research (`1700510`)** when the student's
+final project focuses on a public service issue.
+
 ## Source
 
-Florida Department of Education, *Criminal Justice Operations* curriculum framework, secondary
-career preparatory, program 8918000. CTE program resources:
+Florida Department of Education curriculum frameworks: *Criminal Justice Operations*, secondary
+career preparatory, program 8918000; *Careers in Public Service*, secondary non-career
+preparatory, program 8607100 (2026–2027). CTE program resources:
 <http://www.fldoe.org/academics/career-adult-edu/career-tech-edu/program-resources.stml>

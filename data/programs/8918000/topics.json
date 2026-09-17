@@ -1,0 +1,628 @@
+{
+  "note": "Topic tags for this program. patterns are case-insensitive regular expressions matched against the full benchmark text (including its sub-points). materials and activities are optional teaching suggestions surfaced by the lesson builder.",
+  "topics": [
+    {
+      "id": "patrol",
+      "label": "Patrol Operations",
+      "patterns": [
+        "\\bpatrol",
+        "\\bzone",
+        "fixed post",
+        "police hazard"
+      ]
+    },
+    {
+      "id": "traffic-control",
+      "label": "Traffic Direction & Control",
+      "patterns": [
+        "traffic (control|direction|signal|device)",
+        "direct(ing)? traffic",
+        "hand signal",
+        "whistle",
+        "\\bflare",
+        "baton",
+        "light stick",
+        "crossing",
+        "pedestrian",
+        "traffic controller"
+      ],
+      "materials": [
+        "Traffic vest, whistle, cones, flashlight/wand, inert flares",
+        "Open lot or gym space"
+      ],
+      "activities": [
+        "Practice hand and whistle signal sets at a marked intersection"
+      ]
+    },
+    {
+      "id": "crash-investigation",
+      "label": "Traffic Crash Investigation",
+      "patterns": [
+        "\\bcrash",
+        "collision",
+        "skid mark",
+        "tow truck",
+        "DHSMV",
+        "uniform traffic citation",
+        "\\bUTC\\b",
+        "vehicular speed"
+      ],
+      "materials": [
+        "Florida crash report form and DHSMV Traffic Crash Report Manual",
+        "Measuring wheel",
+        "Diagram templates"
+      ],
+      "activities": [
+        "Measure and diagram a staged two-vehicle crash, then complete the report form"
+      ]
+    },
+    {
+      "id": "use-of-force",
+      "label": "Use of Force & Arrest",
+      "patterns": [
+        "use[- ]of[- ]force",
+        "use of force",
+        "deadly force",
+        "reasonable force",
+        "defensive tactics",
+        "\\barrest",
+        "custody",
+        "prisoner",
+        "booking",
+        "frisk",
+        "Garner",
+        "Graham",
+        "Terry v",
+        "de-escalation",
+        "subject resistance",
+        "firearm",
+        "\\bweapon"
+      ],
+      "materials": [
+        "Use-of-force continuum handout",
+        "Case briefs: Graham v. Connor, Tennessee v. Garner, Terry v. Ohio"
+      ],
+      "activities": [
+        "Scenario sort: justify officer response against the totality of circumstances"
+      ]
+    },
+    {
+      "id": "investigations",
+      "label": "Criminal Investigation",
+      "patterns": [
+        "investigat",
+        "interrogat",
+        "confession",
+        "search warrant",
+        "seizure",
+        "exclusionary",
+        "polygraph",
+        "\\bsuspect",
+        "levels of proof",
+        "probable[- ]cause"
+      ]
+    },
+    {
+      "id": "forensics",
+      "label": "Forensic Science",
+      "patterns": [
+        "fingerprint",
+        "latent",
+        "\\bDNA\\b",
+        "hair and fiber",
+        "broken glass",
+        "crime lab",
+        "\\bAFIS\\b",
+        "Henry Modified",
+        "blood type",
+        "impression",
+        "Plaster of Paris",
+        "photo laboratory"
+      ],
+      "materials": [
+        "Fingerprint ink/powder kits, lift tape, ten-print cards",
+        "Magnifiers",
+        "Camera with scale"
+      ],
+      "activities": [
+        "Roll a full set of ten prints, then lift and classify latents from a processed surface"
+      ]
+    },
+    {
+      "id": "crime-scene",
+      "label": "Crime Scene & Evidence",
+      "patterns": [
+        "crime scene",
+        "\\bevidence",
+        "chain of custody",
+        "property control",
+        "contaminat",
+        "preserv",
+        "mock crime scene",
+        "field sketch"
+      ],
+      "materials": [
+        "Scene tape, evidence bags, markers, measuring tape",
+        "Evidence log and chain-of-custody forms"
+      ],
+      "activities": [
+        "Process a staged scene: secure, document, sketch, photograph, collect, log"
+      ]
+    },
+    {
+      "id": "report-writing",
+      "label": "Report Writing & Documentation",
+      "patterns": [
+        "\\breport",
+        "note taking",
+        "field notes",
+        "narrative",
+        "affidavit",
+        "diagram",
+        "who-what-when",
+        "interrogatives",
+        "bullet-style"
+      ],
+      "materials": [
+        "Agency incident/offense report forms",
+        "Sample redacted reports",
+        "Field notebooks"
+      ],
+      "activities": [
+        "Write a report from a staged incident, then peer-edit against the six interrogatives"
+      ]
+    },
+    {
+      "id": "courts-testimony",
+      "label": "Courts & Testimony",
+      "patterns": [
+        "\\bcourt",
+        "\\btrial",
+        "testimony",
+        "testif",
+        "deposition",
+        "subpoena",
+        "\\bjury\\b",
+        "\\bjudge\\b",
+        "prosecutor",
+        "defense attorney",
+        "demeanor",
+        "cross[- ]examination",
+        "hearing",
+        "pretrial",
+        "venue",
+        "duces tecum"
+      ],
+      "materials": [
+        "Mock courtroom setup",
+        "Subpoena and deposition samples",
+        "Testimony rubric"
+      ],
+      "activities": [
+        "Mock trial with assigned courtroom roles and a direct/cross examination round"
+      ]
+    },
+    {
+      "id": "law-legal",
+      "label": "Law & Legal Authority",
+      "patterns": [
+        "\\bstatute",
+        "F\\.S\\.",
+        "F\\.A\\.C\\.",
+        "ordinance",
+        "constitutional",
+        "misdemeanor",
+        "felony",
+        "\\bchapter \\d",
+        "\\blegal\\b",
+        "Miranda",
+        "jurisdiction",
+        "civil and criminal",
+        "rights of",
+        "right-to-know",
+        "liabilit",
+        "Good Samaritan"
+      ],
+      "materials": [
+        "Online Florida Statutes (leg.state.fl.us)",
+        "Statute look-up worksheet"
+      ],
+      "activities": [
+        "Statute scavenger hunt: locate the cited section and paraphrase the element list"
+      ]
+    },
+    {
+      "id": "juvenile",
+      "label": "Juvenile Justice",
+      "patterns": [
+        "juvenile",
+        "delinquen"
+      ]
+    },
+    {
+      "id": "corrections",
+      "label": "Corrections",
+      "patterns": [
+        "correction",
+        "\\binmate",
+        "\\bprison",
+        "\\bjail\\b"
+      ]
+    },
+    {
+      "id": "communication",
+      "label": "Communication Skills",
+      "patterns": [
+        "communicat",
+        "\\bradio\\b",
+        "telephone",
+        "interview",
+        "rapport",
+        "etiquette",
+        "interpersonal",
+        "phonetic",
+        "listening",
+        "public speaking",
+        "body language",
+        "\\bmessage"
+      ],
+      "materials": [
+        "Two-way radios or radio simulator",
+        "Phonetic alphabet and ten-code reference"
+      ],
+      "activities": [
+        "Timed radio traffic drill with dispatch and field roles"
+      ]
+    },
+    {
+      "id": "diversity",
+      "label": "Human Diversity & Community",
+      "patterns": [
+        "diversit",
+        "cultural",
+        "minority",
+        "bias[- ]based",
+        "disabilit",
+        "elderly",
+        "homeless",
+        "veteran",
+        "human relations",
+        "special concerns",
+        "older population",
+        "community relations",
+        "transient"
+      ],
+      "materials": [
+        "Community demographic data",
+        "Scenario cards for varied populations"
+      ],
+      "activities": [
+        "Structured role-play with debrief on perception and de-escalation"
+      ]
+    },
+    {
+      "id": "ethics",
+      "label": "Ethics & Professionalism",
+      "patterns": [
+        "\\bethic",
+        "professionalism",
+        "professional conduct",
+        "integrity",
+        "harassment",
+        "discriminat",
+        "command presence",
+        "grooming",
+        "\\buniform\\b(?!\\s+(?:traffic|crime))",
+        "honesty",
+        "code of conduct",
+        "discipline"
+      ],
+      "materials": [
+        "Agency code of ethics/code of conduct samples",
+        "Case study packet"
+      ],
+      "activities": [
+        "Ethical dilemma panel: defend a decision against the published code"
+      ]
+    },
+    {
+      "id": "employability",
+      "label": "Employability & Career",
+      "patterns": [
+        "employ",
+        "\\bjob\\b",
+        "resume",
+        "job application",
+        "\\bcareer",
+        "training opportunit",
+        "work habits",
+        "performance evaluation",
+        "letter of introduction",
+        "prerequisite"
+      ],
+      "materials": [
+        "Job announcements from local agencies",
+        "Resume and application templates"
+      ],
+      "activities": [
+        "Mock interview panel with a scored rubric"
+      ]
+    },
+    {
+      "id": "crime-prevention",
+      "label": "Crime Prevention",
+      "patterns": [
+        "crime prevention",
+        "CPTED",
+        "security survey",
+        "prevention of",
+        "preventive patrol",
+        "crime analysis"
+      ]
+    },
+    {
+      "id": "security-industry",
+      "label": "Private Security Industry",
+      "patterns": [
+        "security officer",
+        "private security",
+        "493",
+        "DOACS",
+        "licens",
+        "access control",
+        "CCTV",
+        "\\bTWIC\\b",
+        "security vehicle",
+        "security business",
+        "security patrol"
+      ],
+      "materials": [
+        "Chapter 493, F.S. and 5N-1, F.A.C. excerpts",
+        "Sample D/G license application"
+      ],
+      "activities": [
+        "Licensure pathway map: match duties to license class and prohibitions"
+      ]
+    },
+    {
+      "id": "emergency-response",
+      "label": "Emergency & Crisis Response",
+      "patterns": [
+        "emergency",
+        "first aid",
+        "bloodborne",
+        "disaster",
+        "hurricane",
+        "active shooter",
+        "weapons of mass destruction",
+        "evacuation",
+        "\\bcrisis",
+        "Baker Act",
+        "Marchman",
+        "mental illness",
+        "suicide",
+        "trauma team",
+        "medical response"
+      ],
+      "materials": [
+        "First aid supplies and manikins",
+        "Agency emergency action plan samples"
+      ],
+      "activities": [
+        "Table-top critical incident walkthrough with role cards"
+      ]
+    },
+    {
+      "id": "fire-life-safety",
+      "label": "Fire & Life Safety",
+      "patterns": [
+        "\\bfire\\b",
+        "fires",
+        "extinguish",
+        "life safety",
+        "fire watch",
+        "incendiary"
+      ],
+      "materials": [
+        "Extinguisher types chart and trainer unit",
+        "Life safety plan sample"
+      ],
+      "activities": [
+        "Identify extinguishing agent by fire class and stage an evacuation route check"
+      ]
+    },
+    {
+      "id": "terrorism",
+      "label": "Terrorism Awareness",
+      "patterns": [
+        "terror",
+        "OPSEC",
+        "\\bbomb\\b",
+        "BENICE",
+        "threat level",
+        "mail screening"
+      ]
+    },
+    {
+      "id": "crowd-control",
+      "label": "Crowd Control",
+      "patterns": [
+        "\\bcrowd",
+        "\\briot",
+        "protest",
+        "demonstration",
+        "civil disturbance",
+        "disturbance"
+      ]
+    },
+    {
+      "id": "technology",
+      "label": "Technology & Records",
+      "patterns": [
+        "computer",
+        "software",
+        "database",
+        "spreadsheet",
+        "word processor",
+        "\\bCAD\\b",
+        "technolog",
+        "e-mail",
+        "keyboarding",
+        "\\bFCIC\\b",
+        "\\bNCIC\\b",
+        "records management",
+        "electronic",
+        "internet",
+        "networking",
+        "3D model",
+        "cell phone"
+      ],
+      "materials": [
+        "Lab computers",
+        "Spreadsheet and word-processing software",
+        "CAD or scene-diagram software"
+      ],
+      "activities": [
+        "Build a crime-scene sketch and a data table from field measurements"
+      ]
+    },
+    {
+      "id": "math",
+      "label": "Applied Math",
+      "patterns": [
+        "\\bmath\\b",
+        "arithmetic",
+        "measurement",
+        "estimat",
+        "\\bgraph\\b",
+        "dollar amount",
+        "fractions",
+        "decimals",
+        "computations"
+      ]
+    },
+    {
+      "id": "code-enforcement",
+      "label": "Code Enforcement",
+      "patterns": [
+        "code enforcement",
+        "code violation",
+        "code board",
+        "\\blien",
+        "county code",
+        "right of entry",
+        "forfeiture"
+      ],
+      "materials": [
+        "Local code/ordinance excerpts",
+        "Notice of violation and citation forms",
+        "Camera"
+      ],
+      "activities": [
+        "Document a mock violation, issue the notice, then argue it at a mock code board hearing"
+      ]
+    },
+    {
+      "id": "legal-office",
+      "label": "Legal Office Practice",
+      "patterns": [
+        "legal office",
+        "notary",
+        "filing",
+        "accounting",
+        "legal document",
+        "\\bclient",
+        "legal terminolog",
+        "legal business",
+        "legal professional",
+        "legal workplace",
+        "legal operating system",
+        "trust bank"
+      ],
+      "materials": [
+        "Legal document templates",
+        "Case management or word processing software"
+      ],
+      "activities": [
+        "Prepare and proofread a filing packet against a formatting checklist"
+      ]
+    },
+    {
+      "id": "safety-wellness",
+      "label": "Officer Safety & Wellness",
+      "patterns": [
+        "officer safety",
+        "\\bstress",
+        "wellness",
+        "\\bhazard",
+        "OSHA",
+        "HAZMAT",
+        "protective equipment",
+        "substance",
+        "aggressive animal",
+        "fight or flight",
+        "safety precaution",
+        "officer survival",
+        "right-to-know",
+        "workplace violence",
+        "violence in the workplace"
+      ]
+    },
+    {
+      "id": "entrepreneurship",
+      "label": "Entrepreneurship",
+      "patterns": [
+        "entrepreneur",
+        "starting a .*business",
+        "business investment"
+      ]
+    },
+    {
+      "id": "ctso",
+      "label": "CTSO & Leadership",
+      "patterns": [
+        "\\bFPSA\\b",
+        "\\bCTSO\\b",
+        "SkillsUSA",
+        "leadership",
+        "supervision",
+        "managerial",
+        "performance management"
+      ]
+    },
+    {
+      "id": "time-management",
+      "label": "Time & Task Management",
+      "patterns": [
+        "time management",
+        "scheduling",
+        "prioritization",
+        "goal setting",
+        "self-motivation"
+      ]
+    },
+    {
+      "id": "public-relations",
+      "label": "Media & Public Relations",
+      "patterns": [
+        "\\bmedia\\b",
+        "press release",
+        "public relations",
+        "public records",
+        "courtesy and etiquette"
+      ]
+    },
+    {
+      "id": "system-overview",
+      "label": "CJ System Overview",
+      "patterns": [
+        "criminal justice system",
+        "branches",
+        "history and goals",
+        "history of",
+        "roles and responsibilities",
+        "court system"
+      ]
+    }
+  ]
+}
