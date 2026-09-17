@@ -22,6 +22,20 @@ questions instead of being a PDF you scroll through.
 **Web app** — open `docs/index.html` in a browser (works from `file://`, any static host, or
 GitHub Pages). No build step, no dependencies, nothing to install.
 
+**Install it as a desktop app** — served over https (GitHub Pages does this automatically via
+`.github/workflows/pages.yml`), the app installs to Windows, macOS, Android or iOS and runs
+offline, because the entire framework ships with the page.
+
+* **Windows (Edge):** open the site → `…` → **Apps** → **Install this site as an app** → tick
+  **Pin to taskbar**. It gets its own window and taskbar icon, no browser chrome.
+* **Windows (Chrome):** install icon in the address bar → **Install** → right-click the taskbar
+  icon → **Pin to taskbar**.
+* **Phone:** Share → **Add to Home Screen** (iOS), or the install prompt (Android).
+
+The **Install** button in the app's header does the same thing and explains the steps for
+whatever browser you are in. `docs/icons/app.ico` is there if you would rather make a plain
+Windows shortcut (`msedge.exe --app="<url>"`) and set its icon by hand.
+
 ```bash
 npm run serve        # or just double-click docs/index.html
 ```
@@ -97,6 +111,8 @@ build/graph.mjs            prerequisites, spirals and the canonical teaching ord
 build/build.mjs            assembles indexes, crosswalk, stats -> dist/ + docs/
 build/validate.mjs         structural checks (npm test)
 build/artifact.mjs         packages docs/ for publishing as a hosted page
+build/sw-template.js       offline service worker, version-stamped at build time
+build/icon.svg             source for the app icons in docs/icons/
 tools/cjo.mjs              CLI
 docs/                      the app (index.html, app.js, styles.css, framework-data.js)
 ```

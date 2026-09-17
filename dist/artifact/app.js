@@ -1462,6 +1462,16 @@ function focusOn(type, id) {
 /* --------------------------------------------------------------- actions */
 const ACTIONS = {
   'clear-query': () => setQuery(''),
+  install: async () => {
+    if (deferredInstall) {
+      deferredInstall.prompt();
+      const { outcome } = await deferredInstall.userChoice;
+      deferredInstall = null;
+      if (outcome === 'accepted') showInstallButton(false); else installHelp();
+      return;
+    }
+    installHelp();
+  },
   'seq-option': (value) => { state.sequence.option = value; persist.sequence(); render(); },
   'seq-density': () => {
     state.sequence.density = state.sequence.density === 'outline' ? 'full' : 'outline';
@@ -1742,6 +1752,77 @@ document.addEventListener('keydown', (e) => {
     if (document.activeElement === $('#q')) { setQuery(''); $('#q').blur(); }
   }
 });
+
+/* ------------------------------------------------- install / offline shell */
+// Served over https (or localhost) the app installs as a desktop or mobile app
+// and runs offline. Inside the artifact iframe none of this applies.
+let deferredInstall = null;
+
+function installable() {
+  return !EMBEDDED && (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname));
+}
+
+function showInstallButton(show) {
+  const btn = $('#install');
+  if (btn) btn.hidden = !show;
+}
+
+if (installable() && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* offline support is optional */ });
+  });
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    toast('Updated - reloading');
+    setTimeout(() => location.reload(), 600);
+  });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+  showInstallButton(true);
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstall = null;
+  showInstallButton(false);
+  toast('Installed - pin it to your taskbar from the app window');
+});
+
+const standalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+if (installable() && !standalone()) showInstallButton(true);
+
+function installHelp() {
+  const ua = navigator.userAgent;
+  const windows = /Windows/i.test(ua);
+  const edge = /Edg\//.test(ua);
+  const ios = /iPhone|iPad|iPod/i.test(ua);
+  const steps = ios
+    ? ['Tap the Share button in Safari.', 'Choose <strong>Add to Home Screen</strong>.', 'Tap <strong>Add</strong> - the icon appears on your home screen.']
+    : windows
+      ? [
+        edge
+          ? 'In Edge, open the <strong>&hellip;</strong> menu &rarr; <strong>Apps</strong> &rarr; <strong>Install this site as an app</strong> (or click the install icon in the address bar).'
+          : 'In Chrome, click the install icon in the address bar, or <strong>&#8942;</strong> menu &rarr; <strong>Cast, save and share</strong> &rarr; <strong>Install page as app</strong>.',
+        'Confirm the name <strong>CJ Ops</strong> and click <strong>Install</strong>.',
+        'When it opens in its own window, tick <strong>Pin to taskbar</strong> - or right-click its taskbar icon and choose <strong>Pin to taskbar</strong>.',
+      ]
+      : ['Use your browser menu and choose <strong>Install</strong> or <strong>Add to Home screen</strong>.'];
+  const wrap = document.createElement('div');
+  wrap.className = 'overlay';
+  wrap.id = 'export-overlay';
+  wrap.innerHTML = `<div class="card stack" role="dialog" aria-label="Install this app">
+    <div class="row"><h2 style="margin:0">Put this on your taskbar</h2>
+      <span class="right"><button class="btn ghost" data-action="close-export">Close</button></span></div>
+    <div class="installhelp small"><ol>${steps.map((x) => `<li>${x}</li>`).join('')}</ol>
+    <p class="tiny muted">Installed, it opens in its own window with its own icon and keeps working without a network connection - the whole framework is stored locally.</p></div>
+  </div>`;
+  wrap.addEventListener('click', (e) => { if (e.target === wrap) wrap.remove(); });
+  document.body.appendChild(wrap);
+}
 
 /* ---------------------------------------------------------------- router */
 function route() {

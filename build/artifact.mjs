@@ -12,7 +12,7 @@ const body = src.slice(src.indexOf('<body>') + 6, src.lastIndexOf('</body>'));
 
 const page = `${head
   .split('\n')
-  .filter((l) => !/rel="icon"/.test(l))
+  .filter((l) => !/rel="icon"|rel="apple-touch-icon"|rel="manifest"|apple-mobile-web-app|mobile-web-app-capable|name="theme-color"/.test(l))
   .join('\n')
   .trim()}\n${body.trim()}\n`;
 

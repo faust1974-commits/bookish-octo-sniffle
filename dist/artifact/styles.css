@@ -333,3 +333,14 @@ ul.lesson-items li { margin-bottom: 1px; }
   border-radius: 6px; color: var(--text-dim); background: var(--surface-2);
 }
 .stat .l + .tiny { margin-top: 2px; }
+
+/* ------------------------------------------- installed (home screen) app */
+@media (display-mode: standalone) {
+  .topbar { top: 0; padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+  .sticky-side { top: calc(132px + env(safe-area-inset-top, 0px)); }
+  footer { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+  main { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+}
+.installhelp { display: grid; gap: 8px; }
+.installhelp ol { margin: 0; padding-left: 20px; }
+.installhelp li { margin-bottom: 4px; }

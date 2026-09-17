@@ -281,6 +281,10 @@ const framework = {
 out('dist/framework.json', `${JSON.stringify(framework, null, 2)}\n`);
 out('docs/framework-data.js', `window.CJO_FRAMEWORK = ${JSON.stringify(framework)};\n`);
 
+// ------------------------------------------------------- offline shell (PWA)
+const swVersion = `${framework.meta.schemaVersion}.${stats.benchmarks}.${Date.now().toString(36)}`;
+out('docs/sw.js', read('build/sw-template.js').replace('__VERSION__', swVersion));
+
 // ---------------------------------------------------------------- flat CSV
 const csvCell = (v) => {
   const s = Array.isArray(v) ? v.join('; ') : String(v ?? '');
