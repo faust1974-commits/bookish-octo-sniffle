@@ -22,9 +22,19 @@ questions instead of being a PDF you scroll through.
 **Web app** — open `docs/index.html` in a browser (works from `file://`, any static host, or
 GitHub Pages). No build step, no dependencies, nothing to install.
 
-**Install it as a desktop app** — served over https (GitHub Pages does this automatically via
-`.github/workflows/pages.yml`), the app installs to Windows, macOS, Android or iOS and runs
-offline, because the entire framework ships with the page.
+**Publish it** — one-time, needs a repository admin (a workflow token is not allowed to enable
+Pages): **Settings → Pages → Source**. Either
+
+* **GitHub Actions** — `.github/workflows/pages.yml` then builds, validates and deploys `docs/`
+  on every push; or
+* **Deploy from a branch** — branch `claude/criminal-justice-operations-framework-jl12eg`,
+  folder `/docs`, which serves the committed files directly.
+
+Either way the site lands at `https://<owner>.github.io/bookish-octo-sniffle/`. The workflow
+detects which mode is in use and stays out of the way in the second one.
+
+**Install it as a desktop app** — served over https, the app installs to Windows, macOS,
+Android or iOS and runs offline, because the entire framework ships with the page.
 
 * **Windows (Edge):** open the site → `…` → **Apps** → **Install this site as an app** → tick
   **Pin to taskbar**. It gets its own window and taskbar icon, no browser chrome.

@@ -26,15 +26,38 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Build and validate the dataset
         run: |
           npm run build
           npm test
+
+      # Only a repository admin can turn Pages on - a workflow token cannot - so
+      # check how Pages is configured and report rather than fail.
+      - name: Check Pages configuration
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          build_type=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.build_type' 2>/dev/null || echo "disabled")
+          echo "build_type=$build_type" >> "$GITHUB_OUTPUT"
+          case "$build_type" in
+            workflow)
+              echo "Pages is set to deploy from this workflow." ;;
+            legacy)
+              echo "::notice::Pages is serving straight from a branch, so this workflow does not need to deploy. The site updates on push by itself." ;;
+            *)
+              echo "::notice::GitHub Pages is not enabled yet. Turn it on at https://github.com/$GITHUB_REPOSITORY/settings/pages - set Source to 'GitHub Actions' and re-run this workflow, or set it to 'Deploy from a branch' with branch ${GITHUB_REF_NAME} and folder /docs." ;;
+          esac
+
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
+        if: steps.check.outputs.build_type == 'workflow'
+
       - uses: actions/upload-pages-artifact@v3
+        if: steps.check.outputs.build_type == 'workflow'
         with:
           path: docs
+
       - id: deployment
+        if: steps.check.outputs.build_type == 'workflow'
         uses: actions/deploy-pages@v4
