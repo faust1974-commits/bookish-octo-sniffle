@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+
+# The launcher builds its own private environment here on first run.
+.hoopsim-venv/
+
+# Python packaging output. `dist/hoopsim.html` is a deliberate exception:
+# it is the double-clickable build, and it is meant to be downloadable
+# straight from the repository.
+/build/
+/dist/*
+!/dist/hoopsim.html
