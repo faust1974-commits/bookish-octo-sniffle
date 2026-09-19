@@ -9,11 +9,14 @@ together, who should play how many minutes, who is actually good) and **game
 and season forecasting** (win probabilities, projected scores, win totals,
 playoff and title odds).
 
+Built on **real NBA data**: the complete 2025-26 regular season &mdash; 1,230
+games, 500 players, 30 teams, from play-by-play.
+
 ## Three ways to run it, easiest first
 
 **1. Double-click a file.** `dist/hoopsim.html` is the whole thing in one
-file &mdash; data, styles, calculations. Put it on your desktop and open it.
-No install, no terminal, no internet connection. It is about 380 KB.
+file &mdash; real players, real teams, styles, calculations. Put it on your
+desktop and open it. No install, no terminal, no internet connection.
 
 **2. Double-click the launcher** (Mac). `Open hoopsim.command` sets itself up
 the first time, then starts the full Python version and opens your browser.
@@ -43,8 +46,9 @@ redistribution to 1e-6. If the two ever drift, the test fails.
 Rebuild it against any data with:
 
 ```bash
-python build_standalone.py --out dist/hoopsim.html
-python build_standalone.py --source nba --season 2024-25 --out nba.html
+python build_standalone.py                     # real NBA, current season
+python build_standalone.py --season 2024-25    # any published season
+python build_standalone.py --source synthetic  # generated data
 ```
 
 ---
@@ -207,19 +211,45 @@ hoopsim splits clutch
 
 The adapter interface means the models never know where numbers came from.
 
-**`SyntheticSource`** (default) generates a complete, self-consistent league —
+**`SyntheticSource`** generates a complete, self-consistent league —
 play-by-play first, box scores derived from it — with known ground truth.
 That is what makes the impact models testable: you can check whether RAPM
 recovers the impact that actually generated the games. It does, at r ≈ 0.60,
 and it independently recovers the home-court advantage it was never told.
 
-**`NBAStatsSource`** pulls live from `stats.nba.com`. It is written and
-documented but **could not be exercised here** — this environment's network
-policy blocks that host. Run it on your own machine. Notes baked into the
-adapter: the endpoint needs a full browser header set, rate-limits by silently
-returning empty payloads (hence the mandatory delay), and needs one request per
-game for play-by-play, so a first full-season pull takes roughly fifteen
-minutes. Completed seasons never change, so that cache is kept permanently.
+**`NBAGithubSource`** is the default and the source of `dist/hoopsim.html`.
+It reads complete season dumps published at
+[shufinskiy/nba_data](https://github.com/shufinskiy/nba_data) — one compressed
+file per season instead of 1,230 rate-limited requests. A season loads in about
+a minute and is then cached forever, because a finished season never changes.
+
+Four quirks of that play-by-play format are handled explicitly. Each is silent
+when missed, and each produced confidently wrong numbers before it was found:
+
+* Team-level events (team rebounds, team turnovers, timeouts) put the **team id
+  in the player column**. Left alone, thirty team entities enter the player
+  table with 22,000 rebounds between them, and every per-game aggregate grows a
+  third "team" — which dragged apparent scoring from 115.6 points per team down
+  to 109.9.
+* Teams change personnel at **quarter breaks with no substitution events**. The
+  on-floor five has to be re-derived for each period; without that, one quarter
+  break poisons the rest of the game and only 67% of stints hold five players.
+* The clock **occasionally runs backwards**, making stint durations nonsense.
+  It is held at its high-water mark within each game.
+* A substitute who **records no statistic** never appears with an id anywhere in
+  that game, so the incoming player cannot be resolved from in-game names alone
+  and falls back to the season roster.
+
+`tests/test_nba_real.py` pins all four.
+
+Measured against the real league: 99.3 possessions per team per game (NBA ~99),
+115.6 points (~115), .546 eFG (.542), .260 offensive rebound rate (.265), 55.4%
+home wins (~55%), and box scores matching the final score in 98.8% of
+team-games.
+
+**`NBAStatsSource`** pulls live from `stats.nba.com` for anyone who wants the
+official endpoint. It is written and documented but **could not be exercised
+here** — this environment's network policy blocks that host.
 
 **`CSVSource`** reads a directory of canonical CSVs — the escape hatch for
 Kaggle dumps, paid-feed exports or your own scrapes.
@@ -227,8 +257,8 @@ Kaggle dumps, paid-feed exports or your own scrapes.
 ```python
 from hoopsim.context import Analysis
 
-a = Analysis.from_nba("2023-24")        # live
-a = Analysis.from_csv("./data", "2023-24")
+a = Analysis.from_nba_github("2025-26")   # real NBA, the default
+a = Analysis.from_csv("./data", "2025-26")
 a = Analysis.synthetic(n_teams=30, games_per_team=82)
 ```
 
@@ -280,8 +310,8 @@ src/hoopsim/
   cli.py  api.py   command line and HTTP server (standard library only)
 build_standalone.py  packs everything into one double-clickable HTML file
 web/               browser interface and the JavaScript engine, no build step
-dist/hoopsim.html  the double-clickable build
-tests/             205 tests
+dist/hoopsim.html  the double-clickable build, real NBA data
+tests/             220 tests
 ```
 
 ## Development
