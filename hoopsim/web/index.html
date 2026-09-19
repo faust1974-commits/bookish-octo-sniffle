@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hoopsim</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>hoopsim</h1>
+    <span class="sub" id="league-meta">loading&hellip;</span>
+  </div>
+  <nav id="tabs">
+    <button class="tab active" data-tab="lineups">Lineups</button>
+    <button class="tab" data-tab="players">Players</button>
+    <button class="tab" data-tab="teams">Teams</button>
+    <button class="tab" data-tab="splits">Splits</button>
+    <button class="tab" data-tab="simulate">Simulate</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ---------------------------------------------------------------- -->
+  <section id="tab-lineups" class="panel active">
+    <div class="controls">
+      <label>Team
+        <select id="lineup-team"></select>
+      </label>
+      <button id="load-starters" class="ghost">Load top 5 by minutes</button>
+      <button id="clear-lineup" class="ghost">Clear</button>
+      <button id="find-best" class="ghost">Best five from rotation</button>
+      <button id="optimise-rotation" class="ghost">Optimise minutes</button>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Roster <span class="hint">click to add or remove</span></h2>
+        <div id="roster" class="roster"></div>
+      </div>
+
+      <div class="card">
+        <h2>On the floor <span class="hint" id="lineup-count">0 of 5</span></h2>
+        <div id="lineup-slots" class="slots"></div>
+        <div id="lineup-warning" class="warning hidden"></div>
+        <div id="lineup-result" class="result"></div>
+      </div>
+    </div>
+
+    <div class="card" id="breakdown-card">
+      <h2>Where the rating comes from</h2>
+      <div id="breakdown"></div>
+    </div>
+
+    <div class="card" id="usage-card">
+      <h2>Usage redistribution
+        <span class="hint">five players must total one possession, so someone gives up shots</span>
+      </h2>
+      <div id="usage-table"></div>
+    </div>
+
+    <div class="card" id="swap-card">
+      <h2>Substitution</h2>
+      <div class="controls">
+        <label>Out <select id="swap-out"></select></label>
+        <label>In <select id="swap-in"></select></label>
+        <button id="do-swap">Apply</button>
+        <button id="rank-replacements" class="ghost">Rank every replacement</button>
+      </div>
+      <div id="swap-result"></div>
+    </div>
+
+    <div class="card hidden" id="best-card">
+      <h2 id="best-title">Best five-man units</h2>
+      <div id="best-result"></div>
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <section id="tab-players" class="panel">
+    <div class="controls">
+      <label>Rate basis <select id="per-mode"></select></label>
+      <label>Minimum minutes <input id="min-minutes" type="number" value="250" min="0" step="50"></label>
+      <label>Team <select id="player-team"><option value="">all</option></select></label>
+      <label>Search <input id="player-search" type="search" placeholder="name"></label>
+      <button id="show-rapm" class="ghost">Show RAPM</button>
+    </div>
+    <p class="hint" id="per-mode-help"></p>
+    <div class="card"><div id="players-table"></div></div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <section id="tab-teams" class="panel">
+    <div class="card"><h2>Efficiency</h2><div id="teams-table"></div></div>
+    <div class="card"><h2>Four factors
+      <span class="hint">shooting, turnovers, rebounding, free throws &mdash; in that order of importance</span>
+    </h2><div id="factors-table"></div></div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <section id="tab-splits" class="panel">
+    <div class="controls">
+      <label>Vertical <select id="split-dimension"></select></label>
+      <label>Team <select id="split-team"><option value="">league wide</option></select></label>
+    </div>
+    <p class="hint" id="split-help"></p>
+    <div class="card"><div id="splits-table"></div></div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <section id="tab-simulate" class="panel">
+    <div class="card">
+      <h2>One game</h2>
+      <div class="controls">
+        <label>Home <select id="sim-home"></select></label>
+        <label>Away <select id="sim-away"></select></label>
+        <button id="run-game">Simulate 20,000 times</button>
+      </div>
+      <div id="game-result"></div>
+      <div id="margin-chart"></div>
+    </div>
+    <div class="card">
+      <h2>Full season</h2>
+      <div class="controls">
+        <button id="run-season">Simulate the season</button>
+        <span class="hint">win totals, playoff odds and title odds from the current ratings</span>
+      </div>
+      <div id="season-result"></div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>
