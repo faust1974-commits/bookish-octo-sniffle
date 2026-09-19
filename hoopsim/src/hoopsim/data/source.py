@@ -51,6 +51,15 @@ class DataSource(ABC):
 
         return aggregate_team_box(self.box(season, season_type))
 
+    def starting_lineups(self, season: str | None = None) -> dict | None:
+        """Known opening fives, keyed by (game_id, team_id).
+
+        Return None when the feed does not record them, in which case starters
+        are inferred from the event log. Supplying them is strictly better: a
+        wrong opening five poisons every stint in the game that follows.
+        """
+        return None
+
     def pbp(self, season: str, game_ids=None) -> pd.DataFrame:
         """Canonical `pbp` frame. Only meaningful when provides_pbp is True."""
         raise NotImplementedError(

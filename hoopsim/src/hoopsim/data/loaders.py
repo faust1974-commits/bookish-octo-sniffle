@@ -109,7 +109,10 @@ class League:
         if self._stints is None:
             from .pbp import build_stints
 
-            self._stints = build_stints(self.pbp, self.games)
+            known = None
+            if hasattr(self.source, "starting_lineups"):
+                known = self.source.starting_lineups(self.season)
+            self._stints = build_stints(self.pbp, self.games, known)
         return self._stints
 
     @cached_property

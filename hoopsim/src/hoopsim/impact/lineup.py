@@ -174,6 +174,10 @@ class LineupModel:
         enough possessions.
         """
         df = player_metrics[player_metrics["min"] >= min_minutes].copy()
+        # Feeds that only record G/F/C leave lineups looking unable to cover
+        # the floor; sharpen them before anything reads a position.
+        if "position" in df.columns:
+            df["position"] = refine_positions(df).to_numpy()
         skills = compute_skill_scores(df)
         df = df.merge(skills, on="player_id", how="left")
 
@@ -437,6 +441,62 @@ class LineupModel:
 # ---------------------------------------------------------------------------
 # Skill scores
 # ---------------------------------------------------------------------------
+
+def refine_positions(player_metrics: pd.DataFrame,
+                     *, min_minutes: float = 200.0) -> pd.Series:
+    """Sharpen coarse guard/forward/centre labels into the five slots.
+
+    Real feeds often only record G, F or C. Collapsing those onto three of the
+    five slots makes plenty of ordinary NBA lineups look unable to cover the
+    floor -- a team whose best big is listed "F" appears to have no centre.
+
+    So split them by how the players actually play: guards by how much they
+    create for others, forwards by how much they rebound and protect the rim.
+    A player already labelled with one of the five slots is left alone.
+    """
+    df = player_metrics
+    out = df["position"].astype(str).copy()
+
+    # Feeds that only know G/F/C are detected through `position_raw`, which
+    # the loader preserves alongside its own best guess at a slot. Without it,
+    # fall back to reading the slot column directly.
+    source = df["position_raw"] if "position_raw" in df.columns else df["position"]
+    source = source.astype(str).str.strip().str.upper()
+    coarse = source.isin(["G", "F", "C", "", "NAN", "NONE"])
+    if not coarse.any():
+        return out
+
+    df = df.assign(_coarse=source)
+    eligible = df["min"] >= min_minutes
+
+    def split(mask, column, high_slot, low_slot, fallback):
+        if column not in df.columns:
+            out.loc[mask] = fallback
+            return
+        values = pd.to_numeric(df.loc[mask, column], errors="coerce")
+        pool = pd.to_numeric(df.loc[mask & eligible, column], errors="coerce").dropna()
+        if pool.empty:
+            out.loc[mask] = fallback
+            return
+        cut = float(pool.median())
+        out.loc[mask] = np.where(values.fillna(cut) >= cut, high_slot, low_slot)
+
+    split(coarse & (df["_coarse"] == "G"), "ast_rate", "PG", "SG", "SG")
+    # Forwards: rim protection and rebounding separate a four from a three.
+    if {"blk_rate", "trb_rate"} <= set(df.columns):
+        big = (pd.to_numeric(df["blk_rate"], errors="coerce").fillna(0.0) * 2.0
+               + pd.to_numeric(df["trb_rate"], errors="coerce").fillna(0.0))
+        df = df.assign(_bigness=big)
+        pool = df.loc[coarse & (df["_coarse"] == "F") & eligible, "_bigness"].dropna()
+        cut = float(pool.median()) if not pool.empty else 0.0
+        mask = coarse & (df["_coarse"] == "F")
+        out.loc[mask] = np.where(df.loc[mask, "_bigness"] >= cut, "PF", "SF")
+    else:
+        out.loc[coarse & (df["_coarse"] == "F")] = "SF"
+    out.loc[coarse & (df["_coarse"] == "C")] = "C"
+    out.loc[out.isin(["G", "F", ""]) | out.isna()] = "SF"
+    return out
+
 
 def compute_skill_scores(player_metrics: pd.DataFrame,
                          *, min_minutes: float = 100.0) -> pd.DataFrame:

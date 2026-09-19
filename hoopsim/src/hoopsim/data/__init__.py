@@ -22,4 +22,8 @@ def __getattr__(name):
         from .nba_stats import NBAStatsSource
 
         return NBAStatsSource
+    if name == "NBAGithubSource":
+        from .nba_github import NBAGithubSource
+
+        return NBAGithubSource
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

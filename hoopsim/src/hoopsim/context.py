@@ -48,6 +48,20 @@ class Analysis:
                                              with_pbp=with_pbp), **kwargs)
 
     @classmethod
+    def from_nba_github(cls, season: str = "2025-26", *, offline: bool = False,
+                        **kwargs) -> "Analysis":
+        """Load a real NBA season from the published GitHub dumps.
+
+        This is the fast, reliable path to real data: one compressed file per
+        season instead of 1,230 rate-limited requests, and it works from
+        environments where stats.nba.com is blocked.
+        """
+        from .data.nba_github import NBAGithubSource
+
+        source = NBAGithubSource(season, offline=offline)
+        return cls(league=League.from_source(source, source.season), **kwargs)
+
+    @classmethod
     def from_csv(cls, directory, season: str, **kwargs) -> "Analysis":
         from .data import CSVSource
 

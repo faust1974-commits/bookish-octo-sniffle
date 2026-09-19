@@ -102,6 +102,47 @@ def infer_starters(game_pbp: pd.DataFrame) -> dict[str, set[str]]:
     return resolved
 
 
+def infer_period_starters(game_pbp: pd.DataFrame) -> dict:
+    """Recover the five on the floor at the start of each period.
+
+    This is not optional. Teams change personnel at every quarter break, and
+    the play-by-play records no substitution events for it -- the new five
+    simply appears. Carrying the end-of-quarter lineup into the next period
+    therefore corrupts the on-floor set, and because each error persists until
+    something happens to cancel it, a single quarter break can poison the rest
+    of the game.
+
+    Within a period the rule is the same one `infer_starters` uses: a player
+    who acts, or is substituted out, before he is ever substituted in was on
+    the floor when the period began.
+
+    Returns a mapping of (team_id, period) to a set of player ids.
+    """
+    out: dict[tuple[str, int], set] = {}
+    for period, chunk in game_pbp.groupby("period", sort=True):
+        seen_in: dict[str, set] = defaultdict(set)
+        starters: dict[str, list] = defaultdict(list)
+        for row in chunk.itertuples(index=False):
+            team = row.team_id
+            if not _is_id(team):
+                continue
+            if row.event_type == "substitution":
+                if _is_id(row.player_id) and row.player_id not in seen_in[team]:
+                    if row.player_id not in starters[team]:
+                        starters[team].append(row.player_id)
+                if _is_id(row.player2_id):
+                    seen_in[team].add(row.player2_id)
+                continue
+            if row.event_type in ("period_start", "period_end", "timeout"):
+                continue
+            actor = row.player_id
+            if _is_id(actor) and actor not in seen_in[team] and actor not in starters[team]:
+                starters[team].append(actor)
+        for team, found in starters.items():
+            out[(team, int(period))] = set(found[:K.PLAYERS_ON_FLOOR])
+    return out
+
+
 def reconstruct_lineups(pbp: pd.DataFrame) -> pd.DataFrame:
     """Attach the on-floor five for both teams to every event.
 
@@ -204,12 +245,16 @@ def mark_garbage_time(game: pd.DataFrame, total_seconds: float) -> np.ndarray:
     return (remaining <= K.GARBAGE_TIME_MAX_SECONDS) & (margin > threshold)
 
 
-def build_stints(pbp: pd.DataFrame, games: pd.DataFrame) -> pd.DataFrame:
+def build_stints(pbp: pd.DataFrame, games: pd.DataFrame,
+                 starters: dict | None = None) -> pd.DataFrame:
     """Collapse play-by-play into stints: spans with both lineups fixed.
 
     Each row records the ten players on the floor, how many possessions each
     team used, how many points each scored, and whether the span was garbage
     time. This frame is the input to on/off, RAPM and the lineup model.
+
+    `starters` maps (game_id, team_id) to a known opening five. Pass it when
+    the feed records starters; otherwise they are inferred from the event log.
     """
     gmeta = games.set_index("game_id")[["home_team_id", "away_team_id", "season"]]
     rows: list[dict] = []
@@ -221,11 +266,13 @@ def build_stints(pbp: pd.DataFrame, games: pd.DataFrame) -> pd.DataFrame:
         meta = gmeta.loc[game_id]
         home_id, away_id = meta["home_team_id"], meta["away_team_id"]
         game = game.sort_values("event_num")
-        starters = infer_starters(game)
-        on = {
-            home_id: set(starters.get(home_id, set())),
-            away_id: set(starters.get(away_id, set())),
-        }
+        inferred = infer_starters(game)
+        per_period = infer_period_starters(game)
+        on = {}
+        for team in (home_id, away_id):
+            known = (starters or {}).get((game_id, team))
+            on[team] = set(known) if known and len(known) == K.PLAYERS_ON_FLOOR \
+                else set(inferred.get(team, set()))
         total_seconds = float(game["seconds_elapsed"].max())
         ends = _possession_flags(game, home_id, away_id)
         garbage = mark_garbage_time(game, total_seconds)
@@ -264,7 +311,27 @@ def build_stints(pbp: pd.DataFrame, games: pd.DataFrame) -> pd.DataFrame:
             stint_id += 1
 
         prev_seconds = 0.0
+        current_period = int(game["period"].iloc[0])
         for i, row in enumerate(game.itertuples(index=False)):
+            if int(row.period) != current_period:
+                # A new period begins. Teams reset their personnel here with
+                # no substitution events, so take the period's own opening
+                # five wherever it could be determined.
+                current_period = int(row.period)
+                flush(float(row.seconds_elapsed))
+                for team in (home_id, away_id):
+                    fresh = per_period.get((team, current_period))
+                    if fresh and len(fresh) == K.PLAYERS_ON_FLOOR:
+                        on[team] = set(fresh)
+                home_five = frozenset(on[home_id])
+                away_five = frozenset(on[away_id])
+                cur = {
+                    "start_seconds": float(row.seconds_elapsed),
+                    "period": current_period,
+                    "home_poss": 0.0, "away_poss": 0.0,
+                    "home_pts": 0.0, "away_pts": 0.0,
+                    "garbage": 0, "n": 0,
+                }
             if row.event_type == "substitution":
                 flush(float(row.seconds_elapsed))
                 team = row.team_id
@@ -420,6 +487,13 @@ def box_from_pbp(pbp: pd.DataFrame, games: pd.DataFrame,
     # Starters: the five with the most minutes per team-game is a proxy that
     # matches the truth in synthetic data and is close in real data. Real
     # sources supply the flag directly and should override it.
+    # Events that belong to no team (a violation with teamId zero, say) leave
+    # rows with no team. They carry nothing, but they would show up as a third
+    # "team" in any per-game aggregate, so drop them.
+    box = box[box["team_id"].map(_is_id)].copy()
+    if box.empty:
+        return box
+
     box["_rank"] = box.groupby(["game_id", "team_id"])["min"].rank(
         ascending=False, method="first"
     )

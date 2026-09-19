@@ -100,7 +100,11 @@ def player_season(league, *, by=("player_id", "team_id"),
     players = player_totals(box, by=by)
     teams = team_totals(league.team_box)
     out = players.merge(teams, on="team_id", how="left")
-    meta_cols = [c for c in ("player_name", "position", "age") if c in league.players.columns]
+    # `position_raw` carries the feed's own label (often only G/F/C) so the
+    # lineup model can sharpen it later; dropping it here would silently
+    # disable that.
+    meta_cols = [c for c in ("player_name", "position", "position_raw", "age")
+                 if c in league.players.columns]
     if meta_cols:
         meta = league.players.drop_duplicates("player_id")[["player_id"] + meta_cols]
         out = out.merge(meta, on="player_id", how="left")

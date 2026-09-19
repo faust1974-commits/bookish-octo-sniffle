@@ -250,21 +250,26 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description="Build a double-clickable single-file version of hoopsim.")
     parser.add_argument("--out", default="hoopsim.html", help="file to write")
-    parser.add_argument("--source", default="synthetic",
-                        choices=["synthetic", "nba", "csv"])
-    parser.add_argument("--season", default="2024-25")
+    parser.add_argument("--source", default="nba",
+                        choices=["nba", "synthetic", "nba-stats", "csv"],
+                        help="nba = real season dumps from GitHub (default)")
+    parser.add_argument("--season", default="2025-26")
     parser.add_argument("--teams", type=int, default=30)
     parser.add_argument("--games", type=int, default=41)
     parser.add_argument("--seed", type=int, default=20251001)
     parser.add_argument("--directory", help="data directory, with --source csv")
     parser.add_argument("--no-splits", action="store_true")
+    parser.add_argument("--no-refit", action="store_true",
+                        help="skip refitting the box model against RAPM")
     args = parser.parse_args(argv)
 
     print(f"loading {args.source} data ...", flush=True)
-    if args.source == "synthetic":
+    if args.source == "nba":
+        analysis = Analysis.from_nba_github(args.season)
+    elif args.source == "synthetic":
         analysis = Analysis.synthetic(n_teams=args.teams, games_per_team=args.games,
                                       season=args.season, seed=args.seed)
-    elif args.source == "nba":
+    elif args.source == "nba-stats":
         analysis = Analysis.from_nba(args.season)
     else:
         if not args.directory:
@@ -272,6 +277,16 @@ def main(argv=None) -> int:
         analysis = Analysis.from_csv(args.directory, args.season)
 
     print("computing metrics and impact ratings ...", flush=True)
+    if not args.no_refit and analysis.league.has_pbp:
+        # The built-in box coefficients are a prior fitted to nothing in
+        # particular, and they overrate low-usage bigs. Refitting them against
+        # this league's own RAPM is a large accuracy gain and costs seconds.
+        try:
+            stats = analysis.refit_box_impact()
+            print(f"  refit box model against RAPM: R^2 = {stats['_r_squared']:.3f}",
+                  flush=True)
+        except (ValueError, KeyError) as exc:
+            print(f"  box refit skipped: {exc}", flush=True)
     payload = build_payload(analysis, splits=not args.no_splits)
 
     out = Path(args.out)
