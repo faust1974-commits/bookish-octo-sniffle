@@ -213,6 +213,11 @@ USAGE_EFFICIENCY_SLOPE = 0.0055        # TS% lost per usage point added
 USAGE_EFFICIENCY_SLOPE_DOWN = 0.0030   # TS% gained per usage point shed
 USAGE_CURVE_CONVEXITY = 0.00022        # extra quadratic penalty far from base
 
+# Plausible bounds on a single player's usage share inside a lineup. The
+# redistribution clips to these and rebalances whatever the clipping displaces.
+USAGE_FLOOR = 0.06
+USAGE_CEILING = 0.42
+
 # Usage that must be absorbed by the remaining four players when one leaves.
 # Empirically the redistribution is not uniform: higher-usage players absorb
 # disproportionately more. This exponent shapes that.
@@ -246,8 +251,19 @@ LINEUP_FIT_WEIGHTS = {
 
 # Diminishing returns: a lineup of five identical high-usage creators is worth
 # less than the sum of its parts. Penalty scales with the concentration of
-# usage and of playmaking.
+# usage and of playmaking. The threshold is the spread of playmaking scores
+# below which a lineup counts as redundant.
 LINEUP_REDUNDANCY_PENALTY = 2.2
+LINEUP_REDUNDANCY_THRESHOLD = 0.35
+
+# A lineup needs at least one player meaningfully above average in each of
+# these, or it has a hole nobody on the floor can cover.
+LINEUP_COVERAGE_THRESHOLDS = {
+    "spacing": -0.15,
+    "playmaking": -0.25,
+    "rim_protection": -0.35,
+    "rebounding": -0.45,
+}
 
 # --------------------------------------------------------------------------
 # Scoring environment defaults (used to seed synthetic data and as fallbacks)

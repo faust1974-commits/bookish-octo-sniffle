@@ -61,8 +61,8 @@ def ts_delta(base_usage: float, new_usage: float) -> float:
 def redistribute_usage(profiles: list[UsageProfile], *,
                        target_total: float = 1.0,
                        exponent: float = K.USAGE_ABSORPTION_EXPONENT,
-                       floor: float = 0.06,
-                       ceiling: float = 0.42) -> pd.DataFrame:
+                       floor: float = K.USAGE_FLOOR,
+                       ceiling: float = K.USAGE_CEILING) -> pd.DataFrame:
     """Rebalance five players' usage so it sums to one possession.
 
     Every possession ends with exactly one player, so a lineup's usage shares

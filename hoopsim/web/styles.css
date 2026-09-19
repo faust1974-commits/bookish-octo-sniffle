@@ -103,7 +103,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .slot .remove { background: none; border: none; color: var(--muted); cursor: pointer; padding: 0 4px; }
 
 .result { font-family: var(--mono); font-size: 13px; }
-.bignum { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; font-family: var(--mono); }
+/* Prose inside the result block should read as prose, not as a data readout. */
+.result .hint, .result p { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: block; margin: 2px 0 10px; max-width: 46ch; line-height: 1.4; }
+.bignum { font-size: 32px; font-weight: 650; letter-spacing: -0.02em;
+  font-family: var(--mono); line-height: 1.1; }
 .pos-val { color: var(--good); }
 .neg-val { color: var(--bad); }
 .warning { color: var(--warn); font-size: 13px; margin-bottom: 8px; }
@@ -117,7 +121,8 @@ tbody tr:hover { background: var(--surface-2); }
 .scroll { overflow-x: auto; max-height: 620px; overflow-y: auto; }
 td.num, th.num { font-family: var(--mono); }
 
-.kv { display: grid; grid-template-columns: 1fr auto; gap: 2px 14px; font-family: var(--mono); font-size: 13px; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px;
+  font-family: var(--mono); font-size: 13px; max-width: 420px; }
 .kv .k { color: var(--muted); }
 .kv .v { text-align: right; }
 .kv .rule { grid-column: 1 / -1; border-top: 1px solid var(--border); margin: 4px 0; }

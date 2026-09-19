@@ -154,14 +154,10 @@ class LineupModel:
         self.profiles = profiles
         self.league_off_rating = float(league_off_rating)
         self.fit_weights = dict(K.LINEUP_FIT_WEIGHTS if fit_weights is None else fit_weights)
-        # A lineup needs at least one player meaningfully above average in
-        # each of these, or it has a hole in it.
-        self.coverage_thresholds = coverage_thresholds or {
-            "spacing": -0.15,
-            "playmaking": -0.25,
-            "rim_protection": -0.35,
-            "rebounding": -0.45,
-        }
+        self.coverage_thresholds = dict(
+            K.LINEUP_COVERAGE_THRESHOLDS if coverage_thresholds is None
+            else coverage_thresholds
+        )
 
     # -- construction -------------------------------------------------------
 
@@ -260,8 +256,9 @@ class LineupModel:
         playmaking = np.array([p.playmaking for p in squad], dtype=float)
         creation_spread = float(playmaking.std())
         redundancy = 0.0
-        if creation_spread < 0.35:
-            redundancy = K.LINEUP_REDUNDANCY_PENALTY * (0.35 - creation_spread)
+        if creation_spread < K.LINEUP_REDUNDANCY_THRESHOLD:
+            redundancy = K.LINEUP_REDUNDANCY_PENALTY * (
+                K.LINEUP_REDUNDANCY_THRESHOLD - creation_spread)
         coverage_penalty += redundancy
         fit_detail["redundancy"] = -redundancy
 

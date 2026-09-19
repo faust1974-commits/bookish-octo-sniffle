@@ -9,10 +9,42 @@ together, who should play how many minutes, who is actually good) and **game
 and season forecasting** (win probabilities, projected scores, win totals,
 playoff and title odds).
 
+## Three ways to run it, easiest first
+
+**1. Double-click a file.** `dist/hoopsim.html` is the whole thing in one
+file &mdash; data, styles, calculations. Put it on your desktop and open it.
+No install, no terminal, no internet connection. It is about 380 KB.
+
+**2. Double-click the launcher** (Mac). `Open hoopsim.command` sets itself up
+the first time, then starts the full Python version and opens your browser.
+It keeps everything it installs in a private folder beside the script.
+
+**3. The command line**, if you want the whole engine.
+
 ```bash
 pip install -e .
 hoopsim demo          # a full tour on generated data, no network needed
 hoopsim serve         # the browser interface
+```
+
+### How the single file stays honest
+
+The browser cannot run Python, so `web/engine.js` re-implements the lineup
+model in JavaScript. That is a real hazard: a silent divergence would make the
+file confidently wrong.
+
+Two things prevent it. Every tunable number is exported from `constants.py`
+into the file rather than retyped in JavaScript, so there is one source of
+truth &mdash; and a test asserts that no tunable is hardcoded on the JavaScript
+side. Then `tests/test_standalone.py` runs the JavaScript under node and
+compares it against the Python engine lineup by lineup: ratings to 1e-4, usage
+redistribution to 1e-6. If the two ever drift, the test fails.
+
+Rebuild it against any data with:
+
+```bash
+python build_standalone.py --out dist/hoopsim.html
+python build_standalone.py --source nba --season 2024-25 --out nba.html
 ```
 
 ---
@@ -246,8 +278,10 @@ src/hoopsim/
   sim/             win probability, game and season Monte Carlo, calibration
   splits/          the verticals engine
   cli.py  api.py   command line and HTTP server (standard library only)
-web/               browser interface, no build step, no dependencies
-tests/             194 tests
+build_standalone.py  packs everything into one double-clickable HTML file
+web/               browser interface and the JavaScript engine, no build step
+dist/hoopsim.html  the double-clickable build
+tests/             205 tests
 ```
 
 ## Development
@@ -261,4 +295,5 @@ The tests check identities rather than snapshots: PER averages exactly 15,
 defensive ratings average to the league offensive rating, usage shares sum to
 one possession per team, per-36 is exactly 1.5× per-24, minutes total 240,
 title probabilities sum to 1, the Monte Carlo agrees with the closed form, and
-RAPM recovers known ground truth. If a formula is wrong, those fail.
+RAPM recovers known ground truth, and the JavaScript engine agrees with
+the Python one. If a formula is wrong, those fail.
