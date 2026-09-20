@@ -119,13 +119,27 @@
   /* ------------------------------------------------------------ boot */
 
   function boot() {
-    $('#league-meta').textContent =
-      `${D.meta.season} · ${D.meta.source} · ${D.teams.length} teams · ` +
-      `${D.players.length} players · ${D.meta.n_games} games`;
-    $('#provenance').textContent =
-      `Generated ${D.meta.generated} by hoopsim ${D.meta.version} from ` +
-      `${D.meta.source} data. Everything in this file is computed locally — ` +
-      `it works with no internet connection and sends nothing anywhere.`;
+    const rs = D.meta.roster_season;
+    $('#league-meta').textContent = rs
+      ? `${rs} rosters · ${D.meta.season} numbers · ${D.teams.length} teams · ` +
+        `${D.players.length} players`
+      : `${D.meta.season} · ${D.meta.source} · ${D.teams.length} teams · ` +
+        `${D.players.length} players · ${D.meta.n_games} games`;
+
+    const c = D.meta.roster_counts;
+    const counts = c
+      ? ` Of ${c.players} players under contract, ${c.current} have ` +
+        `${D.meta.season} numbers, ${c.prior} last played in ` +
+        `${D.meta.fallback_season}, and ${c.unrated} have no NBA record yet.`
+      : '';
+    $('#provenance').textContent = (rs
+      ? `Rosters are ${rs}, as of ${D.meta.generated}. The ratings come from ` +
+        `games actually played in ${D.meta.season} — a trade moves a player, ` +
+        `not his production.${counts} `
+      : `Generated ${D.meta.generated} by hoopsim ${D.meta.version} from ` +
+        `${D.meta.source} data. `) +
+      `Everything in this file is computed locally — it works with no ` +
+      `internet connection and sends nothing anywhere.`;
 
     const teamItems = D.teams.map(t => ({
       value: t.team_id, label: `${t.team_abbrev} — ${t.team_name}`,
@@ -192,7 +206,8 @@
 
   function teamPlayers(teamId) {
     return D.players.filter(p => p.team_id === teamId)
-      .sort((a, b) => (b.min || 0) - (a.min || 0));
+      .sort((a, b) => (a.unrated ? 1 : 0) - (b.unrated ? 1 : 0)
+        || (b.min || 0) - (a.min || 0));
   }
 
   function renderRoster() {
@@ -205,10 +220,22 @@
     }
     roster.forEach((p) => {
       const row = el('div', 'player-row' + (S.lineup.includes(p.player_id) ? ' selected' : ''));
-      row.appendChild(el('span', 'nm', p.name));
+      const nm = el('span', 'nm', p.name);
+      if (p.unrated) {
+        nm.appendChild(el('span', 'vintage unrated', 'no NBA record'));
+      } else if (p.data_season && p.data_season !== D.meta.season) {
+        const tag = el('span', 'vintage', p.data_season);
+        tag.title = `Did not play in ${D.meta.season}; these are his ` +
+          `${p.data_season} numbers.`;
+        nm.appendChild(tag);
+      }
+      row.appendChild(nm);
       row.appendChild(el('span', 'pos', p.position));
       const imp = el('span', 'num ' + cls(p.impact), signed(p.impact, 1));
-      imp.title = 'impact: points per 100 possessions versus an average player';
+      imp.title = p.unrated
+        ? 'He has never played an NBA possession. Shown at replacement level ' +
+          'because that is the least-wrong placeholder, not a projection.'
+        : 'impact: points per 100 possessions versus an average player';
       row.appendChild(imp);
       const usg = el('span', 'num', (p.usage * 100).toFixed(1) + '%');
       usg.title = 'usage: share of the team’s possessions he ends';

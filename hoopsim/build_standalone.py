@@ -43,6 +43,10 @@ STANDALONE_CSS = """
 .provenance { color: var(--muted); font-size: 12px; margin-top: 24px;
   border-top: 1px solid var(--border); padding-top: 12px; }
 .empty { color: var(--muted); font-size: 14px; padding: 18px 0; text-align: center; }
+.vintage { font-size: 10px; text-transform: uppercase; letter-spacing: .04em;
+  margin-left: 6px; padding: 1px 5px; border-radius: 3px; vertical-align: 1px;
+  background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+.vintage.unrated { border-style: dashed; }
 """
 
 #: Counting stats the browser can put on any rate basis.
@@ -88,6 +92,14 @@ def _clean(value, digits: int = 4):
     if isinstance(value, (np.floating, float)):
         f = float(value)
         return None if (math.isnan(f) or math.isinf(f)) else round(f, digits)
+    # A Series or array reaching here means a lookup matched more than one row
+    # -- a player with two team rows, say. `str()` would quietly turn that into
+    # a multi-line string that is still valid JSON, so the file ships looking
+    # fine and reads as nonsense. Fail the build instead.
+    if hasattr(value, "__len__") and not isinstance(value, (str, bytes)):
+        raise TypeError(
+            f"expected one value per field, got {type(value).__name__} with "
+            f"{len(value)} entries: {value!r:.120}")
     return str(value)
 
 
@@ -129,8 +141,84 @@ def export_constants(model) -> dict:
     }
 
 
-def build_payload(analysis: Analysis, *, splits: bool = True) -> dict:
-    """Everything the standalone file needs, as one JSON-serialisable dict."""
+#: Skills a player with no NBA record is shown at: dead average, which is
+#: the honest encoding of "we do not know", not a guess at how good he is.
+UNKNOWN_SKILLS = ("spacing", "rim_pressure", "playmaking", "rebounding",
+                  "rim_protection")
+
+
+def _replacement_profile(players: list[dict]) -> dict:
+    """What to show for a player the league has no record of.
+
+    A rookie or a camp invitee has never taken an NBA possession, so any
+    number attached to him is invented. The least-wrong placeholder is
+    replacement level -- the impact of the marginal rotation player -- with
+    average skills and a modest usage, clearly labelled in the interface so
+    nobody mistakes it for a projection.
+    """
+    rated = sorted(p["impact"] for p in players
+                   if p.get("min", 0) and p["min"] >= 500 and p.get("impact") is not None)
+    if not rated:
+        replacement = -2.0
+    else:
+        replacement = rated[max(0, int(len(rated) * 0.10) - 1)]
+    entry = {"impact": _clean(replacement, MODEL_DIGITS),
+             "off_impact": _clean(replacement * 0.6, MODEL_DIGITS),
+             "def_impact": _clean(replacement * 0.4, MODEL_DIGITS),
+             "usage": 0.18, "ts_pct": 0.54}
+    for skill in UNKNOWN_SKILLS:
+        entry[skill] = 0.0
+    return entry
+
+
+def _rebuild_on_rosters(players, fallback_entries, roster_frame,
+                        analysis, fallback):
+    """Re-key the player list on today's rosters. Returns (players, report)."""
+    import pandas as pd
+
+    from hoopsim.data import rosters as R
+
+    def to_frame(entries, season):
+        frame = pd.DataFrame(entries).rename(columns={"name": "player_name"})
+        frame["season"] = season
+        return frame
+
+    current = to_frame(players, analysis.league.season)
+    prior = (to_frame(fallback_entries, fallback.league.season)
+             if fallback_entries else None)
+
+    joined, report = R.apply_rosters(current, analysis.teams, roster_frame,
+                                     fallback=prior)
+
+    unknown = _replacement_profile(players)
+    out = []
+    for row in joined.to_dict("records"):
+        entry = {k: (None if _is_missing(v) else v) for k, v in row.items()}
+        entry["name"] = entry.pop("player_name")
+        entry["team_id"] = str(entry["team_id"])
+        entry["player_id"] = str(entry["player_id"])
+        # The roster's listed position is the current truth; the refined one
+        # from play style is better where we have a season of it to refine.
+        if not entry.get("has_data") or not entry.get("position"):
+            entry["position"] = entry.get("roster_position") or "SF"
+        if not entry.get("has_data"):
+            entry.update(unknown)
+            entry["unrated"] = True
+        entry.pop("roster_position", None)
+        out.append(entry)
+    return out, report
+
+
+def _is_missing(value) -> bool:
+    try:
+        import pandas as pd
+        return bool(pd.isna(value))
+    except (TypeError, ValueError):
+        return False
+
+
+def player_entries(analysis: Analysis) -> list[dict]:
+    """One dict per player with a usable record, in payload form."""
     model = analysis.lineup_model
     metrics = analysis.players.set_index("player_id")
     rapm = None
@@ -170,6 +258,26 @@ def build_payload(analysis: Analysis, *, splits: bool = True) -> dict:
             entry["rapm_def"] = _clean(rapm.loc[pid, "rapm_def"], 3)
             entry["rapm_poss"] = _clean(rapm.loc[pid, "possessions"], 0)
         players.append(entry)
+    return players
+
+
+def build_payload(analysis: Analysis, *, splits: bool = True,
+                  roster_frame=None, fallback: Analysis | None = None) -> dict:
+    """Everything the standalone file needs, as one JSON-serialisable dict.
+
+    With `roster_frame`, the player list is rebuilt around who is on an NBA
+    roster today rather than who played last season. The numbers still come
+    from games actually played -- a trade changes a player's team, not his
+    production -- but the teams, ages and positions are current, and players
+    who have left the league are gone.
+    """
+    model = analysis.lineup_model
+    players = player_entries(analysis)
+    report = None
+    if roster_frame is not None:
+        fallback_entries = player_entries(fallback) if fallback is not None else None
+        players, report = _rebuild_on_rosters(
+            players, fallback_entries, roster_frame, analysis, fallback)
 
     teams_frame = analysis.teams
     teams = []
@@ -211,6 +319,17 @@ def build_payload(analysis: Analysis, *, splits: bool = True) -> dict:
             "league_off_rating": _clean(model.league_off_rating, MODEL_DIGITS),
             "has_pbp": bool(analysis.league.has_pbp),
             "n_games": int(len(analysis.league.games)),
+            # Where the rosters came from, and where the numbers came from.
+            # These are different questions and the interface says so.
+            "roster_season": report.season if report else None,
+            "fallback_season": (fallback.league.season if fallback else None),
+            "roster_counts": ({
+                "players": report.roster_players,
+                "current": report.matched,
+                "prior": report.fallback,
+                "unrated": report.no_data,
+                "dropped": report.dropped,
+            } if report else None),
         },
         "constants": export_constants(model),
         "count_columns": COUNT_COLUMNS,
@@ -261,6 +380,14 @@ def main(argv=None) -> int:
     parser.add_argument("--no-splits", action="store_true")
     parser.add_argument("--no-refit", action="store_true",
                         help="skip refitting the box model against RAPM")
+    parser.add_argument("--rosters", default="current",
+                        help="roster season to build around (default: whichever "
+                             "season the league year is currently in), or 'off' "
+                             "to leave players on last season's teams")
+    parser.add_argument("--fallback-season", default="auto",
+                        help="season to fall back on for players who did not "
+                             "appear in --season at all, e.g. a full year lost "
+                             "to injury; 'off' to skip")
     args = parser.parse_args(argv)
 
     print(f"loading {args.source} data ...", flush=True)
@@ -287,7 +414,44 @@ def main(argv=None) -> int:
                   flush=True)
         except (ValueError, KeyError) as exc:
             print(f"  box refit skipped: {exc}", flush=True)
-    payload = build_payload(analysis, splits=not args.no_splits)
+    roster_frame = None
+    fallback = None
+    if args.rosters != "off":
+        from hoopsim.data import rosters as R
+
+        season = R.current_season() if args.rosters == "current" else args.rosters
+        print(f"fetching {season} rosters ...", flush=True)
+        roster_frame = R.fetch(season)
+        print(f"  {len(roster_frame)} players on "
+              f"{roster_frame['team_abbrev'].nunique()} rosters", flush=True)
+
+        if args.fallback_season != "off":
+            prior = args.fallback_season
+            if prior == "auto":
+                head = int(args.season.split("-")[0]) - 1
+                prior = f"{head}-{str(head + 1)[2:]}"
+            print(f"loading {prior} as a fallback for players who missed "
+                  f"{args.season} ...", flush=True)
+            try:
+                fallback = Analysis.from_nba_github(prior)
+                if not args.no_refit and fallback.league.has_pbp:
+                    try:
+                        fallback.refit_box_impact()
+                    except (ValueError, KeyError):
+                        pass
+            except Exception as exc:  # a missing season is not fatal
+                print(f"  fallback unavailable: {exc}", flush=True)
+                fallback = None
+
+    payload = build_payload(analysis, splits=not args.no_splits,
+                            roster_frame=roster_frame, fallback=fallback)
+    counts = payload["meta"].get("roster_counts")
+    if counts:
+        print(f"  rosters: {counts['current']} with {args.season} numbers, "
+              f"{counts['prior']} from the prior season, "
+              f"{counts['unrated']} with no NBA record, "
+              f"{counts['dropped']} last-season players no longer rostered",
+              flush=True)
 
     out = Path(args.out)
     out.write_text(render(payload), encoding="utf-8")

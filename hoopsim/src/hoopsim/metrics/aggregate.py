@@ -90,16 +90,60 @@ def league_totals(team_season: pd.DataFrame) -> dict:
     return lg
 
 
+def blend_team_context(stints: pd.DataFrame, teams: pd.DataFrame) -> pd.DataFrame:
+    """Collapse a traded player's stints into one season of team context.
+
+    A player who changes teams mid-season has one row per team, and every
+    per-team row carries that team's totals as the denominator for his rates.
+    Summing his counting stats is easy; the denominators are the problem.
+
+    The answer is a minutes-weighted blend: two-thirds of a season in Utah and
+    one-third in Los Angeles gives a denominator two-thirds Utah's pace and
+    one-third Los Angeles's -- which is, exactly, the team context he actually
+    played in. His primary team is the one he played the most minutes for.
+    """
+    weights = stints[["player_id", "team_id", "min"]].copy()
+    total = weights.groupby("player_id")["min"].transform("sum")
+    # A player with zero recorded minutes across every stint would divide by
+    # zero; weight his stints equally instead.
+    weights["w"] = np.where(total > 0, weights["min"] / total.replace(0, np.nan), np.nan)
+    weights["w"] = weights["w"].fillna(
+        1.0 / weights.groupby("player_id")["team_id"].transform("count"))
+
+    primary = (weights.sort_values(["player_id", "min"], ascending=[True, False])
+               .drop_duplicates("player_id")[["player_id", "team_id"]])
+
+    context = weights.merge(teams, on="team_id", how="left")
+    value_cols = [c for c in teams.columns if c != "team_id"]
+    for c in value_cols:
+        context[c] = context[c] * context["w"]
+    blended = context.groupby("player_id", as_index=False)[value_cols].sum()
+    return blended.merge(primary, on="player_id", how="left")
+
+
 def player_season(league, *, by=("player_id", "team_id"),
+                  combine_stints: bool = False,
                   box: pd.DataFrame | None = None) -> pd.DataFrame:
     """Player totals joined to their team's and opponents' totals.
 
     This is the frame every box-score metric in `metrics.box` consumes.
+
+    With `combine_stints`, a player traded mid-season comes back as one row
+    for the whole season rather than one per team. Without it, a lineup tool
+    keyed on player id silently keeps whichever stint happened to be last --
+    so Tyus Jones, who played for three teams, would be rated on the 94
+    minutes of one of them instead of the 1,023 he actually played.
     """
     box = league.box if box is None else box
-    players = player_totals(box, by=by)
     teams = team_totals(league.team_box)
-    out = players.merge(teams, on="team_id", how="left")
+    if combine_stints:
+        stints = player_totals(box, by=["player_id", "team_id"])
+        players = player_totals(box, by=["player_id"])
+        out = players.merge(blend_team_context(stints, teams),
+                            on="player_id", how="left")
+    else:
+        players = player_totals(box, by=by)
+        out = players.merge(teams, on="team_id", how="left")
     # `position_raw` carries the feed's own label (often only G/F/C) so the
     # lineup model can sharpen it later; dropping it here would silently
     # disable that.

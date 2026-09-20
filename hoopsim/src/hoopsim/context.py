@@ -88,7 +88,9 @@ class Analysis:
         from .metrics import add_player_possessions, player_season
         from .metrics.box import add_all
 
-        base = player_season(self.league)
+        # One row per player, not one per player-team: a mid-season trade
+        # must not split a career into halves that each look like a bench guy.
+        base = player_season(self.league, combine_stints=True)
         out = add_all(base, self.league_totals, self._overrides.get("box_impact_coefs"))
         return add_player_possessions(out)
 

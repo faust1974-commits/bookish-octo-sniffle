@@ -251,6 +251,42 @@ team-games.
 official endpoint. It is written and documented but **could not be exercised
 here** — this environment's network policy blocks that host.
 
+**`rosters.py`** answers a different question from all of these, and keeping
+the two apart is the point. A season dump says what a player did and who he
+did it for; it cannot say he was traded in July. Build a lineup tool from the
+dump alone and it shows last season's teams — Giannis in Milwaukee, Herro in
+Miami — months after both moved, which is exactly the bug this module exists
+to fix.
+
+So roster membership comes from its own feed on its own clock: ESPN's daily
+team-roster scrape, mirrored per season by
+[hoopR-nba-data](https://github.com/sportsdataverse/hoopR-nba-data). It is one
+small file, refreshed daily, and it also supplies the age and listed position
+the play-by-play dumps leave blank.
+
+The two feeds share no player id, so they join on a normalised name — accents,
+punctuation, generational suffixes and hyphens stripped. That is the weak link
+and it is handled explicitly: a key matching two players is refused rather than
+guessed, and every unmatched player is counted rather than dropped in silence.
+
+Three outcomes, all labelled in the interface:
+
+* **Played last season** — his own numbers, his current team.
+* **Missed last season entirely** — an achilles or an ACL costs a full year,
+  and Haliburton, Lillard and VanVleet are all on rosters with no 2025-26 row
+  at all. They fall back to the prior season, tagged with the year it came from
+  rather than passed off as current.
+* **No NBA record yet** — the 74 rookies. They are shown at replacement level,
+  badged "no NBA record", because a placeholder you can see is better than a
+  number that looks like a projection.
+
+```python
+from hoopsim.data import rosters
+
+rosters.current_season()          # '2026-27' from 1 July onward
+frame = rosters.fetch()           # today's rosters, cached six hours
+```
+
 **`CSVSource`** reads a directory of canonical CSVs — the escape hatch for
 Kaggle dumps, paid-feed exports or your own scrapes.
 
@@ -265,6 +301,13 @@ a = Analysis.synthetic(n_teams=30, games_per_team=82)
 ---
 
 ## Honest limitations
+
+- **Ratings are last season's; rosters are today's.** There is no way around
+  this in September: the 2026-27 season opens on 20 October 2026 and nobody has
+  played a possession yet. A player traded in July carries his old team's
+  numbers to his new team, which is the right call for a veteran and a poor one
+  for a rookie or a player whose role is about to change completely. Once games
+  are played the same feed carries them, and a rebuild picks them up.
 
 - **The synthetic league is not real basketball.** Its four factors, pace,
   offensive rating and home-court advantage all match NBA values closely, but
