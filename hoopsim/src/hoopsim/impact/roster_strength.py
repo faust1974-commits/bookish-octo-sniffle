@@ -68,24 +68,46 @@ def project_minutes(minutes_per_game: np.ndarray) -> np.ndarray:
     return out
 
 
-def raw_strength(frame: pd.DataFrame) -> tuple[float, float]:
+def raw_strength(frame: pd.DataFrame, minutes: np.ndarray | None = None,
+                 replacement: tuple[float, float] = (0.0, 0.0),
+                 ) -> tuple[float, float]:
     """Uncalibrated (offense, defense) for one roster, in points per 100.
 
     `frame` needs `off_impact`, `def_impact`, `min` and `games`.
+
+    `minutes` is a hand-set rotation. Last season's minutes are a guess, and
+    a poor one as soon as a player changes team or role, so a caller who
+    knows better can say so.
+
+    Minutes nobody is assigned are not free: sit a star down and somebody
+    plays those minutes, and that somebody is the end of the bench. They are
+    charged at `replacement` rather than handed to the remaining starters,
+    which would make benching a team's best player nearly costless.
     """
     if frame.empty:
         return 0.0, 0.0
-    games = frame["games"].to_numpy(dtype=float)
-    mpg = np.divide(frame["min"].to_numpy(dtype=float), games,
-                    out=np.zeros(len(frame)), where=games > 0)
-    allocated = project_minutes(mpg)
-    if allocated.sum() <= 0:
+    if minutes is None:
+        games = frame["games"].to_numpy(dtype=float)
+        mpg = np.divide(frame["min"].to_numpy(dtype=float), games,
+                        out=np.zeros(len(frame)), where=games > 0)
+        allocated = project_minutes(mpg)
+    else:
+        allocated = np.asarray(minutes, dtype=float)
+    allocated = np.where(np.isfinite(allocated) & (allocated > 0), allocated, 0.0)
+
+    total = float(allocated.sum())
+    if total <= 0:
         return 0.0, 0.0
 
-    share = allocated / TEAM_MINUTES * K.PLAYERS_ON_FLOOR
+    scale = TEAM_MINUTES / total if total > TEAM_MINUTES else 1.0
+    shortfall = max(0.0, TEAM_MINUTES - total)
+
+    share = allocated * scale / TEAM_MINUTES * K.PLAYERS_ON_FLOOR
     off = float(np.nansum(share * frame["off_impact"].to_numpy(dtype=float)))
     dfn = float(np.nansum(share * frame["def_impact"].to_numpy(dtype=float)))
-    return off, dfn
+
+    spare = shortfall / TEAM_MINUTES * K.PLAYERS_ON_FLOOR
+    return off + spare * replacement[0], dfn + spare * replacement[1]
 
 
 def calibrate(players: pd.DataFrame, team_ratings: pd.DataFrame) -> dict:
@@ -120,7 +142,9 @@ def calibrate(players: pd.DataFrame, team_ratings: pd.DataFrame) -> dict:
     }
 
 
-def team_strength(frame: pd.DataFrame, calibration: dict) -> dict:
+def team_strength(frame: pd.DataFrame, calibration: dict,
+                  minutes: np.ndarray | None = None,
+                  replacement: tuple[float, float] = (0.0, 0.0)) -> dict:
     """Calibrated offense, defense and net for one roster.
 
     The calibration is fitted on net rating, so the slope applies to both
@@ -129,7 +153,7 @@ def team_strength(frame: pd.DataFrame, calibration: dict) -> dict:
     are both a point of net rating, but they have opposite signs on the
     scoreboard.
     """
-    off, dfn = raw_strength(frame)
+    off, dfn = raw_strength(frame, minutes, replacement)
     slope = calibration["slope"]
     half = calibration["intercept"] / 2.0
     return {

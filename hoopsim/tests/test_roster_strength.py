@@ -129,3 +129,45 @@ def test_calibration_scales_the_answer():
                 "residual_sd": 0.0, "n_teams": 30}
     roster = _roster([[5.0, 3.0, 2400.0, 80]] * 8)
     assert team_strength(roster, cal_flat)["net"] == pytest.approx(0.0)
+
+
+# -- hand-set rotations -----------------------------------------------------
+
+def test_a_hand_set_rotation_overrides_last_season():
+    roster = _roster([[4.0, 2.0, 2400.0, 80], [0.0, 0.0, 2400.0, 80]])
+    # Last season says they split the minutes; the caller says otherwise.
+    heavy_star = raw_strength(roster, np.array([200.0, 40.0]), (0.0, 0.0))
+    heavy_scrub = raw_strength(roster, np.array([40.0, 200.0]), (0.0, 0.0))
+    assert heavy_star[0] > heavy_scrub[0]
+
+
+def test_unassigned_minutes_go_to_a_replacement_player():
+    # Benching the best player must actually cost something. Spreading his
+    # minutes over the rest of the starters would make it nearly free.
+    roster = _roster([[6.0, 3.0, 2400.0, 80]] + [[1.0, 0.5, 2000.0, 80]] * 4)
+    full = raw_strength(roster, np.array([48.0, 48.0, 48.0, 48.0, 48.0]),
+                        (-0.4, -0.3))
+    benched = raw_strength(roster, np.array([0.0, 48.0, 48.0, 48.0, 48.0]),
+                           (-0.4, -0.3))
+    assert benched[0] < full[0]
+    assert benched[1] < full[1]
+    # And the drop is real, not a rounding artefact.
+    assert full[0] - benched[0] > 1.0
+
+
+def test_over_assigned_minutes_are_scaled_back_not_counted_twice():
+    roster = _roster([[3.0, 1.0, 2000.0, 80]] * 5)
+    exact = raw_strength(roster, np.array([48.0] * 5), (-0.4, -0.3))
+    doubled = raw_strength(roster, np.array([96.0] * 5), (-0.4, -0.3))
+    # Doubling everyone's minutes describes the same team, not one twice as good.
+    assert doubled[0] == pytest.approx(exact[0], abs=1e-9)
+
+
+def test_replacement_only_fills_what_is_missing():
+    roster = _roster([[2.0, 1.0, 2000.0, 80]] * 5)
+    none_missing = raw_strength(roster, np.array([48.0] * 5), (-5.0, -5.0))
+    half_missing = raw_strength(roster, np.array([24.0] * 5), (-5.0, -5.0))
+    # With nobody missing the replacement level cannot matter at all.
+    assert none_missing == pytest.approx(raw_strength(
+        roster, np.array([48.0] * 5), (0.0, 0.0)))
+    assert half_missing[0] < none_missing[0]

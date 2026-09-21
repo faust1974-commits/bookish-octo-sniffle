@@ -341,18 +341,46 @@
     return out;
   }
 
-  /** Uncalibrated offence and defence for a roster, in points per 100. */
-  function rawStrength(K, roster) {
+  /**
+   * Uncalibrated offence and defence for a roster, in points per 100.
+   *
+   * `allocated` is the minutes each player is expected to play. Pass it when
+   * a person has set the rotation by hand -- last season's minutes are a
+   * guess, and a wrong one as soon as anybody changes teams or role. Omit it
+   * and the minutes are projected from last season.
+   *
+   * Whatever comes in is scaled to a full game, so a rotation that adds to
+   * 260 minutes describes the same team as one that adds to 240; only the
+   * proportions matter.
+   */
+  function rawStrength(K, roster, allocated) {
     if (!roster.length) return { off: 0, def: 0 };
-    const mpg = roster.map(p => (p.games > 0 ? p.min / p.games : 0));
-    const allocated = projectMinutes(K, mpg);
-    if (allocated.reduce((a, b) => a + b, 0) <= 0) return { off: 0, def: 0 };
+    let mins = allocated;
+    if (!mins) {
+      mins = projectMinutes(K, roster.map(p => (p.games > 0 ? p.min / p.games : 0)));
+    }
+    const total = mins.reduce((a, b) => a + (b > 0 ? b : 0), 0);
+    if (total <= 0) return { off: 0, def: 0 };
+
+    // Minutes nobody has been assigned are not free. Sit a star down and
+    // somebody has to play those minutes, and that somebody is the end of
+    // the bench -- not a proportionally larger helping of the other four
+    // starters. Scaling everyone up instead would mean benching the best
+    // player on a team barely cost it anything, which is nonsense.
+    const full = K.team_minutes;
+    const scale = total > full ? full / total : 1;   // over-assigned: scale back
+    const shortfall = Math.max(0, full - total);
+
     let off = 0, def = 0;
     for (let i = 0; i < roster.length; i++) {
-      const share = allocated[i] / K.team_minutes * K.players_on_floor;
+      const m = (mins[i] > 0 ? mins[i] : 0) * scale;
+      const share = (m / full) * K.players_on_floor;
       off += share * (roster[i].off_impact || 0);
       def += share * (roster[i].def_impact || 0);
     }
+    const spare = (shortfall / full) * K.players_on_floor;
+    off += spare * (K.replacement_off || 0);
+    def += spare * (K.replacement_def || 0);
     return { off: off, def: def };
   }
 
@@ -361,10 +389,10 @@
    * league's own net ratings, so the slope applies to both halves and the
    * intercept -- a whole-team offset -- is split between them.
    */
-  function teamStrength(payload, roster) {
+  function teamStrength(payload, roster, allocated) {
     const K = payload.constants;
     const cal = K.roster_strength;
-    const raw = rawStrength(K, roster);
+    const raw = rawStrength(K, roster, allocated);
     const half = cal.intercept / 2;
     return {
       off: cal.slope * raw.off + half,

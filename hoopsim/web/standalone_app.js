@@ -13,7 +13,7 @@
   for (const t of D.teams) teamsById[t.team_id] = t;
 
   const S = { lineup: [], team: null, sort: {}, rapmMode: false,
-              moves: {}, undo: [], rosterA: null, rosterB: null };
+              moves: {}, minutes: {}, undo: [], rosterA: null, rosterB: null };
 
   /* ------------------------------------------------- roster overrides */
 
@@ -26,6 +26,7 @@
    * blocked site data), so every read and write is guarded and the page
    * works fine without it -- it just forgets between sessions. */
   const MOVES_KEY = 'hoopsim.rosters.v1';
+  const MINUTES_KEY = 'hoopsim.minutes.v1';
 
   function loadMoves() {
     try {
@@ -44,6 +45,51 @@
 
   function saveMoves() {
     try { localStorage.setItem(MOVES_KEY, JSON.stringify(S.moves)); } catch (e) { /* fine */ }
+  }
+
+  /* Minutes projected from last season are a guess, and a bad one the moment
+   * anybody changes team or role. A person who follows the league knows the
+   * rotation better than the arithmetic does, so they can set it. */
+  function loadMinutes() {
+    try {
+      const raw = localStorage.getItem(MINUTES_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || typeof parsed !== 'object') return {};
+      const clean = {};
+      for (const [pid, m] of Object.entries(parsed)) {
+        const v = Number(m);
+        if (D.playersById[pid] && Number.isFinite(v) && v >= 0 && v <= 48) {
+          clean[pid] = v;
+        }
+      }
+      return clean;
+    } catch (e) { return {}; }
+  }
+
+  function saveMinutes() {
+    try { localStorage.setItem(MINUTES_KEY, JSON.stringify(S.minutes)); } catch (e) { /* fine */ }
+  }
+
+  function setMinutes(pid, value) {
+    const v = Number(value);
+    if (!Number.isFinite(v) || v < 0) return false;
+    S.minutes[pid] = Math.min(48, v);
+    saveMinutes();
+    return true;
+  }
+
+  /* One source of truth for a team's rotation: who is on it, and how many
+   * minutes each of them plays. Everything downstream -- team strength,
+   * standings, playoff odds, the skill profile -- is built from this, so a
+   * minutes edit moves all of them at once. */
+  function rotationOf(teamId) {
+    const roster = rosterOf(teamId);
+    const projected = E.projectMinutes(K,
+      roster.map(p => (p.games > 0 ? p.min / p.games : 0)));
+    const minutes = roster.map((p, i) => (
+      Object.prototype.hasOwnProperty.call(S.minutes, p.player_id)
+        ? S.minutes[p.player_id] : projected[i]));
+    return { roster: roster, minutes: minutes, projected: projected };
   }
 
   /** The team a player is on right now, override included. '' means no team. */
@@ -80,6 +126,18 @@
     loadCompare();
     loadUpcoming();
     updateEditFlag();
+  }
+
+  /* A minutes edit changes the same things a trade does, so it refreshes the
+   * same screens. */
+  function afterRotationChange() {
+    loadTeam();
+    loadTeams();
+    loadSeason();
+    loadRankings();
+    loadCompare();
+    loadUpcoming();
+    evaluate();
   }
 
   function editCount() { return Object.keys(S.moves).length; }
@@ -287,6 +345,7 @@
     $('#run-game').addEventListener('click', runGame);
 
     S.moves = loadMoves();
+    S.minutes = loadMinutes();
     setupRosterEditor();
 
     S.team = D.teams[0].team_id;
@@ -821,7 +880,8 @@
    * on it can read as a mediocre defence. */
   function projectedTeams() {
     return D.teams.map((t) => {
-      const s = E.teamStrength(D, rosterOf(t.team_id));
+      const r = rotationOf(t.team_id);
+      const s = E.teamStrength(D, r.roster, r.minutes);
       const lg = D.meta.league_off_rating;
       return Object.assign({}, t, {
         // Put both halves on the familiar scale: points scored and points
@@ -1180,11 +1240,9 @@
 
   /** Minutes-weighted skill profile for a roster, versus a league average. */
   function teamProfile(teamId) {
-    const roster = rosterOf(teamId);
+    const { roster, minutes: mins } = rotationOf(teamId);
     if (!roster.length) return null;
-    const mpg = roster.map(p => (p.games > 0 ? p.min / p.games : 0));
-    const mins = E.projectMinutes(K, mpg);
-    const total = mins.reduce((a, b) => a + b, 0) || 1;
+    const total = mins.reduce((a, b) => a + (b > 0 ? b : 0), 0) || 1;
     const out = {};
     for (const k of Object.keys(SKILL_LABELS)) {
       let v = 0;
@@ -1196,12 +1254,12 @@
 
   /** Roster sorted by projected minutes, with those minutes attached. */
   function rotation(teamId) {
-    const roster = rosterOf(teamId);
-    const mpg = roster.map(p => (p.games > 0 ? p.min / p.games : 0));
-    const mins = E.projectMinutes(K, mpg);
-    return roster.map((p, i) => Object.assign({}, p, { proj_min: mins[i] }))
-      .filter(p => p.proj_min > 0.5)
-      .sort((a, b) => b.proj_min - a.proj_min);
+    const { roster, minutes, projected } = rotationOf(teamId);
+    return roster.map((p, i) => Object.assign({}, p, {
+      proj_min: minutes[i],
+      auto_min: projected[i],
+      edited: Object.prototype.hasOwnProperty.call(S.minutes, p.player_id),
+    })).sort((a, b) => b.proj_min - a.proj_min);
   }
 
   /* Say it in words. A table of decimals is not an answer to "are they any
@@ -1281,6 +1339,26 @@
     if (!rot.length) {
       depth.appendChild(el('p', 'empty', 'Nobody on this roster has a record to project from.'));
     } else {
+      const total = rot.reduce((a, p) => a + p.proj_min, 0);
+      const bar = el('div', 'controls');
+      const tally = el('span', 'hint');
+      tally.textContent = `${total.toFixed(0)} of 240 minutes assigned` +
+        (Math.abs(total - 240) > 2
+          ? ' — the shares are what matter, so this is scaled to a full game.'
+          : '');
+      if (Math.abs(total - 240) > 2) tally.style.color = 'var(--warn)';
+      bar.appendChild(tally);
+      const reset = el('button', 'ghost', 'Reset minutes');
+      reset.disabled = !rot.some(p => p.edited);
+      reset.addEventListener('click', () => {
+        for (const p of rot) delete S.minutes[p.player_id];
+        saveMinutes();
+        afterRotationChange();
+        toast('Minutes back to projected.');
+      });
+      bar.appendChild(reset);
+      depth.appendChild(bar);
+
       for (const pos of K.positions) {
         const group = rot.filter(p => p.position === pos);
         if (!group.length) continue;
@@ -1288,9 +1366,24 @@
         h.appendChild(el('span', 'k', pos));
         const list = el('div');
         for (const p of group) {
-          const line = el('div', 'player-row');
+          const line = el('div', 'player-row' + (p.edited ? ' selected' : ''));
           line.appendChild(el('span', 'nm', p.name));
-          line.appendChild(el('span', 'num', p.proj_min.toFixed(1) + ' min'));
+
+          // Minutes are an input, not a verdict. Set a player to 0 and he is
+          // out of the rotation; everything downstream follows.
+          const box = document.createElement('input');
+          box.type = 'number'; box.min = '0'; box.max = '48'; box.step = '1';
+          box.value = p.proj_min.toFixed(0);
+          box.className = 'mins';
+          box.title = p.edited
+            ? `You set this. Projected from last season: ${p.auto_min.toFixed(1)}.`
+            : 'Projected from last season. Type over it to set the rotation yourself.';
+          box.addEventListener('change', () => {
+            if (setMinutes(p.player_id, box.value)) afterRotationChange();
+          });
+          box.addEventListener('click', (e) => e.stopPropagation());
+          line.appendChild(box);
+
           const per = el('span', 'num', p.per === null || p.per === undefined
             ? '—' : p.per.toFixed(1) + ' PER');
           per.title = 'Player efficiency rating. League average is 15.';
@@ -1360,7 +1453,10 @@
   /** Net rating per team, from whoever is on the roster right now. */
   function strengthMap() {
     const out = {};
-    for (const t of D.teams) out[t.team_id] = E.teamStrength(D, rosterOf(t.team_id)).net;
+    for (const t of D.teams) {
+      const r = rotationOf(t.team_id);
+      out[t.team_id] = E.teamStrength(D, r.roster, r.minutes).net;
+    }
     return out;
   }
 
@@ -1481,8 +1577,9 @@
     const mount = $('#game-result');
     mount.innerHTML = '<div class="spinner">simulating…</div>';
     setTimeout(() => {
-      const hr = E.teamStrength(D, rosterOf(home)).net;
-      const ar = E.teamStrength(D, rosterOf(away)).net;
+      const rh = rotationOf(home), ra = rotationOf(away);
+      const hr = E.teamStrength(D, rh.roster, rh.minutes).net;
+      const ar = E.teamStrength(D, ra.roster, ra.minutes).net;
       const res = E.simulateGame(D, hr, ar, 10000, 7);
       const analytic = E.winProbability(K, hr, ar);
       mount.innerHTML = '';

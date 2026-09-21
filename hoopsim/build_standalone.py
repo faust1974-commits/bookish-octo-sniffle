@@ -84,6 +84,10 @@ STANDALONE_CSS = """
 .cmp .side.win { background: var(--accent-soft); font-weight: 600; }
 .cmp .head { font-size: 16px; font-weight: 650; padding-bottom: 6px;
   border-bottom: 1px solid var(--border); margin-bottom: 6px; }
+
+/* Editable rotation minutes. */
+input.mins { width: 54px; font-family: var(--mono); font-size: 13px;
+  text-align: right; padding: 3px 6px; }
 """
 
 #: Counting stats the browser can put on any rate basis.
@@ -140,7 +144,7 @@ def _clean(value, digits: int = 4):
     return str(value)
 
 
-def export_constants(model, calibration: dict) -> dict:
+def export_constants(model, calibration: dict, replacement: dict) -> dict:
     """Every tunable the browser engine needs, straight from constants.py.
 
     Exported rather than retyped so the JavaScript cannot drift from Python.
@@ -181,6 +185,9 @@ def export_constants(model, calibration: dict) -> dict:
         # Fitted against this league's own net ratings, never typed by hand.
         "roster_strength": calibration,
         "games_per_season": K.GAMES_PER_SEASON,
+        # Who plays the minutes nobody has been assigned.
+        "replacement_off": replacement["off_impact"],
+        "replacement_def": replacement["def_impact"],
         "team_strength_sd": K.TEAM_STRENGTH_SD,
     }
 
@@ -382,6 +389,7 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
     # the roster join moves anybody: the calibration has to be learned on the
     # teams that actually played the games.
     calibration = _fit_strength(analysis, players)
+    replacement = _replacement_profile(players)
 
     report = None
     if roster_frame is not None:
@@ -457,7 +465,7 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
                 "dropped": report.dropped,
             } if report else None),
         },
-        "constants": export_constants(model, calibration),
+        "constants": export_constants(model, calibration, replacement),
         "count_columns": COUNT_COLUMNS,
         "players": players,
         "teams": teams,
