@@ -305,6 +305,76 @@
     return rows.slice(0, top || 10);
   }
 
+  /* --------------------------------------------------- roster strength */
+
+  /**
+   * Split a team's 240 minutes across a roster, in proportion to last
+   * season's per-game minutes. Mirrors impact.roster_strength.project_minutes.
+   */
+  function projectMinutes(K, minutesPerGame) {
+    const cap = K.max_minutes_per_game;
+    const total = K.team_minutes;
+    const mpg = minutesPerGame.map(m => (Number.isFinite(m) && m > 0 ? m : 0));
+    const sum = mpg.reduce((a, b) => a + b, 0);
+    if (sum <= 0) return mpg.map(() => 0);
+
+    let out = mpg.map(m => m * (total / sum));
+    // A short roster cannot cover the game under the cap; there the cap is
+    // arithmetically impossible, so it is dropped rather than fielding four
+    // and a half men.
+    if (out.filter(m => m > 0).length * cap < total) return out;
+
+    for (let iter = 0; iter < 12; iter++) {
+      const over = out.map(m => m > cap);
+      if (!over.some(Boolean)) break;
+      let spare = 0;
+      for (let i = 0; i < out.length; i++) {
+        if (over[i]) { spare += out[i] - cap; out[i] = cap; }
+      }
+      const room = out.map((m, i) => !over[i] && m > 0);
+      const roomSum = out.reduce((a, m, i) => a + (room[i] ? m : 0), 0);
+      if (roomSum <= 0) break;
+      for (let i = 0; i < out.length; i++) {
+        if (room[i]) out[i] += spare * (out[i] / roomSum);
+      }
+    }
+    return out;
+  }
+
+  /** Uncalibrated offence and defence for a roster, in points per 100. */
+  function rawStrength(K, roster) {
+    if (!roster.length) return { off: 0, def: 0 };
+    const mpg = roster.map(p => (p.games > 0 ? p.min / p.games : 0));
+    const allocated = projectMinutes(K, mpg);
+    if (allocated.reduce((a, b) => a + b, 0) <= 0) return { off: 0, def: 0 };
+    let off = 0, def = 0;
+    for (let i = 0; i < roster.length; i++) {
+      const share = allocated[i] / K.team_minutes * K.players_on_floor;
+      off += share * (roster[i].off_impact || 0);
+      def += share * (roster[i].def_impact || 0);
+    }
+    return { off: off, def: def };
+  }
+
+  /**
+   * Calibrated strength for a roster. The calibration is fitted against the
+   * league's own net ratings, so the slope applies to both halves and the
+   * intercept -- a whole-team offset -- is split between them.
+   */
+  function teamStrength(payload, roster) {
+    const K = payload.constants;
+    const cal = K.roster_strength;
+    const raw = rawStrength(K, roster);
+    const half = cal.intercept / 2;
+    return {
+      off: cal.slope * raw.off + half,
+      def: cal.slope * raw.def + half,
+      net: cal.slope * (raw.off + raw.def) + cal.intercept,
+      raw_off: raw.off,
+      raw_def: raw.def,
+    };
+  }
+
   /* ------------------------------------------------------- rate bases */
 
   /** Put a player's counting stats on a rate basis. Mirrors metrics.normalize. */
@@ -465,6 +535,7 @@
   const api = {
     mean, stdev, clamp, normalCdf,
     tsDelta, redistributeUsage,
+    projectMinutes, rawStrength, teamStrength,
     evaluateLineup, swapPlayer, positionsViable, bestReplacement, bestLineups,
     normalize, projectedMargin, winProbability, simulateGame, makeRng,
     SKILLS,

@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+import numpy as np
 
 import pytest
 
@@ -276,3 +277,73 @@ def test_data_cannot_break_out_of_its_script_tag(analysis):
     html = render(payload)
     assert "</script><script>alert(1)" not in html
     assert "<\\/script>" in html
+
+
+# -- roster strength --------------------------------------------------------
+
+@requires_node
+def test_roster_strength_matches_python(payload, tmp_path):
+    """The browser's team projection must equal Python's, roster by roster.
+
+    This is the number the Simulate tab now runs on, so a drift here would
+    quietly change every win probability in the file.
+    """
+    from hoopsim.impact import roster_strength as RS
+
+    import pandas as pd
+
+    by_team = {}
+    for p in payload["players"]:
+        if p.get("team_id") and p.get("min") and p.get("games"):
+            by_team.setdefault(p["team_id"], []).append(p)
+    assert by_team, "payload has no rostered players to check"
+
+    cal = payload["constants"]["roster_strength"]
+    checked = 0
+    for team_id, roster in list(by_team.items())[:8]:
+        js = _run_node(
+            payload,
+            "const roster = D.players.filter(p => p.team_id === %s "
+            "&& p.min && p.games);\n"
+            "console.log(JSON.stringify(E.teamStrength(D, roster)));"
+            % json.dumps(team_id),
+            tmp_path)
+        py = RS.team_strength(pd.DataFrame(roster), cal)
+        for key in ("off", "def", "net", "raw_off", "raw_def"):
+            assert js[key] == pytest.approx(py[key], abs=1e-6), (team_id, key)
+        # The halves must still add to the whole on both sides.
+        assert js["off"] + js["def"] == pytest.approx(js["net"], abs=1e-6)
+        checked += 1
+    assert checked >= 1
+
+
+@requires_node
+def test_minute_projection_matches_python(payload, tmp_path):
+    from hoopsim.impact.roster_strength import project_minutes, TEAM_MINUTES
+
+    cases = [[38, 36, 34, 30, 28, 22, 18, 14, 10, 6], [40] * 5, [40] * 6,
+             [30], [20] * 15, [0, 0, 0]]
+    for mpg in cases:
+        js = _run_node(
+            payload,
+            "console.log(JSON.stringify(E.projectMinutes(K, %s)));"
+            % json.dumps(mpg),
+            tmp_path)
+        py = project_minutes(np.array(mpg, dtype=float))
+        assert len(js) == len(py)
+        for a, b in zip(js, py):
+            assert a == pytest.approx(b, abs=1e-9), mpg
+        if sum(mpg) > 0:
+            assert sum(js) == pytest.approx(TEAM_MINUTES, abs=1e-6), mpg
+
+
+@requires_node
+def test_calibration_is_exported_not_retyped(payload):
+    """The JS must read the fit from the payload, never carry its own copy."""
+    engine = (ROOT / "web" / "engine.js").read_text(encoding="utf-8")
+    cal = payload["constants"]["roster_strength"]
+    for key in ("slope", "intercept"):
+        literal = repr(round(cal[key], 3))[:5]
+        assert literal not in engine, f"{key} looks hardcoded in engine.js"
+    assert "roster_strength" in engine        # reads it from constants
+    assert "max_minutes_per_game" in engine

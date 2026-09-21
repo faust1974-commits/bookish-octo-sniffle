@@ -30,6 +30,7 @@ from pathlib import Path
 import numpy as np
 
 from hoopsim import __version__, constants as K
+from hoopsim.impact import roster_strength as RS
 from hoopsim.context import Analysis
 
 WEB = Path(__file__).resolve().parent / "web"
@@ -124,7 +125,7 @@ def _clean(value, digits: int = 4):
     return str(value)
 
 
-def export_constants(model) -> dict:
+def export_constants(model, calibration: dict) -> dict:
     """Every tunable the browser engine needs, straight from constants.py.
 
     Exported rather than retyped so the JavaScript cannot drift from Python.
@@ -159,6 +160,11 @@ def export_constants(model) -> dict:
         "mean_reversion": K.GAME_MEAN_REVERSION,
         "possession_outcomes": [0, 1, 2, 3, 4],
         "possession_base_probs": [0.470, 0.042, 0.279, 0.187, 0.022],
+
+        "max_minutes_per_game": RS.MAX_MINUTES_PER_GAME,
+        "team_minutes": RS.TEAM_MINUTES,
+        # Fitted against this league's own net ratings, never typed by hand.
+        "roster_strength": calibration,
     }
 
 
@@ -190,6 +196,20 @@ def _replacement_profile(players: list[dict]) -> dict:
     for skill in UNKNOWN_SKILLS:
         entry[skill] = 0.0
     return entry
+
+
+def _fit_strength(analysis, entries) -> dict:
+    """Calibrate roster-derived team strength against observed net ratings."""
+    import pandas as pd
+
+    frame = pd.DataFrame(entries)[
+        ["player_id", "team_id", "off_impact", "def_impact", "min", "games"]]
+    frame = frame.dropna(subset=["team_id", "min", "games"])
+    stats = RS.calibrate(frame, analysis.teams)
+    print(f"  roster strength fitted: R^2 = {stats['r_squared']:.3f}, "
+          f"residual {stats['residual_sd']:.2f} pts/100 over "
+          f"{stats['n_teams']} teams", flush=True)
+    return stats
 
 
 def _rebuild_on_rosters(players, fallback_entries, roster_frame,
@@ -308,6 +328,12 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
     """
     model = analysis.lineup_model
     players = player_entries(analysis)
+
+    # Fit roster-derived strength onto this league's own net ratings, before
+    # the roster join moves anybody: the calibration has to be learned on the
+    # teams that actually played the games.
+    calibration = _fit_strength(analysis, players)
+
     report = None
     if roster_frame is not None:
         fallback_entries = player_entries(fallback) if fallback is not None else None
@@ -366,7 +392,7 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
                 "dropped": report.dropped,
             } if report else None),
         },
-        "constants": export_constants(model),
+        "constants": export_constants(model, calibration),
         "count_columns": COUNT_COLUMNS,
         "players": players,
         "teams": teams,
