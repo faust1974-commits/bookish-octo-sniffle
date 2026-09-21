@@ -347,10 +347,10 @@
     }
     row.appendChild(nm);
 
-    const imp = el('span', 'num ' + cls(p.impact), signed(p.impact, 1));
-    imp.title = impactTitle(p);
-    if (!p.unrated && (p.pbp_share || 0) < 0.25) imp.classList.add('thin');
-    row.appendChild(imp);
+    const per = el('span', 'num', p.per === null || p.per === undefined
+      ? '—' : p.per.toFixed(1));
+    per.title = 'PER: player efficiency rating. League average is 15.';
+    row.appendChild(per);
 
     // Dragging is nice; a menu is what works on a phone, with one hand, or
     // when the target team is not one of the two on screen.
@@ -526,13 +526,10 @@
       }
       row.appendChild(nm);
       row.appendChild(el('span', 'pos', p.position));
-      const imp = el('span', 'num ' + cls(p.impact), signed(p.impact, 1));
-      imp.title = impactTitle(p);
-      if (p.impact_se !== null && p.impact_se !== undefined) {
-        imp.appendChild(el('span', 'se', ' ±' + p.impact_se.toFixed(1)));
-      }
-      if (!p.unrated && (p.pbp_share || 0) < 0.25) imp.classList.add('thin');
-      row.appendChild(imp);
+      const per = el('span', 'num', p.per === null || p.per === undefined
+        ? '—' : p.per.toFixed(1));
+      per.title = 'PER: player efficiency rating. League average is 15.';
+      row.appendChild(per);
       const usg = el('span', 'num', (p.usage * 100).toFixed(1) + '%');
       usg.title = 'usage: share of the team’s possessions he ends';
       row.appendChild(usg);
@@ -1006,29 +1003,42 @@
 
   function comparePlayers(idA, idB) {
     const a = D.playersById[idA], b = D.playersById[idB];
+    const per36 = (p, k) => (p.min > 0 ? (p[k] || 0) * 36 / p.min : 0);
     const rows = [
-      cmpRow('impact per 100', a.impact, b.impact, { signed: true }),
-      cmpRow('offence', a.off_impact, b.off_impact, { signed: true }),
-      cmpRow('defence', a.def_impact, b.def_impact, { signed: true }),
+      cmpRow('win shares', a.ws, b.ws),
+      cmpRow('PER', a.per, b.per, { title: 'league average is 15' }),
+      cmpRow('win shares per 48', a.ws_per_48, b.ws_per_48, { dp: 3 }),
       cmpRow('minutes', a.min, b.min, { dp: 0 }),
-      cmpRow('usage', a.usage, b.usage, { fmt: v => (v * 100).toFixed(1) + '%' }),
-      cmpRow('true shooting', a.ts_pct, b.ts_pct, { fmt: v => (v * 100).toFixed(1) + '%' }),
+      cmpRow('points per 36', per36(a, 'pts'), per36(b, 'pts')),
+      cmpRow('rebounds per 36', per36(a, 'trb'), per36(b, 'trb')),
+      cmpRow('assists per 36', per36(a, 'ast'), per36(b, 'ast')),
+      cmpRow('steals per 36', per36(a, 'stl'), per36(b, 'stl')),
+      cmpRow('blocks per 36', per36(a, 'blk'), per36(b, 'blk')),
+      cmpRow('true shooting', a.ts_pct, b.ts_pct,
+        { fmt: v => (v * 100).toFixed(1) + '%' }),
+      cmpRow('usage', a.usage_rate, b.usage_rate,
+        { fmt: v => (v * 100).toFixed(1) + '%' }),
+      cmpRow('turnover rate', a.tov_rate, b.tov_rate,
+        { lowerIsBetter: true, fmt: v => (v * 100).toFixed(1) + '%' }),
     ];
-    for (const k of Object.keys(SKILL_LABELS)) {
-      rows.push(cmpRow(SKILL_LABELS[k], a[k], b[k], { signed: true, dp: 2 }));
-    }
 
     const bits = [];
-    const gap = (a.impact || 0) - (b.impact || 0);
-    const se = Math.sqrt(Math.pow(a.impact_se || 1, 2) + Math.pow(b.impact_se || 1, 2));
+    const gap = (a.ws || 0) - (b.ws || 0);
     const better = gap >= 0 ? a : b, worse = gap >= 0 ? b : a;
-    if (Math.abs(gap) < se) {
-      bits.push(`${a.name} and ${b.name} are not separable — ${Math.abs(gap).toFixed(1)} ` +
-        `points per 100 apart, with a combined margin of error of ${se.toFixed(1)}. ` +
-        `Anyone claiming to know which is better is guessing.`);
+    if (Math.abs(gap) < 1.0) {
+      bits.push(`${a.name} and ${b.name} were worth about the same last season — ` +
+        `${(a.ws || 0).toFixed(1)} win shares against ${(b.ws || 0).toFixed(1)}.`);
     } else {
-      bits.push(`${better.name} rates ${Math.abs(gap).toFixed(1)} points per 100 above ` +
-        `${worse.name}, which is outside the ${se.toFixed(1)} margin of error on the pair.`);
+      bits.push(`${better.name} was worth ${Math.abs(gap).toFixed(1)} more wins than ` +
+        `${worse.name} last season — ${(better.ws || 0).toFixed(1)} win shares ` +
+        `against ${(worse.ws || 0).toFixed(1)}.`);
+    }
+    const dper = (a.per || 0) - (b.per || 0);
+    if (Math.abs(dper) > 2) {
+      const eff = dper > 0 ? a : b;
+      bits.push(`${eff.name} was also the more efficient of the two, ` +
+        `${Math.max(a.per || 0, b.per || 0).toFixed(1)} PER against ` +
+        `${Math.min(a.per || 0, b.per || 0).toFixed(1)}.`);
     }
     const am = a.min || 0, bm = b.min || 0;
     if (am > 0 && bm > 0 && Math.abs(am - bm) / Math.max(am, bm) > 0.3) {
@@ -1096,20 +1106,13 @@
     lede.innerHTML = '';
     const box = el('div', 'intro');
     const byNet = projected.slice().sort((a, b) => b.proj_net - a.proj_net);
-    // Rank by value contributed, not by rate. A backup centre at +5.6 in 900
-    // minutes did not help his team as much as a star at +6.6 in 2,300, and a
-    // list that says otherwise is answering a question nobody asked. This is
-    // the VORP convention: rate above replacement, multiplied by how much of
-    // the season he actually played.
-    const REPLACEMENT = -2.0;
-    const FULL_SEASON_MIN = 30 * (K.games_per_season || 82);
+    // Ranked on win shares: points produced and points prevented, converted
+    // into wins, from what a player actually did on the floor. It is a
+    // forty-year-old public method with a known formula, not a regression
+    // that assigns credit among five men who are always out there together.
     const bestPlayers = D.players
-      .filter(p => p.impact !== null && p.impact !== undefined && !p.unrated
-        && p.min)
-      .map(p => Object.assign({}, p, {
-        value: (p.impact - REPLACEMENT) * (p.min / FULL_SEASON_MIN),
-      }))
-      .sort((a, b) => b.value - a.value);
+      .filter(p => !p.unrated && p.min && p.ws !== null && p.ws !== undefined)
+      .sort((a, b) => b.ws - a.ws);
     if (season) {
       const fav = season.slice().sort((a, b) => b.top_seed_odds - a.top_seed_odds)[0];
       const east = season.filter(r => r.conference === 'East')
@@ -1125,11 +1128,10 @@
     if (bestPlayers.length) {
       const b = bestPlayers[0];
       box.appendChild(el('p', null,
-        `${b.name} is the most valuable player in the league — ` +
-        `${signed(b.impact, 1)} points per 100 across ${b.min.toFixed(0)} minutes. ` +
-        `The honest margin on any one-season rating is about ` +
-        `${(b.impact_se || 1).toFixed(1)}, so the top few are not really ` +
-        `separable from each other.`));
+        `${b.name} leads the league at ${b.ws.toFixed(1)} win shares — the wins ` +
+        `his scoring, rebounding and defence were worth across ` +
+        `${b.min.toFixed(0)} minutes. A ${b.per.toFixed(1)} player efficiency ` +
+        `rating against a league average of 15.`));
     }
     lede.appendChild(box);
 
@@ -1147,10 +1149,11 @@
     }
 
     rankList($('#rank-players'), bestPlayers.slice(0, 12).map(p => ({
-      label: p.name, value: p.impact, signed: true,
-      thin: (p.pbp_share || 0) < 0.4, p: p,
-    })), r => signed(r.value, 1) + ' ±' + (r.p.impact_se || 0).toFixed(1),
-       r => `${r.p.min.toFixed(0)} minutes. ${impactTitle(r.p)}`);
+      label: p.name, value: p.ws, p: p,
+    })), r => r.value.toFixed(1) + ' WS',
+       r => `${r.p.per.toFixed(1)} PER, ${(r.p.ts_pct * 100).toFixed(1)}% true ` +
+            `shooting, ${r.p.min.toFixed(0)} minutes. Win shares: the wins his ` +
+            `production was worth.`);
 
     rankList($('#rank-off'), projected.slice()
       .sort((a, b) => b.proj_off - a.proj_off).slice(0, 8)
@@ -1288,10 +1291,10 @@
           const line = el('div', 'player-row');
           line.appendChild(el('span', 'nm', p.name));
           line.appendChild(el('span', 'num', p.proj_min.toFixed(1) + ' min'));
-          const imp = el('span', 'num ' + cls(p.impact), signed(p.impact, 1));
-          imp.title = impactTitle(p);
-          if (!p.unrated && (p.pbp_share || 0) < 0.25) imp.classList.add('thin');
-          line.appendChild(imp);
+          const per = el('span', 'num', p.per === null || p.per === undefined
+            ? '—' : p.per.toFixed(1) + ' PER');
+          per.title = 'Player efficiency rating. League average is 15.';
+          line.appendChild(per);
           list.appendChild(line);
         }
         h.appendChild(list);
