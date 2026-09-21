@@ -16,6 +16,7 @@
     <button class="tab active" data-tab="rankings">Rankings</button>
     <button class="tab" data-tab="lineups">Lineups</button>
     <button class="tab" data-tab="team">Team</button>
+    <button class="tab" data-tab="compare">Compare</button>
     <button class="tab" data-tab="season">Season</button>
     <button class="tab" data-tab="rosters">Rosters</button>
     <button class="tab" data-tab="players">Players</button>
@@ -117,6 +118,25 @@
       <h2>Best five they can put out <span class="hint">searched over the rotation</span></h2>
       <div id="team-best"></div>
     </div>
+  </section>
+
+  <section id="tab-compare" class="panel">
+    <div class="intro">
+      <p>Two of anything, side by side, with the difference said out loud rather
+      than left for you to work out from two columns of decimals.</p>
+    </div>
+    <div class="controls">
+      <label>Compare
+        <select id="cmp-mode">
+          <option value="teams">two teams</option>
+          <option value="players">two players</option>
+        </select>
+      </label>
+      <label>This <select id="cmp-a"></select></label>
+      <label>Against <select id="cmp-b"></select></label>
+    </div>
+    <div id="cmp-verdict"></div>
+    <div class="card"><div id="cmp-table"></div></div>
   </section>
 
   <section id="tab-season" class="panel">
@@ -222,6 +242,15 @@
   </section>
 
   <section id="tab-simulate" class="panel">
+    <div class="card">
+      <h2>Next games <span class="hint">from the real schedule</span></h2>
+      <div class="controls">
+        <label>Show <select id="sched-team"></select></label>
+        <label>From <input id="sched-from" type="date"></label>
+      </div>
+      <div id="upcoming"></div>
+    </div>
+
     <div class="card">
       <h2>One game</h2>
       <div class="controls">

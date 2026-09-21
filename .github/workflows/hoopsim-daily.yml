@@ -1,0 +1,98 @@
+# Rebuild hoopsim every morning so the app is never stale.
+#
+# Rosters churn daily in the offseason and games land nightly once the
+# season starts. Both come from feeds that refresh on their own clock, so
+# the only thing standing between the published file and today's truth is
+# somebody re-running the build. This does that.
+#
+# The Mac app fetches this committed file each time it opens, so a person
+# who installed it once keeps getting current data without doing anything.
+
+name: Rebuild hoopsim daily
+
+on:
+  schedule:
+    # 11:20 UTC — after the overnight feeds have settled, and off the hour
+    # so this job is not queued alongside everybody else's midnight cron.
+    - cron: "20 11 * * *"
+  workflow_dispatch: {}
+  push:
+    branches: [claude/upbeat-goldberg-m8elj1]
+    paths:
+      - "hoopsim/src/**"
+      - "hoopsim/web/**"
+      - "hoopsim/build_standalone.py"
+      - ".github/workflows/hoopsim-daily.yml"
+
+concurrency:
+  group: hoopsim-build
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/upbeat-goldberg-m8elj1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # Season dumps are ~150 MB each and never change once a season is
+      # finished, so caching them turns a 10-minute download into seconds.
+      - name: Cache season data
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/hoopsim
+          key: hoopsim-data-${{ github.run_id }}
+          restore-keys: hoopsim-data-
+
+      - name: Install
+        working-directory: hoopsim
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyarrow pytest
+
+      - name: Test
+        working-directory: hoopsim
+        run: python -m pytest tests -q -x --ignore=tests/test_nba_real.py
+
+      - name: Build
+        working-directory: hoopsim
+        run: python build_standalone.py --out dist/hoopsim.html
+
+      # A build that lost its data would still be a valid HTML file, and it
+      # would quietly replace a good one. Check before committing.
+      - name: Check the build is not empty
+        working-directory: hoopsim
+        run: |
+          python - <<'PY'
+          import json, sys
+          html = open("dist/hoopsim.html", encoding="utf-8").read()
+          i = html.index("window.__HOOPSIM__ = ") + len("window.__HOOPSIM__ = ")
+          d = json.loads(html[i:html.index(";</script>", i)].replace("<\\/", "</"))
+          players, teams = len(d["players"]), len(d["teams"])
+          games = len(d.get("schedule") or [])
+          print(f"{players} players, {teams} teams, {games} scheduled games")
+          if players < 400 or teams != 30:
+              sys.exit(f"refusing to publish: {players} players, {teams} teams")
+          PY
+
+      - name: Commit if anything changed
+        run: |
+          git config user.name "hoopsim build"
+          git config user.email "noreply@anthropic.com"
+          if git diff --quiet -- hoopsim/dist/hoopsim.html; then
+            echo "no change today"
+            exit 0
+          fi
+          git add hoopsim/dist/hoopsim.html
+          git commit -m "Daily rebuild: $(date -u +%Y-%m-%d)"
+          git push

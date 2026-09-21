@@ -77,6 +77,8 @@
     loadSeason();         // and so are the standings
     loadTeam();
     loadRankings();
+    loadCompare();
+    loadUpcoming();
     updateEditFlag();
   }
 
@@ -130,7 +132,7 @@
     'home_margin_per_100', 'off_impact', 'def_impact']);
 
   /* Odds read as odds, not as decimals nobody converts in their head. */
-  const PCT_COLS = new Set(['playoff_odds', 'play_in_odds', 'top_seed_odds',
+  const PCT_COLS = new Set(['playoff_odds', 'play_in_odds', 'top_seed_odds', 'confidence',
     'title_odds', 'pbp_share']);
   const ONE_DP = new Set(['wins', 'losses', 'avg_seed', 'sos']);
 
@@ -153,7 +155,10 @@
       return;
     }
     const key = opts.sortKey || mount.id;
-    const sort = S.sort[key] || { col: opts.defaultSort || columns[0].k, dir: -1 };
+    const sort = S.sort[key] || {
+      col: opts.defaultSort || columns[0].k,
+      dir: opts.defaultDir === undefined ? -1 : opts.defaultDir,
+    };
     S.sort[key] = sort;
 
     const sorted = rows.slice().sort((a, b) => {
@@ -299,7 +304,23 @@
     loadSeason();
     loadTeam();
     loadRankings();
+    fillCompareOptions();
+    loadCompare();
+    fillSelect($('#sched-team'), [{ value: '', label: 'every team' }].concat(
+      D.teams.map(t => ({ value: t.team_abbrev, label: t.team_name }))), '');
+    if (D.schedule && D.schedule.length && D.schedule[0].length > 2) {
+      $('#sched-from').value = D.schedule[0][2];
+    }
+    ['#sched-team', '#sched-from'].forEach(s =>
+      $(s).addEventListener('change', loadUpcoming));
+    loadUpcoming();
     loadSplits();
+
+    $('#cmp-mode').addEventListener('change', () => {
+      fillCompareOptions(); loadCompare();
+    });
+    ['#cmp-a', '#cmp-b'].forEach(s =>
+      $(s).addEventListener('change', loadCompare));
   }
 
   /* --------------------------------------------------- roster editor */
@@ -814,6 +835,238 @@
         proj_net: s.net,
       });
     });
+  }
+
+  /* ------------------------------------------------- upcoming games */
+
+  /** Predicted result for one scheduled game. */
+  function predictGame(homeId, awayId, strengths) {
+    const h = strengths[homeId] || 0, a = strengths[awayId] || 0;
+    const p = E.winProbability(K, h, a);
+    const margin = E.projectedMargin(K, h, a);
+    // Split the projected margin around the league's own scoring level, so
+    // the two numbers add up to a believable final score rather than just a
+    // difference.
+    const total = 2 * K.pace * (D.meta.league_off_rating / 100);
+    return {
+      home_win_prob: p,
+      margin: margin,
+      home_score: total / 2 + margin / 2,
+      away_score: total / 2 - margin / 2,
+    };
+  }
+
+  function loadUpcoming() {
+    const mount = $('#upcoming');
+    mount.innerHTML = '';
+    if (!D.schedule || !D.schedule.length || D.schedule[0].length < 3) {
+      mount.appendChild(el('p', 'empty', 'No dated schedule in this build.'));
+      return;
+    }
+    const strengths = strengthMap();
+    const idByAbbrev = {};
+    for (const t of D.teams) idByAbbrev[t.team_abbrev] = t.team_id;
+
+    const from = $('#sched-from').value || D.schedule[0][2];
+    const only = $('#sched-team').value;
+    const rows = [];
+    for (const g of D.schedule) {
+      if (g[2] < from) continue;
+      if (only && g[0] !== only && g[1] !== only) continue;
+      const h = idByAbbrev[g[0]], a = idByAbbrev[g[1]];
+      if (!h || !a) continue;
+      const pr = predictGame(h, a, strengths);
+      const homeFav = pr.home_win_prob >= 0.5;
+      rows.push({
+        date: g[2],
+        game: `${g[1]} at ${g[0]}`,
+        pick: homeFav ? g[0] : g[1],
+        confidence: homeFav ? pr.home_win_prob : 1 - pr.home_win_prob,
+        // Written in the same order as the fixture, so "LAL at LAC 113–112"
+        // reads left to right without anyone having to work out which
+        // number belongs to which side.
+        score: `${g[1]} ${Math.round(pr.away_score)} – ` +
+               `${Math.round(pr.home_score)} ${g[0]}`,
+      });
+      if (rows.length >= 60) break;
+    }
+    if (!rows.length) {
+      mount.appendChild(el('p', 'empty', 'No games from that date on.'));
+      return;
+    }
+    table(mount, rows, [
+      { k: 'date', label: 'date' },
+      { k: 'game', label: 'game' },
+      { k: 'pick', label: 'pick' },
+      { k: 'confidence', label: 'confidence',
+        title: 'how often this side wins, simulating the matchup' },
+      { k: 'score', label: 'projected score' },
+    ], { sortKey: 'upcoming', defaultSort: 'date', defaultDir: 1 });
+  }
+
+  /* --------------------------------------------------------- compare */
+
+  /** One comparison row: label, both values, and which side is better. */
+  function cmpRow(label, a, b, opts) {
+    const o = opts || {};
+    const fmtv = o.fmt || ((v) => (v === null || v === undefined) ? '—'
+      : (o.signed ? signed(v, o.dp === undefined ? 1 : o.dp)
+                  : Number(v).toFixed(o.dp === undefined ? 1 : o.dp)));
+    let winner = 0;
+    if (typeof a === 'number' && typeof b === 'number' && a !== b) {
+      const aBetter = o.lowerIsBetter ? a < b : a > b;
+      winner = aBetter ? -1 : 1;
+    }
+    return { label: label, a: a, b: b, fa: fmtv(a), fb: fmtv(b),
+             winner: winner, title: o.title };
+  }
+
+  function renderCmp(mount, nameA, nameB, rows) {
+    mount.innerHTML = '';
+    const grid = el('div', 'cmp');
+    const ha = el('div', 'head'); ha.textContent = nameA;
+    ha.style.textAlign = 'right';
+    grid.appendChild(ha);
+    grid.appendChild(el('div', 'head', ''));
+    grid.appendChild(el('div', 'head', nameB));
+    for (const r of rows) {
+      const a = el('div', 'side a' + (r.winner === -1 ? ' win' : ''), r.fa);
+      const lbl = el('div', 'lbl', r.label);
+      const b = el('div', 'side b' + (r.winner === 1 ? ' win' : ''), r.fb);
+      if (r.title) { lbl.title = r.title; }
+      grid.appendChild(a); grid.appendChild(lbl); grid.appendChild(b);
+    }
+    mount.appendChild(grid);
+  }
+
+  function compareTeams(idA, idB) {
+    const strengths = strengthMap();
+    const season = (D.schedule && D.schedule.length)
+      ? E.projectSeason(D, strengths, 800, 31) : null;
+    const proj = projectedTeams();
+    const pa = proj.find(t => t.team_id === idA), pb = proj.find(t => t.team_id === idB);
+    const sa = season && season.find(r => r.team_id === idA);
+    const sb = season && season.find(r => r.team_id === idB);
+    const rows = [];
+    if (sa && sb) {
+      rows.push(cmpRow('projected wins', sa.wins, sb.wins, { dp: 0 }));
+      rows.push(cmpRow('playoff odds', sa.playoff_odds, sb.playoff_odds,
+        { fmt: v => (v * 100).toFixed(0) + '%' }));
+      rows.push(cmpRow('top seed odds', sa.top_seed_odds, sb.top_seed_odds,
+        { fmt: v => (v * 100).toFixed(0) + '%' }));
+    }
+    rows.push(cmpRow('net rating', pa.proj_net, pb.proj_net, { signed: true }));
+    rows.push(cmpRow('offence', pa.proj_off, pb.proj_off,
+      { title: 'projected points scored per 100' }));
+    rows.push(cmpRow('defence', pa.proj_def, pb.proj_def,
+      { lowerIsBetter: true, title: 'projected points allowed per 100 — lower is better' }));
+
+    const profA = teamProfile(idA), profB = teamProfile(idB);
+    if (profA && profB) {
+      for (const k of Object.keys(SKILL_LABELS)) {
+        rows.push(cmpRow(SKILL_LABELS[k], profA[k], profB[k], { signed: true, dp: 2 }));
+      }
+    }
+
+    // The verdict, in words.
+    const A = teamsById[idA], B = teamsById[idB];
+    const gap = pa.proj_net - pb.proj_net;
+    const better = gap >= 0 ? A : B, worse = gap >= 0 ? B : A;
+    const bits = [];
+    if (Math.abs(gap) < 1) {
+      bits.push(`${A.team_name} and ${B.team_name} project as essentially the same team — ` +
+        `${Math.abs(gap).toFixed(1)} points per 100 apart, which is inside the noise.`);
+    } else {
+      bits.push(`${better.team_name} projects ${Math.abs(gap).toFixed(1)} points per 100 ` +
+        `better than ${worse.team_name}.`);
+    }
+    if (sa && sb) {
+      bits.push(`That is about ${Math.abs(sa.wins - sb.wins).toFixed(0)} wins across a season.`);
+    }
+    if (profA && profB) {
+      let biggest = null, mag = 0;
+      for (const k of Object.keys(SKILL_LABELS)) {
+        const d = profA[k] - profB[k];
+        if (Math.abs(d) > mag) { mag = Math.abs(d); biggest = { k: k, d: d }; }
+      }
+      if (biggest && mag > 0.2) {
+        const side = biggest.d > 0 ? A : B;
+        bits.push(`The clearest difference between them is ${SKILL_LABELS[biggest.k]}, ` +
+          `where ${side.team_abbrev} is well ahead.`);
+      }
+    }
+    // Head to head, if they play.
+    const hp = E.winProbability(K, strengths[idA] || 0, strengths[idB] || 0);
+    bits.push(`On a neutral floor ${A.team_abbrev} would beat ${B.team_abbrev} about ` +
+      `${(E.winProbability(K, strengths[idA] || 0, strengths[idB] || 0, { neutral: true }) * 100).toFixed(0)}` +
+      `% of the time; at home, ${(hp * 100).toFixed(0)}%.`);
+
+    return { nameA: A.team_name, nameB: B.team_name, rows: rows, verdict: bits.join(' ') };
+  }
+
+  function comparePlayers(idA, idB) {
+    const a = D.playersById[idA], b = D.playersById[idB];
+    const rows = [
+      cmpRow('impact per 100', a.impact, b.impact, { signed: true }),
+      cmpRow('offence', a.off_impact, b.off_impact, { signed: true }),
+      cmpRow('defence', a.def_impact, b.def_impact, { signed: true }),
+      cmpRow('minutes', a.min, b.min, { dp: 0 }),
+      cmpRow('usage', a.usage, b.usage, { fmt: v => (v * 100).toFixed(1) + '%' }),
+      cmpRow('true shooting', a.ts_pct, b.ts_pct, { fmt: v => (v * 100).toFixed(1) + '%' }),
+    ];
+    for (const k of Object.keys(SKILL_LABELS)) {
+      rows.push(cmpRow(SKILL_LABELS[k], a[k], b[k], { signed: true, dp: 2 }));
+    }
+
+    const bits = [];
+    const gap = (a.impact || 0) - (b.impact || 0);
+    const se = Math.sqrt(Math.pow(a.impact_se || 1, 2) + Math.pow(b.impact_se || 1, 2));
+    const better = gap >= 0 ? a : b, worse = gap >= 0 ? b : a;
+    if (Math.abs(gap) < se) {
+      bits.push(`${a.name} and ${b.name} are not separable — ${Math.abs(gap).toFixed(1)} ` +
+        `points per 100 apart, with a combined margin of error of ${se.toFixed(1)}. ` +
+        `Anyone claiming to know which is better is guessing.`);
+    } else {
+      bits.push(`${better.name} rates ${Math.abs(gap).toFixed(1)} points per 100 above ` +
+        `${worse.name}, which is outside the ${se.toFixed(1)} margin of error on the pair.`);
+    }
+    const am = a.min || 0, bm = b.min || 0;
+    if (am > 0 && bm > 0 && Math.abs(am - bm) / Math.max(am, bm) > 0.3) {
+      const more = am > bm ? a : b;
+      bits.push(`${more.name} played far more — ${Math.max(am, bm).toFixed(0)} minutes ` +
+        `against ${Math.min(am, bm).toFixed(0)} — so his rating rests on more evidence ` +
+        `and he contributed more in total.`);
+    }
+    return { nameA: a.name, nameB: b.name, rows: rows, verdict: bits.join(' ') };
+  }
+
+  function loadCompare() {
+    const mode = $('#cmp-mode').value;
+    const a = $('#cmp-a').value, b = $('#cmp-b').value;
+    if (!a || !b) return;
+    const out = mode === 'teams' ? compareTeams(a, b) : comparePlayers(a, b);
+    const v = $('#cmp-verdict');
+    v.innerHTML = '';
+    const box = el('div', 'intro');
+    box.appendChild(el('p', null, out.verdict));
+    v.appendChild(box);
+    renderCmp($('#cmp-table'), out.nameA, out.nameB, out.rows);
+  }
+
+  function fillCompareOptions() {
+    const mode = $('#cmp-mode').value;
+    let items;
+    if (mode === 'teams') {
+      items = D.teams.map(t => ({ value: t.team_id, label: t.team_name }));
+    } else {
+      items = D.players.filter(p => p.min && !p.unrated)
+        .sort((x, y) => (y.min || 0) - (x.min || 0))
+        .slice(0, 300)
+        .map(p => ({ value: p.player_id, label: p.name }))
+        .sort((x, y) => x.label.localeCompare(y.label));
+    }
+    fillSelect($('#cmp-a'), items, items[0] && items[0].value);
+    fillSelect($('#cmp-b'), items, items[1] ? items[1].value : items[0].value);
   }
 
   /* -------------------------------------------------------- rankings */

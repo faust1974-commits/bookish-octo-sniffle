@@ -61,10 +61,31 @@ cat > "${APP}/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-cat > "${APP}/Contents/MacOS/${APP_NAME}" <<'LAUNCH'
+cat > "${APP}/Contents/MacOS/${APP_NAME}" <<LAUNCH
 #!/bin/bash
-# Open the bundled page in whatever the default browser is.
-exec /usr/bin/open "${HOME}/Library/Application Support/Hoopsim/hoopsim.html"
+# Fetch today's build, then open it.
+#
+# The data behind this app is rebuilt every morning -- rosters change daily
+# and games land nightly once the season starts -- so opening the app is the
+# natural moment to pick that up. It is best effort: a short timeout, and any
+# failure just means opening the copy already on disk. Offline, on a plane,
+# or with GitHub down, it still works; it is simply not newer.
+#
+# The new file is only moved into place after it is checked, so a truncated
+# download can never replace a working app with a blank page.
+SUPPORT="\${HOME}/Library/Application Support/Hoopsim"
+CURRENT="\${SUPPORT}/hoopsim.html"
+FRESH="\${SUPPORT}/.hoopsim.new"
+
+if /usr/bin/curl -fsSL --max-time 12 --retry 1 "${RAW}" -o "\${FRESH}" 2>/dev/null; then
+  if /usr/bin/grep -q "</html>" "\${FRESH}" 2>/dev/null \\
+     && [ "\$(/usr/bin/stat -f%z "\${FRESH}" 2>/dev/null || echo 0)" -gt 200000 ]; then
+    /bin/mv -f "\${FRESH}" "\${CURRENT}"
+  fi
+fi
+/bin/rm -f "\${FRESH}"
+
+exec /usr/bin/open "\${CURRENT}"
 LAUNCH
 chmod +x "${APP}/Contents/MacOS/${APP_NAME}"
 
@@ -125,7 +146,8 @@ say ""
 say "  the app      ${APP}"
 say "  its data     ${SUPPORT}/hoopsim.html"
 say ""
-say "Run this installer again whenever you want the latest version."
+say "It updates itself: every time you open it, it quietly picks up the"
+say "latest data. Offline, it just opens the copy it already has."
 say ""
 
 # 4. Open it now so there is something to look at immediately.

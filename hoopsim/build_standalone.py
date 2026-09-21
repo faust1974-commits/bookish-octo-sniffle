@@ -72,6 +72,18 @@ STANDALONE_CSS = """
 .se { color: var(--muted); font-size: 11px; font-weight: 400; }
 /* A rating the play-by-play barely touched is mostly a box-score guess. */
 .num.thin { opacity: 0.62; font-style: italic; }
+
+/* Side-by-side comparison. */
+.cmp { display: grid; grid-template-columns: 1fr auto 1fr; gap: 4px 18px;
+  align-items: center; font-size: 14px; }
+.cmp .lbl { color: var(--muted); font-size: 12px; text-align: center;
+  padding: 4px 0; }
+.cmp .side { font-family: var(--mono); padding: 5px 10px; border-radius: 6px; }
+.cmp .side.a { text-align: right; }
+.cmp .side.b { text-align: left; }
+.cmp .side.win { background: var(--accent-soft); font-weight: 600; }
+.cmp .head { font-size: 16px; font-weight: 650; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border); margin-bottom: 6px; }
 """
 
 #: Counting stats the browser can put on any rate basis.
@@ -413,7 +425,8 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
         season = (roster_frame["season"].iloc[0] if roster_frame is not None
                   else analysis.league.season)
         sched = SCH.fetch(season)
-        schedule_rows = [[r.home, r.away] for r in sched.itertuples(index=False)]
+        schedule_rows = [[r.home, r.away, r.date]
+                         for r in sched.itertuples(index=False)]
         print(f"  schedule: {len(schedule_rows)} games for {season}", flush=True)
     except Exception as exc:  # a season with no published schedule yet
         print(f"  schedule unavailable ({exc}); records will not be projected",
