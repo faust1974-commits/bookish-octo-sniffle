@@ -13,7 +13,10 @@
     <span class="sub" id="league-meta"></span>
   </div>
   <nav id="tabs">
-    <button class="tab active" data-tab="lineups">Lineups</button>
+    <button class="tab active" data-tab="rankings">Rankings</button>
+    <button class="tab" data-tab="lineups">Lineups</button>
+    <button class="tab" data-tab="team">Team</button>
+    <button class="tab" data-tab="season">Season</button>
     <button class="tab" data-tab="rosters">Rosters</button>
     <button class="tab" data-tab="players">Players</button>
     <button class="tab" data-tab="teams">Teams</button>
@@ -23,7 +26,23 @@
 </header>
 
 <main>
-  <section id="tab-lineups" class="panel active">
+  <section id="tab-rankings" class="panel active">
+    <div class="intro">
+      <p>The short answers, from today's rosters. Everything here updates if you
+      move a player on the <strong>Rosters</strong> tab.</p>
+    </div>
+    <div id="rank-lede"></div>
+    <div class="grid">
+      <div class="card"><h2>Title picture</h2><div id="rank-title"></div></div>
+      <div class="card"><h2>Best players</h2><div id="rank-players"></div></div>
+    </div>
+    <div class="grid">
+      <div class="card"><h2>Best offences</h2><div id="rank-off"></div></div>
+      <div class="card"><h2>Best defences</h2><div id="rank-def"></div></div>
+    </div>
+  </section>
+
+  <section id="tab-lineups" class="panel">
     <div class="intro">
       <p><strong>Click five players</strong> from the roster to put them on the floor.
       The rating updates as you go, and the panels below show exactly where that
@@ -76,6 +95,42 @@
     <div class="card hidden" id="best-card">
       <h2 id="best-title">Best five-man units</h2>
       <div id="best-result"></div>
+    </div>
+  </section>
+
+  <section id="tab-team" class="panel">
+    <div class="controls">
+      <label>Team <select id="team-pick"></select></label>
+    </div>
+    <div id="team-headline"></div>
+    <div class="grid">
+      <div class="card">
+        <h2>Depth chart <span class="hint">projected minutes a game</span></h2>
+        <div id="team-depth"></div>
+      </div>
+      <div class="card">
+        <h2>Strengths and weaknesses</h2>
+        <div id="team-profile"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Best five they can put out <span class="hint">searched over the rotation</span></h2>
+      <div id="team-best"></div>
+    </div>
+  </section>
+
+  <section id="tab-season" class="panel">
+    <div class="intro">
+      <p><strong>Projected standings for 2026-27</strong>, played out over the real
+      schedule &mdash; who each team actually has to face, and how often, at home
+      and away. The season is simulated two thousand times to get playoff odds.</p>
+      <p>Change a roster on the Rosters tab and these move. That is the point of
+      them.</p>
+    </div>
+    <div id="season-summary"></div>
+    <div class="grid">
+      <div class="card"><h2>East</h2><div id="east-table"></div></div>
+      <div class="card"><h2>West</h2><div id="west-table"></div></div>
     </div>
   </section>
 

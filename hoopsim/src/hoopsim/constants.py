@@ -239,6 +239,19 @@ USAGE_ABSORPTION_EXPONENT = 1.35
 #
 # Under-regularising is what put a backup centre seventh in the league. See
 # `impact/evaluate.py` for why stint-level error cannot settle this.
+#: Games in an NBA regular season. The published schedule holds back
+#: two per team pending cup results, so a projection scales up to this.
+GAMES_PER_SEASON = 82
+
+#: How wrong a team projection is, a year out, in points per 100.
+#:
+#: Measured, not guessed: fit player ratings on 2024-25, apply them to the
+#: rosters that actually played 2025-26, and compare with what those teams
+#: really did. RMSE 4.73. Rosters change, players develop, stars miss
+#: months. A projection that ignores this reports 70-win seasons and 96%
+#: chances at a one seed, which is not what the evidence supports.
+TEAM_STRENGTH_SD = 4.73
+
 RAPM_DEFAULT_ALPHA = 8000.0
 
 # Weight on the box-score prior: 1.0 shrinks fully toward a player's box

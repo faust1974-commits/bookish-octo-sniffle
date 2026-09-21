@@ -168,6 +168,8 @@ def export_constants(model, calibration: dict) -> dict:
         "team_minutes": RS.TEAM_MINUTES,
         # Fitted against this league's own net ratings, never typed by hand.
         "roster_strength": calibration,
+        "games_per_season": K.GAMES_PER_SEASON,
+        "team_strength_sd": K.TEAM_STRENGTH_SD,
     }
 
 
@@ -404,6 +406,19 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
                          for row in frame.to_dict("records")],
             }
 
+    schedule_rows = []
+    try:
+        from hoopsim.data import schedule as SCH
+
+        season = (roster_frame["season"].iloc[0] if roster_frame is not None
+                  else analysis.league.season)
+        sched = SCH.fetch(season)
+        schedule_rows = [[r.home, r.away] for r in sched.itertuples(index=False)]
+        print(f"  schedule: {len(schedule_rows)} games for {season}", flush=True)
+    except Exception as exc:  # a season with no published schedule yet
+        print(f"  schedule unavailable ({exc}); records will not be projected",
+              flush=True)
+
     ratings = analysis.team_ratings()
 
     return {
@@ -434,6 +449,9 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
         "players": players,
         "teams": teams,
         "splits": split_data,
+        # [home, away] per game, by tricode. The browser plays this out to
+        # project records and playoff odds, so an edited roster changes them.
+        "schedule": schedule_rows,
         "ratings": {t: _clean(v, 3) for t, v in ratings.items()},
     }
 

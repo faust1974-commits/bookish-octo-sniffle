@@ -74,6 +74,9 @@
     evaluate();
     loadPlayers();
     loadTeams();          // team projections are built from the rosters
+    loadSeason();         // and so are the standings
+    loadTeam();
+    loadRankings();
     updateEditFlag();
   }
 
@@ -126,10 +129,17 @@
     'usage_shift', 'ts_shift', 'pts_per_100_shift', 'pts_per_100_effect',
     'home_margin_per_100', 'off_impact', 'def_impact']);
 
+  /* Odds read as odds, not as decimals nobody converts in their head. */
+  const PCT_COLS = new Set(['playoff_odds', 'play_in_odds', 'top_seed_odds',
+    'title_odds', 'pbp_share']);
+  const ONE_DP = new Set(['wins', 'losses', 'avg_seed', 'sos']);
+
   function fmt(key, v) {
     if (v === null || v === undefined) return '';
     if (typeof v === 'boolean') return v ? 'yes' : 'no';
     if (typeof v !== 'number') return String(v);
+    if (PCT_COLS.has(key)) return (v * 100).toFixed(0) + '%';
+    if (ONE_DP.has(key)) return v.toFixed(1);
     if (RATE_COLS.has(key)) return v.toFixed(3);
     if (SIGNED_COLS.has(key)) return signed(v, 2);
     if (Number.isInteger(v)) return String(v);
@@ -277,8 +287,18 @@
     S.team = D.teams[0].team_id;
     $('#lineup-team').value = S.team;
     renderRoster();
+    fillSelect($('#team-pick'), D.teams.map(t => ({
+      value: t.team_id, label: `${t.team_abbrev} — ${t.team_name}`,
+    })), D.teams[0].team_id);
+    $('#team-pick').addEventListener('change', (e) => {
+      S.teamPage = e.target.value; loadTeam();
+    });
+
     loadPlayers();
     loadTeams();
+    loadSeason();
+    loadTeam();
+    loadRankings();
     loadSplits();
   }
 
@@ -794,6 +814,351 @@
         proj_net: s.net,
       });
     });
+  }
+
+  /* -------------------------------------------------------- rankings */
+
+  function rankList(mount, rows, valueFn, noteFn) {
+    mount.innerHTML = '';
+    rows.forEach((r, i) => {
+      const row = el('div', 'player-row');
+      row.appendChild(el('span', 'pos', String(i + 1)));
+      row.appendChild(el('span', 'nm', r.label));
+      const v = el('span', 'num ' + (r.signed ? cls(r.value) : ''), valueFn(r));
+      if (r.thin) v.classList.add('thin');
+      if (noteFn) v.title = noteFn(r);
+      row.appendChild(v);
+      mount.appendChild(row);
+    });
+  }
+
+  function loadRankings() {
+    const strengths = strengthMap();
+    const projected = projectedTeams();
+    const hasSchedule = D.schedule && D.schedule.length;
+    const season = hasSchedule ? E.projectSeason(D, strengths, 1200, 17) : null;
+
+    // The lede: the two or three things someone actually wants told to them.
+    const lede = $('#rank-lede');
+    lede.innerHTML = '';
+    const box = el('div', 'intro');
+    const byNet = projected.slice().sort((a, b) => b.proj_net - a.proj_net);
+    // Rank by value contributed, not by rate. A backup centre at +5.6 in 900
+    // minutes did not help his team as much as a star at +6.6 in 2,300, and a
+    // list that says otherwise is answering a question nobody asked. This is
+    // the VORP convention: rate above replacement, multiplied by how much of
+    // the season he actually played.
+    const REPLACEMENT = -2.0;
+    const FULL_SEASON_MIN = 30 * (K.games_per_season || 82);
+    const bestPlayers = D.players
+      .filter(p => p.impact !== null && p.impact !== undefined && !p.unrated
+        && p.min)
+      .map(p => Object.assign({}, p, {
+        value: (p.impact - REPLACEMENT) * (p.min / FULL_SEASON_MIN),
+      }))
+      .sort((a, b) => b.value - a.value);
+    if (season) {
+      const fav = season.slice().sort((a, b) => b.top_seed_odds - a.top_seed_odds)[0];
+      const east = season.filter(r => r.conference === 'East')
+        .sort((a, b) => b.wins - a.wins)[0];
+      const west = season.filter(r => r.conference === 'West')
+        .sort((a, b) => b.wins - a.wins)[0];
+      box.appendChild(el('p', null,
+        `${west.team_name} project to lead the West at ` +
+        `${west.wins.toFixed(0)}-${west.losses.toFixed(0)}, and ` +
+        `${east.team_name} the East at ${east.wins.toFixed(0)}-${east.losses.toFixed(0)}. ` +
+        `${fav.team_abbrev} is the likeliest number one seed overall.`));
+    }
+    if (bestPlayers.length) {
+      const b = bestPlayers[0];
+      box.appendChild(el('p', null,
+        `${b.name} is the most valuable player in the league — ` +
+        `${signed(b.impact, 1)} points per 100 across ${b.min.toFixed(0)} minutes. ` +
+        `The honest margin on any one-season rating is about ` +
+        `${(b.impact_se || 1).toFixed(1)}, so the top few are not really ` +
+        `separable from each other.`));
+    }
+    lede.appendChild(box);
+
+    if (season) {
+      rankList($('#rank-title'), season.slice()
+        .sort((a, b) => b.top_seed_odds - a.top_seed_odds).slice(0, 8)
+        .map(r => ({ label: `${r.team_name}`, value: r.top_seed_odds, row: r })),
+        r => (r.value * 100).toFixed(0) + '%',
+        r => `Projected ${r.row.wins.toFixed(0)}-${r.row.losses.toFixed(0)}, ` +
+             `${(r.row.playoff_odds * 100).toFixed(0)}% to make the top six.`);
+    } else {
+      rankList($('#rank-title'), byNet.slice(0, 8)
+        .map(r => ({ label: r.team_name, value: r.proj_net, signed: true })),
+        r => signed(r.value, 1));
+    }
+
+    rankList($('#rank-players'), bestPlayers.slice(0, 12).map(p => ({
+      label: p.name, value: p.impact, signed: true,
+      thin: (p.pbp_share || 0) < 0.4, p: p,
+    })), r => signed(r.value, 1) + ' ±' + (r.p.impact_se || 0).toFixed(1),
+       r => `${r.p.min.toFixed(0)} minutes. ${impactTitle(r.p)}`);
+
+    rankList($('#rank-off'), projected.slice()
+      .sort((a, b) => b.proj_off - a.proj_off).slice(0, 8)
+      .map(t => ({ label: t.team_name, value: t.proj_off })),
+      r => r.value.toFixed(1),
+      () => 'projected points scored per 100 possessions');
+
+    rankList($('#rank-def'), projected.slice()
+      .sort((a, b) => a.proj_def - b.proj_def).slice(0, 8)
+      .map(t => ({ label: t.team_name, value: t.proj_def })),
+      r => r.value.toFixed(1),
+      () => 'projected points allowed per 100 possessions — lower is better');
+  }
+
+  /* ------------------------------------------------------ one team */
+
+  const SKILL_LABELS = {
+    spacing: 'shooting and spacing',
+    rim_pressure: 'getting to the rim',
+    playmaking: 'playmaking',
+    rebounding: 'rebounding',
+    rim_protection: 'rim protection',
+  };
+
+  /** Minutes-weighted skill profile for a roster, versus a league average. */
+  function teamProfile(teamId) {
+    const roster = rosterOf(teamId);
+    if (!roster.length) return null;
+    const mpg = roster.map(p => (p.games > 0 ? p.min / p.games : 0));
+    const mins = E.projectMinutes(K, mpg);
+    const total = mins.reduce((a, b) => a + b, 0) || 1;
+    const out = {};
+    for (const k of Object.keys(SKILL_LABELS)) {
+      let v = 0;
+      for (let i = 0; i < roster.length; i++) v += mins[i] * (roster[i][k] || 0);
+      out[k] = v / total;
+    }
+    return out;
+  }
+
+  /** Roster sorted by projected minutes, with those minutes attached. */
+  function rotation(teamId) {
+    const roster = rosterOf(teamId);
+    const mpg = roster.map(p => (p.games > 0 ? p.min / p.games : 0));
+    const mins = E.projectMinutes(K, mpg);
+    return roster.map((p, i) => Object.assign({}, p, { proj_min: mins[i] }))
+      .filter(p => p.proj_min > 0.5)
+      .sort((a, b) => b.proj_min - a.proj_min);
+  }
+
+  /* Say it in words. A table of decimals is not an answer to "are they any
+   * good"; this turns the same numbers into the sentence a person would. */
+  function describeTeam(row, profile) {
+    const bits = [];
+    const w = row.wins.toFixed(0);
+    let tier;
+    if (row.wins >= 58) tier = 'a genuine contender';
+    else if (row.wins >= 50) tier = 'a solid playoff team';
+    else if (row.wins >= 43) tier = 'in the play-in mix';
+    else if (row.wins >= 33) tier = 'a fringe team';
+    else tier = 'a rebuilding team';
+    bits.push(`Projected ${w}-${row.losses.toFixed(0)} — ${tier}, with a ` +
+      `${(row.playoff_odds * 100).toFixed(0)}% chance of finishing top six.`);
+
+    if (profile) {
+      const ranked = Object.keys(SKILL_LABELS)
+        .map(k => ({ k: k, v: profile[k] }))
+        .sort((a, b) => b.v - a.v);
+      const best = ranked[0], worst = ranked[ranked.length - 1];
+      if (best.v > 0.15) {
+        bits.push(`Their strength is ${SKILL_LABELS[best.k]}.`);
+      }
+      if (worst.v < -0.15) {
+        bits.push(`The clear weakness is ${SKILL_LABELS[worst.k]}` +
+          (worst.v < -0.6 ? ', badly.' : '.'));
+      }
+    }
+
+    const sos = row.sos || 0;
+    if (Math.abs(sos) > 0.4) {
+      bits.push(sos > 0
+        ? 'They also draw one of the harder schedules in the league.'
+        : 'They get an easier road than most.');
+    }
+    return bits.join(' ');
+  }
+
+  function loadTeam() {
+    const teamId = S.teamPage || D.teams[0].team_id;
+    S.teamPage = teamId;
+    const t = teamsById[teamId];
+    const strengths = strengthMap();
+    const rows = E.projectSeason(D, strengths, 800, 99);
+    const sos = E.scheduleStrength(D, strengths);
+    const row = rows.find(r => r.team_id === teamId);
+    if (row) row.sos = sos[teamId] || 0;
+    const profile = teamProfile(teamId);
+
+    const head = $('#team-headline');
+    head.innerHTML = '';
+    const card = el('div', 'card');
+    card.appendChild(el('div', 'bignum',
+      row ? `${row.wins.toFixed(0)}-${row.losses.toFixed(0)}` : '—'));
+    card.appendChild(el('p', 'hint', row ? describeTeam(row, profile)
+      : 'No schedule, so no projected record.'));
+    if (row) {
+      const kv = el('div', 'kv');
+      const add = (k, v) => {
+        kv.appendChild(el('span', 'k', k));
+        kv.appendChild(el('span', 'v', v));
+      };
+      add('net rating', signed(row.net, 1));
+      add('playoff odds', (row.playoff_odds * 100).toFixed(0) + '%');
+      add('play-in odds', (row.play_in_odds * 100).toFixed(0) + '%');
+      add('top seed odds', (row.top_seed_odds * 100).toFixed(0) + '%');
+      add('likely range', `${row.wins_low.toFixed(0)}–${row.wins_high.toFixed(0)} wins`);
+      card.appendChild(kv);
+    }
+    head.appendChild(card);
+
+    // Depth chart, grouped the way a coach would read it.
+    const depth = $('#team-depth');
+    depth.innerHTML = '';
+    const rot = rotation(teamId);
+    if (!rot.length) {
+      depth.appendChild(el('p', 'empty', 'Nobody on this roster has a record to project from.'));
+    } else {
+      for (const pos of K.positions) {
+        const group = rot.filter(p => p.position === pos);
+        if (!group.length) continue;
+        const h = el('div', 'bar-row');
+        h.appendChild(el('span', 'k', pos));
+        const list = el('div');
+        for (const p of group) {
+          const line = el('div', 'player-row');
+          line.appendChild(el('span', 'nm', p.name));
+          line.appendChild(el('span', 'num', p.proj_min.toFixed(1) + ' min'));
+          const imp = el('span', 'num ' + cls(p.impact), signed(p.impact, 1));
+          imp.title = impactTitle(p);
+          if (!p.unrated && (p.pbp_share || 0) < 0.25) imp.classList.add('thin');
+          line.appendChild(imp);
+          list.appendChild(line);
+        }
+        h.appendChild(list);
+        h.appendChild(el('span'));
+        depth.appendChild(h);
+      }
+    }
+
+    // Skill profile as bars, so the shape is visible at a glance.
+    const prof = $('#team-profile');
+    prof.innerHTML = '';
+    if (profile) {
+      const bars = el('div', 'bars');
+      for (const k of Object.keys(SKILL_LABELS)) {
+        const v = profile[k];
+        const r = el('div', 'bar-row');
+        r.appendChild(el('span', null, SKILL_LABELS[k]));
+        const track = el('div', 'bar-track');
+        const fill = el('div', 'bar-fill');
+        const mag = Math.min(1, Math.abs(v) / 1.2);
+        fill.style.background = v >= 0 ? 'var(--good)' : 'var(--bad)';
+        fill.style.width = (mag * 50) + '%';
+        fill.style.left = v >= 0 ? '50%' : (50 - mag * 50) + '%';
+        track.appendChild(fill);
+        const zero = el('div', 'bar-zero'); zero.style.left = '50%';
+        track.appendChild(zero);
+        r.appendChild(track);
+        r.appendChild(el('span', 'num', signed(v, 2)));
+        bars.appendChild(r);
+      }
+      prof.appendChild(bars);
+      prof.appendChild(el('p', 'hint',
+        'Each bar is how this rotation compares with an average one, ' +
+        'weighted by the minutes each player is projected to play.'));
+    }
+
+    // Best legal five from the top of the rotation.
+    const bestMount = $('#team-best');
+    bestMount.innerHTML = '';
+    const pool = rot.filter(p => !p.unrated).slice(0, 9).map(p => p.player_id);
+    if (pool.length < 5) {
+      bestMount.appendChild(el('p', 'empty', 'Not enough rated players to search.'));
+    } else {
+      let best;
+      try { best = E.bestLineups(D, pool, 5, true); } catch (e) { best = []; }
+      if (!best.length) { try { best = E.bestLineups(D, pool, 5, false); } catch (e) {} }
+      table(bestMount, best.map(b => ({
+        lineup: b.names.join(', '),
+        net_rating: b.net_rating,
+        off_rating: b.off_rating,
+        def_rating: b.def_rating,
+      })), [
+        { k: 'lineup', label: 'five on the floor' },
+        { k: 'net_rating', label: 'net' },
+        { k: 'off_rating', label: 'offence' },
+        { k: 'def_rating', label: 'defence' },
+      ], { sortKey: 'best', defaultSort: 'net_rating' });
+    }
+  }
+
+  /* ---------------------------------------------------------- season */
+
+  /** Net rating per team, from whoever is on the roster right now. */
+  function strengthMap() {
+    const out = {};
+    for (const t of D.teams) out[t.team_id] = E.teamStrength(D, rosterOf(t.team_id)).net;
+    return out;
+  }
+
+  function seasonColumns() {
+    return [
+      { k: 'team_abbrev', label: 'team' },
+      { k: 'wins', label: 'W' },
+      { k: 'losses', label: 'L' },
+      { k: 'range', label: 'range', title: 'where the season plausibly lands, 8 times out of 10' },
+      { k: 'net', label: 'net', title: 'points per 100 better than the opponent' },
+      { k: 'sos', label: 'schedule', title: 'average opponent net rating — positive means a harder road' },
+      { k: 'playoff_odds', label: 'playoff %', title: 'finishes top six' },
+      { k: 'play_in_odds', label: 'play-in %', title: 'finishes seventh through tenth' },
+      { k: 'top_seed_odds', label: 'no.1 seed %' },
+    ];
+  }
+
+  function loadSeason() {
+    const mount = $('#season-summary');
+    if (!D.schedule || !D.schedule.length) {
+      mount.innerHTML = '';
+      mount.appendChild(el('p', 'empty',
+        'No schedule published for this season yet, so records cannot be projected.'));
+      return;
+    }
+    const strengths = strengthMap();
+    const rows = E.projectSeason(D, strengths, 2000, 4242);
+    const sos = E.scheduleStrength(D, strengths);
+    rows.forEach(r => {
+      r.sos = sos[r.team_id] || 0;
+      r.range = `${r.wins_low.toFixed(0)}–${r.wins_high.toFixed(0)}`;
+    });
+
+    const byWins = rows.slice().sort((a, b) => b.wins - a.wins);
+    const best = byWins[0];
+    const favourite = rows.slice().sort((a, b) => b.top_seed_odds - a.top_seed_odds)[0];
+    mount.innerHTML = '';
+    const note = el('div', 'intro');
+    note.appendChild(el('p', null,
+      `${best.team_name} project best at ${best.wins.toFixed(0)}-${best.losses.toFixed(0)}. ` +
+      `${favourite.team_abbrev} is likeliest to take a one seed, at ` +
+      `${(favourite.top_seed_odds * 100).toFixed(0)}%. ` +
+      `The range column is where a season plausibly lands 8 times out of 10 — ` +
+      `projections a year out are wrong by about ` +
+      `${(D.constants.team_strength_sd || 0).toFixed(1)} points per 100 on average, ` +
+      `and that is built in rather than hidden.`));
+    mount.appendChild(note);
+
+    for (const [conf, sel] of [['East', '#east-table'], ['West', '#west-table']]) {
+      const side = rows.filter(r => r.conference === conf)
+        .sort((a, b) => b.wins - a.wins);
+      table($(sel), side, seasonColumns(),
+        { sortKey: 'season' + conf, defaultSort: 'wins' });
+    }
   }
 
   function loadTeams() {

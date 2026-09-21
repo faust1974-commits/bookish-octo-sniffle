@@ -375,6 +375,156 @@
     };
   }
 
+  /* ------------------------------------------------------ the season */
+
+  /**
+   * Play the schedule out. Returns per-team expected wins, playoff odds and
+   * seed distribution.
+   *
+   * Expected wins is the sum of per-game win probabilities -- exact, no
+   * simulation needed. Everything else (seeds, playoff odds) depends on how
+   * teams finish relative to each other, which is not a sum, so those come
+   * from simulating the actual schedule many times.
+   *
+   * `strengths` maps team_id to a net rating; passing it in rather than
+   * recomputing means an edited roster flows straight through.
+   */
+  function projectSeason(payload, strengths, sims, seed) {
+    const K = payload.constants;
+    const teams = payload.teams;
+    const idByAbbrev = {};
+    for (const t of teams) idByAbbrev[t.team_abbrev] = t.team_id;
+
+    const games = [];
+    for (const g of (payload.schedule || [])) {
+      const h = idByAbbrev[g[0]], a = idByAbbrev[g[1]];
+      if (h && a) games.push([h, a]);
+    }
+
+    const ids = teams.map(t => t.team_id);
+    const idx = {};
+    ids.forEach((id, i) => { idx[id] = i; });
+    const conf = teams.map(t => t.conference);
+
+    // Per-game home win probability, fixed across simulations.
+    const p = new Float64Array(games.length);
+    for (let g = 0; g < games.length; g++) {
+      const h = strengths[games[g][0]] || 0, a = strengths[games[g][1]] || 0;
+      p[g] = winProbability(K, h, a);
+    }
+
+    const expected = new Float64Array(ids.length);
+    const played = new Float64Array(ids.length);
+    for (let g = 0; g < games.length; g++) {
+      const hi = idx[games[g][0]], ai = idx[games[g][1]];
+      expected[hi] += p[g];
+      expected[ai] += 1 - p[g];
+      played[hi] += 1; played[ai] += 1;
+    }
+
+    const nSims = sims || 2000;
+    const rng = makeRng(seed === undefined ? 4242 : seed);
+    const playoff = new Float64Array(ids.length);
+    const playIn = new Float64Array(ids.length);
+    const topSeed = new Float64Array(ids.length);
+    const seedSum = new Float64Array(ids.length);
+    const wins = new Float64Array(ids.length);
+    const winSum = new Float64Array(ids.length);
+    const winsBySim = [];
+    for (let i = 0; i < ids.length; i++) winsBySim.push(new Float64Array(nSims));
+
+    // A projection is not a fact. Each simulated season draws every team's
+    // true strength from around its projection, by as much as projections
+    // are actually wrong a year out. Without this the model reports 70-win
+    // seasons and near-certain seeds, which the evidence does not support.
+    const sd = K.team_strength_sd || 0;
+    const shock = new Float64Array(ids.length);
+    const gp = new Float64Array(games.length);
+
+    for (let s = 0; s < nSims; s++) {
+      wins.fill(0);
+      if (sd > 0) {
+        for (let i = 0; i < ids.length; i++) shock[i] = gauss(rng) * sd;
+        for (let g = 0; g < games.length; g++) {
+          const hi = idx[games[g][0]], ai = idx[games[g][1]];
+          gp[g] = winProbability(K,
+            (strengths[games[g][0]] || 0) + shock[hi],
+            (strengths[games[g][1]] || 0) + shock[ai]);
+        }
+      } else {
+        for (let g = 0; g < games.length; g++) gp[g] = p[g];
+      }
+      for (let g = 0; g < games.length; g++) {
+        const hi = idx[games[g][0]], ai = idx[games[g][1]];
+        if (rng() < gp[g]) wins[hi] += 1; else wins[ai] += 1;
+      }
+      for (let i = 0; i < ids.length; i++) {
+        winSum[i] += wins[i];
+        winsBySim[i][s] = wins[i];
+      }
+      for (const c of ['East', 'West']) {
+        const order = [];
+        for (let i = 0; i < ids.length; i++) if (conf[i] === c) order.push(i);
+        // Ties are broken by a coin flip rather than by index, so no team
+        // gets a seed for being early in the alphabet.
+        order.sort((x, y) => (wins[y] - wins[x]) || (rng() - 0.5));
+        for (let r = 0; r < order.length; r++) {
+          const i = order[r];
+          seedSum[i] += r + 1;
+          if (r < 6) playoff[i] += 1;
+          else if (r < 10) playIn[i] += 1;
+          if (r === 0) topSeed[i] += 1;
+        }
+      }
+    }
+
+    // The published schedule holds back two games a team pending cup
+    // results, so scale the season out to its real length rather than
+    // reporting an 80-game record as if it were the whole year.
+    const full = K.games_per_season || 82;
+    const pct = (arr, q) => {
+      const sorted = Array.from(arr).sort((a, b) => a - b);
+      return sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
+    };
+    return teams.map((t, i) => {
+      const scale = played[i] > 0 ? full / played[i] : 1;
+      const mean = (sd > 0 ? winSum[i] / nSims : expected[i]) * scale;
+      return {
+        team_id: t.team_id,
+        team_abbrev: t.team_abbrev,
+        team_name: t.team_name,
+        conference: t.conference,
+        net: strengths[t.team_id] || 0,
+        wins: mean,
+        losses: full - mean,
+        // The range a season this uncertain can plausibly land in.
+        wins_low: pct(winsBySim[i], 0.10) * scale,
+        wins_high: pct(winsBySim[i], 0.90) * scale,
+        scheduled: played[i],
+        playoff_odds: playoff[i] / nSims,
+        play_in_odds: playIn[i] / nSims,
+        top_seed_odds: topSeed[i] / nSims,
+        avg_seed: seedSum[i] / nSims,
+      };
+    });
+  }
+
+  /** Strength of schedule: the average opponent a team actually faces. */
+  function scheduleStrength(payload, strengths) {
+    const idByAbbrev = {};
+    for (const t of payload.teams) idByAbbrev[t.team_abbrev] = t.team_id;
+    const sum = {}, n = {};
+    for (const g of (payload.schedule || [])) {
+      const h = idByAbbrev[g[0]], a = idByAbbrev[g[1]];
+      if (!h || !a) continue;
+      sum[h] = (sum[h] || 0) + (strengths[a] || 0); n[h] = (n[h] || 0) + 1;
+      sum[a] = (sum[a] || 0) + (strengths[h] || 0); n[a] = (n[a] || 0) + 1;
+    }
+    const out = {};
+    for (const id of Object.keys(n)) out[id] = sum[id] / n[id];
+    return out;
+  }
+
   /* ------------------------------------------------------- rate bases */
 
   /** Put a player's counting stats on a rate basis. Mirrors metrics.normalize. */
@@ -536,6 +686,7 @@
     mean, stdev, clamp, normalCdf,
     tsDelta, redistributeUsage,
     projectMinutes, rawStrength, teamStrength,
+    projectSeason, scheduleStrength,
     evaluateLineup, swapPlayer, positionsViable, bestReplacement, bestLineups,
     normalize, projectedMargin, winProbability, simulateGame, makeRng,
     SKILLS,
