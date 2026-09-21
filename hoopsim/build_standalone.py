@@ -47,6 +47,27 @@ STANDALONE_CSS = """
   margin-left: 6px; padding: 1px 5px; border-radius: 3px; vertical-align: 1px;
   background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
 .vintage.unrated { border-style: dashed; }
+
+/* Roster editing: three lists you can drag players between. */
+.roster-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 1040px) { .roster-grid { grid-template-columns: 1fr; } }
+.grow { flex: 1; }
+.droplist { display: flex; flex-direction: column; gap: 4px; min-height: 140px;
+  max-height: 540px; overflow-y: auto; padding: 4px; border-radius: 8px;
+  border: 1px dashed transparent; }
+.droplist.over { border-color: var(--accent); background: var(--accent-soft); }
+.drag-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 8px;
+  align-items: center; padding: 6px 8px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--surface-2); cursor: grab; }
+.drag-row:active { cursor: grabbing; }
+.drag-row.dragging { opacity: 0.4; }
+.drag-row .handle { color: var(--muted); font-size: 13px; line-height: 1; }
+.drag-row .nm { font-weight: 500; font-size: 14px; }
+.drag-row .num { font-family: var(--mono); font-size: 12px; min-width: 44px;
+  text-align: right; }
+.drag-row select { padding: 2px 4px; font-size: 12px; max-width: 74px; }
+.drag-row.moved { border-color: var(--accent); border-left-width: 3px; }
+.edited-flag { color: var(--accent); font-size: 12px; margin-left: 6px; }
 """
 
 #: Counting stats the browser can put on any rate basis.
@@ -192,6 +213,20 @@ def _rebuild_on_rosters(players, fallback_entries, roster_frame,
 
     unknown = _replacement_profile(players)
     out = []
+    # Players with a record who are on nobody's roster -- released, retired,
+    # gone overseas. They are carried as free agents rather than deleted,
+    # because a roster feed is never quite right and the person using this
+    # needs to be able to put someone back on a team.
+    on_roster = set(roster_frame["name_key"])
+    for entry in players:
+        if R.name_key(entry["name"]) not in on_roster:
+            free = dict(entry)
+            free["team_id"] = ""
+            free["data_season"] = analysis.league.season
+            free["has_data"] = True
+            free["free_agent"] = True
+            out.append(free)
+
     for row in joined.to_dict("records"):
         entry = {k: (None if _is_missing(v) else v) for k, v in row.items()}
         entry["name"] = entry.pop("player_name")

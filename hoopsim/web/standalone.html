@@ -14,6 +14,7 @@
   </div>
   <nav id="tabs">
     <button class="tab active" data-tab="lineups">Lineups</button>
+    <button class="tab" data-tab="rosters">Rosters</button>
     <button class="tab" data-tab="players">Players</button>
     <button class="tab" data-tab="teams">Teams</button>
     <button class="tab" data-tab="splits">Splits</button>
@@ -75,6 +76,42 @@
     <div class="card hidden" id="best-card">
       <h2 id="best-title">Best five-man units</h2>
       <div id="best-result"></div>
+    </div>
+  </section>
+
+  <section id="tab-rosters" class="panel">
+    <div class="intro">
+      <p><strong>Drag a player onto another team.</strong> Rosters come from a feed
+      that refreshes daily, and a feed is never quite right &mdash; trades land,
+      signings lag, sometimes it is simply wrong. Fix it here and every rating on
+      every other tab follows immediately.</p>
+      <p>Your changes are saved in this browser and survive closing the file.
+      <strong>Reset to official</strong> puts everything back the way the feed had it.</p>
+    </div>
+    <div class="controls">
+      <label>Left <select id="roster-a"></select></label>
+      <label>Right <select id="roster-b"></select></label>
+      <label>Find a player <input id="fa-search" type="search" placeholder="name"></label>
+      <span class="grow"></span>
+      <span class="hint" id="edit-count"></span>
+      <button id="undo-move" class="ghost">Undo</button>
+      <button id="reset-rosters" class="ghost">Reset to official</button>
+    </div>
+    <div class="roster-grid">
+      <div class="card">
+        <h2 id="roster-a-title">&mdash;</h2>
+        <div id="roster-a-list" class="droplist"></div>
+      </div>
+      <div class="card">
+        <h2 id="roster-b-title">&mdash;</h2>
+        <div id="roster-b-list" class="droplist"></div>
+      </div>
+      <div class="card">
+        <h2>Not on a roster
+          <span class="hint">free agents, and players the feed has out of the league</span>
+        </h2>
+        <div id="fa-list" class="droplist"></div>
+      </div>
     </div>
   </section>
 

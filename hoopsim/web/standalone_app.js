@@ -12,7 +12,84 @@
   const teamsById = {};
   for (const t of D.teams) teamsById[t.team_id] = t;
 
-  const S = { lineup: [], team: null, sort: {}, rapmMode: false };
+  const S = { lineup: [], team: null, sort: {}, rapmMode: false,
+              moves: {}, undo: [], rosterA: null, rosterB: null };
+
+  /* ------------------------------------------------- roster overrides */
+
+  /* A roster feed is never quite right: trades land, signings lag, and some
+   * entries are simply wrong. So the feed is a starting point, not the
+   * truth, and anything the person changes here wins over it.
+   *
+   * Overrides live in this browser only. They survive closing the file and
+   * never leave the machine. Storage can be unavailable (private windows,
+   * blocked site data), so every read and write is guarded and the page
+   * works fine without it -- it just forgets between sessions. */
+  const MOVES_KEY = 'hoopsim.rosters.v1';
+
+  function loadMoves() {
+    try {
+      const raw = localStorage.getItem(MOVES_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || typeof parsed !== 'object') return {};
+      // Drop ids that are not in this build, so an older saved set cannot
+      // resurrect players the data no longer has.
+      const clean = {};
+      for (const [pid, team] of Object.entries(parsed)) {
+        if (D.playersById[pid] && (team === '' || teamsById[team])) clean[pid] = team;
+      }
+      return clean;
+    } catch (e) { return {}; }
+  }
+
+  function saveMoves() {
+    try { localStorage.setItem(MOVES_KEY, JSON.stringify(S.moves)); } catch (e) { /* fine */ }
+  }
+
+  /** The team a player is on right now, override included. '' means no team. */
+  function effTeam(p) {
+    return Object.prototype.hasOwnProperty.call(S.moves, p.player_id)
+      ? S.moves[p.player_id] : (p.team_id || '');
+  }
+
+  function movePlayer(pid, teamId) {
+    const p = D.playersById[pid];
+    if (!p || effTeam(p) === teamId) return false;
+    S.undo.push({ pid: pid, prev: effTeam(p) });
+    // Back to where the feed had him is not an override, it is a deletion --
+    // otherwise "reset" and "moved back by hand" would look different.
+    if ((p.team_id || '') === teamId) delete S.moves[pid];
+    else S.moves[pid] = teamId;
+    saveMoves();
+    afterRosterChange();
+    return true;
+  }
+
+  /** Anyone no longer on the selected team cannot stay on its floor. */
+  function afterRosterChange() {
+    const before = S.lineup.length;
+    S.lineup = S.lineup.filter(pid => effTeam(D.playersById[pid]) === S.team);
+    renderRosterEditor();
+    renderRoster();
+    if (S.lineup.length !== before) evaluate();
+    else evaluate();
+    loadPlayers();
+    updateEditFlag();
+  }
+
+  function editCount() { return Object.keys(S.moves).length; }
+
+  function updateEditFlag() {
+    const n = editCount();
+    const label = n ? `${n} roster change${n === 1 ? '' : 's'} of your own` : '';
+    $('#edit-count').textContent = label;
+    const flag = $('#roster-edited');
+    if (flag) {
+      flag.textContent = n ? `· ${n} edited` : '';
+    }
+    $('#undo-move').disabled = !S.undo.length;
+    $('#reset-rosters').disabled = !n;
+  }
 
   /* ---------------------------------------------------------- helpers */
 
@@ -194,6 +271,9 @@
     $('#split-dimension').addEventListener('change', loadSplits);
     $('#run-game').addEventListener('click', runGame);
 
+    S.moves = loadMoves();
+    setupRosterEditor();
+
     S.team = D.teams[0].team_id;
     $('#lineup-team').value = S.team;
     renderRoster();
@@ -202,10 +282,157 @@
     loadSplits();
   }
 
+  /* --------------------------------------------------- roster editor */
+
+  /** Team options for the per-row "move to" menu, free agency included. */
+  function moveOptions() {
+    return [{ value: '', label: '—' }].concat(
+      D.teams.map(t => ({ value: t.team_id, label: t.team_abbrev })));
+  }
+
+  function dragRow(p) {
+    const moved = Object.prototype.hasOwnProperty.call(S.moves, p.player_id);
+    const row = el('div', 'drag-row' + (moved ? ' moved' : ''));
+    row.draggable = true;
+    row.dataset.pid = p.player_id;
+    row.title = moved ? 'You moved this player. Undo or reset puts him back.' : '';
+
+    row.appendChild(el('span', 'handle', '⠿'));
+
+    const nm = el('span', 'nm', p.name);
+    if (p.unrated) nm.appendChild(el('span', 'vintage unrated', 'no record'));
+    else if (p.data_season && p.data_season !== D.meta.season) {
+      nm.appendChild(el('span', 'vintage', p.data_season));
+    }
+    row.appendChild(nm);
+
+    const imp = el('span', 'num ' + cls(p.impact), signed(p.impact, 1));
+    imp.title = 'impact: points per 100 possessions versus an average player';
+    row.appendChild(imp);
+
+    // Dragging is nice; a menu is what works on a phone, with one hand, or
+    // when the target team is not one of the two on screen.
+    const sel = document.createElement('select');
+    fillSelect(sel, moveOptions(), effTeam(p));
+    sel.title = 'move to another team';
+    sel.addEventListener('change', (e) => {
+      if (!movePlayer(p.player_id, e.target.value)) return;
+      const to = e.target.value ? teamsById[e.target.value].team_abbrev : 'free agents';
+      toast(`${p.name} → ${to}`);
+    });
+    sel.addEventListener('click', (e) => e.stopPropagation());
+    row.appendChild(sel);
+
+    row.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', p.player_id);
+      e.dataTransfer.effectAllowed = 'move';
+      row.classList.add('dragging');
+    });
+    row.addEventListener('dragend', () => row.classList.remove('dragging'));
+    return row;
+  }
+
+  function fillList(mount, players, emptyText) {
+    mount.innerHTML = '';
+    if (!players.length) {
+      mount.appendChild(el('p', 'empty', emptyText));
+      return;
+    }
+    players.forEach(p => mount.appendChild(dragRow(p)));
+  }
+
+  function makeDropTarget(mount, teamIdFn) {
+    mount.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      mount.classList.add('over');
+    });
+    mount.addEventListener('dragleave', () => mount.classList.remove('over'));
+    mount.addEventListener('drop', (e) => {
+      e.preventDefault();
+      mount.classList.remove('over');
+      const pid = e.dataTransfer.getData('text/plain');
+      const target = teamIdFn();
+      const p = D.playersById[pid];
+      if (!p) return;
+      if (!movePlayer(pid, target)) {
+        toast(`${p.name} is already there.`);
+        return;
+      }
+      toast(`${p.name} → ${target ? teamsById[target].team_abbrev : 'free agents'}`);
+    });
+  }
+
+  function renderRosterEditor() {
+    $('#roster-a-title').textContent = S.rosterA
+      ? teamsById[S.rosterA].team_name : '—';
+    $('#roster-b-title').textContent = S.rosterB
+      ? teamsById[S.rosterB].team_name : '—';
+    fillList($('#roster-a-list'), teamPlayers(S.rosterA), 'Nobody here. Drag someone in.');
+    fillList($('#roster-b-list'), teamPlayers(S.rosterB), 'Nobody here. Drag someone in.');
+
+    const q = ($('#fa-search').value || '').trim().toLowerCase();
+    let pool = D.players.filter(p => effTeam(p) === '');
+    // The search box looks across the whole league, so you can pull a player
+    // over without first knowing which team the feed thinks he is on.
+    if (q) {
+      pool = D.players.filter(p => p.name.toLowerCase().includes(q)
+        && effTeam(p) !== S.rosterA && effTeam(p) !== S.rosterB);
+    }
+    pool.sort((a, b) => (b.min || 0) - (a.min || 0));
+    fillList($('#fa-list'), pool.slice(0, 120),
+      q ? 'No player by that name.' : 'Everyone with a record is on a roster.');
+    updateEditFlag();
+  }
+
+  function setupRosterEditor() {
+    const teamItems = D.teams.map(t => ({
+      value: t.team_id, label: `${t.team_abbrev} — ${t.team_name}`,
+    }));
+    S.rosterA = D.teams[0].team_id;
+    S.rosterB = (D.teams[1] || D.teams[0]).team_id;
+    fillSelect($('#roster-a'), teamItems, S.rosterA);
+    fillSelect($('#roster-b'), teamItems, S.rosterB);
+
+    $('#roster-a').addEventListener('change', (e) => {
+      S.rosterA = e.target.value; renderRosterEditor();
+    });
+    $('#roster-b').addEventListener('change', (e) => {
+      S.rosterB = e.target.value; renderRosterEditor();
+    });
+    $('#fa-search').addEventListener('input', renderRosterEditor);
+
+    makeDropTarget($('#roster-a-list'), () => S.rosterA);
+    makeDropTarget($('#roster-b-list'), () => S.rosterB);
+    makeDropTarget($('#fa-list'), () => '');
+
+    $('#undo-move').addEventListener('click', () => {
+      const last = S.undo.pop();
+      if (!last) return;
+      const p = D.playersById[last.pid];
+      if ((p.team_id || '') === last.prev) delete S.moves[last.pid];
+      else S.moves[last.pid] = last.prev;
+      saveMoves();
+      afterRosterChange();
+      toast(`${p.name} back to ${last.prev ? teamsById[last.prev].team_abbrev : 'free agents'}`);
+    });
+
+    $('#reset-rosters').addEventListener('click', () => {
+      if (!editCount()) return;
+      const n = editCount();
+      S.moves = {}; S.undo = [];
+      saveMoves();
+      afterRosterChange();
+      toast(`${n} change${n === 1 ? '' : 's'} undone. Back to the official rosters.`);
+    });
+
+    renderRosterEditor();
+  }
+
   /* --------------------------------------------------------- lineups */
 
   function teamPlayers(teamId) {
-    return D.players.filter(p => p.team_id === teamId)
+    return D.players.filter(p => effTeam(p) === teamId)
       .sort((a, b) => (a.unrated ? 1 : 0) - (b.unrated ? 1 : 0)
         || (b.min || 0) - (a.min || 0));
   }
