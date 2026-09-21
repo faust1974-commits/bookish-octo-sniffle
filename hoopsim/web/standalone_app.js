@@ -71,9 +71,9 @@
     S.lineup = S.lineup.filter(pid => effTeam(D.playersById[pid]) === S.team);
     renderRosterEditor();
     renderRoster();
-    if (S.lineup.length !== before) evaluate();
-    else evaluate();
+    evaluate();
     loadPlayers();
+    loadTeams();          // team projections are built from the rosters
     updateEditFlag();
   }
 
@@ -772,8 +772,43 @@
 
   /* ----------------------------------------------------------- teams */
 
+  /* Everyone on this team with enough of a record to rate. */
+  function rosterOf(teamId) {
+    return D.players.filter(p => effTeam(p) === teamId && p.min && p.games);
+  }
+
+  /* What this team projects to, from the players on it today -- as opposed
+   * to what last season's team did. After a trade those are different
+   * questions, and showing only the second one is how a roster with Giannis
+   * on it can read as a mediocre defence. */
+  function projectedTeams() {
+    return D.teams.map((t) => {
+      const s = E.teamStrength(D, rosterOf(t.team_id));
+      const lg = D.meta.league_off_rating;
+      return Object.assign({}, t, {
+        // Put both halves on the familiar scale: points scored and points
+        // allowed per 100, so they sit beside last season's columns without
+        // the reader having to flip a sign in their head.
+        proj_off: lg + s.off,
+        proj_def: lg - s.def,
+        proj_net: s.net,
+      });
+    });
+  }
+
   function loadTeams() {
-    table($('#teams-table'), D.teams, [
+    table($('#teams-table'), projectedTeams(), [
+      { k: 'team_abbrev', label: 'team' },
+      { k: 'conference', label: 'conf' },
+      { k: 'proj_off', label: 'proj offence',
+        title: 'projected points scored per 100, from the players on this roster now' },
+      { k: 'proj_def', label: 'proj defence',
+        title: 'projected points allowed per 100 — lower is better' },
+      { k: 'proj_net', label: 'proj net',
+        title: 'projected points per 100 better than the opponent' },
+    ], { sortKey: 'proj', defaultSort: 'proj_net' });
+
+    table($('#last-season-table'), D.teams, [
       { k: 'team_abbrev', label: 'team' },
       { k: 'conference', label: 'conf' },
       { k: 'w', label: 'W' }, { k: 'l', label: 'L' },
@@ -785,6 +820,7 @@
       { k: 'pythag_win_pct', label: 'expected win%' },
       { k: 'luck', label: 'luck', title: 'wins above what the scoring says they deserved' },
     ], { sortKey: 'teams', defaultSort: 'adj_net_rating' });
+
 
     table($('#factors-table'), D.teams, [
       { k: 'team_abbrev', label: 'team' },
@@ -824,7 +860,8 @@
     const mount = $('#game-result');
     mount.innerHTML = '<div class="spinner">simulating…</div>';
     setTimeout(() => {
-      const hr = D.ratings[home] || 0, ar = D.ratings[away] || 0;
+      const hr = E.teamStrength(D, rosterOf(home)).net;
+      const ar = E.teamStrength(D, rosterOf(away)).net;
       const res = E.simulateGame(D, hr, ar, 10000, 7);
       const analytic = E.winProbability(K, hr, ar);
       mount.innerHTML = '';

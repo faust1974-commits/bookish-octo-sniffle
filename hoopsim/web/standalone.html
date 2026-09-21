@@ -134,12 +134,24 @@
 
   <section id="tab-teams" class="panel">
     <div class="intro">
-      <p>These are <strong>last season's team results</strong> &mdash; wins, ratings
-      and four factors from games actually played. They describe the teams as they
-      were constituted then, not the rosters on the Lineups tab, which are current.
-      Nobody has played a possession of the new season yet.</p>
+      <p>The <strong>first table is a projection</strong> built from the players on
+      each roster today &mdash; so a team that traded for a star reads as better,
+      immediately. Edit a roster on the Rosters tab and these numbers move with it.</p>
+      <p>The second table is <strong>last season's actual results</strong>, describing
+      the teams as they were then. Both are useful; they answer different questions.</p>
     </div>
-    <div class="card"><h2>Efficiency</h2><div id="teams-table"></div></div>
+    <div class="card">
+      <h2>Projected from today's rosters
+        <span class="hint">what these teams are now, not what last year's teams did</span>
+      </h2>
+      <div id="teams-table"></div>
+    </div>
+    <div class="card">
+      <h2>Last season's actual results
+        <span class="hint">2025-26, the teams as they were then constituted</span>
+      </h2>
+      <div id="last-season-table"></div>
+    </div>
     <div class="card">
       <h2>Four factors
         <span class="hint">shooting, turnovers, rebounding, free throws &mdash; in that order of importance</span>
