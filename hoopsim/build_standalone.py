@@ -69,6 +69,9 @@ STANDALONE_CSS = """
 .drag-row select { padding: 2px 4px; font-size: 12px; max-width: 74px; }
 .drag-row.moved { border-color: var(--accent); border-left-width: 3px; }
 .edited-flag { color: var(--accent); font-size: 12px; margin-left: 6px; }
+.se { color: var(--muted); font-size: 11px; font-weight: 400; }
+/* A rating the play-by-play barely touched is mostly a box-score guess. */
+.num.thin { opacity: 0.62; font-style: italic; }
 """
 
 #: Counting stats the browser can put on any rate basis.
@@ -195,7 +198,39 @@ def _replacement_profile(players: list[dict]) -> dict:
              "usage": 0.18, "ts_pct": 0.54}
     for skill in UNKNOWN_SKILLS:
         entry[skill] = 0.0
+    entry["pbp_share"] = 0.0
+    entry["impact_se"] = None      # not "wide", but "no measurement at all"
     return entry
+
+
+def add_uncertainty(entries: list[dict], alpha: float) -> list[dict]:
+    """Say how much each rating can be trusted, and where it came from.
+
+    A ridge-fitted rating is a weighted average of two things: what the
+    possessions say, and what the box score says. The weight on the
+    possessions is roughly `poss / (poss + alpha)` -- so a deep-bench player
+    is barely rated by play-by-play at all. His number is the box score
+    wearing an impact label.
+
+    Hiding that is how a backup centre ends up fifth in the league looking
+    exactly as authoritative as the man in first. Both halves of the
+    uncertainty are reported: sampling noise on the measured part, and the
+    box model's own error on the part it is standing in for.
+    """
+    rated = [e["impact"] for e in entries if e.get("impact") is not None]
+    spread = float(np.std(rated)) if rated else 1.0
+    # What the box score cannot explain about real impact is the error in
+    # any rating that leans on it.
+    prior_sd = spread * math.sqrt(max(0.0, 1.0 - K.BOX_PRIOR_R_SQUARED))
+
+    for e in entries:
+        poss = e.get("rapm_poss") or 0.0
+        share = poss / (poss + alpha) if poss > 0 else 0.0
+        measured = share * K.RAPM_SE_DATA
+        guessed = (1.0 - share) * prior_sd
+        e["pbp_share"] = _clean(share, 3)
+        e["impact_se"] = _clean(math.sqrt(measured ** 2 + guessed ** 2), 2)
+    return entries
 
 
 def _fit_strength(analysis, entries) -> dict:
@@ -327,7 +362,7 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
     who have left the league are gone.
     """
     model = analysis.lineup_model
-    players = player_entries(analysis)
+    players = add_uncertainty(player_entries(analysis), analysis.rapm_alpha)
 
     # Fit roster-derived strength onto this league's own net ratings, before
     # the roster join moves anybody: the calibration has to be learned on the
@@ -336,7 +371,9 @@ def build_payload(analysis: Analysis, *, splits: bool = True,
 
     report = None
     if roster_frame is not None:
-        fallback_entries = player_entries(fallback) if fallback is not None else None
+        fallback_entries = (add_uncertainty(player_entries(fallback),
+                                            fallback.rapm_alpha)
+                            if fallback is not None else None)
         players, report = _rebuild_on_rosters(
             players, fallback_entries, roster_frame, analysis, fallback)
 

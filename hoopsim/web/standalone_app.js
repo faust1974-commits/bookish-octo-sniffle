@@ -307,7 +307,8 @@
     row.appendChild(nm);
 
     const imp = el('span', 'num ' + cls(p.impact), signed(p.impact, 1));
-    imp.title = 'impact: points per 100 possessions versus an average player';
+    imp.title = impactTitle(p);
+    if (!p.unrated && (p.pbp_share || 0) < 0.25) imp.classList.add('thin');
     row.appendChild(imp);
 
     // Dragging is nice; a menu is what works on a phone, with one hand, or
@@ -437,6 +438,32 @@
         || (b.min || 0) - (a.min || 0));
   }
 
+  /* A rating is a weighted average of what the possessions say and what the
+   * box score says. Which one is doing the work matters more than the number
+   * itself, so say it plainly wherever the number appears. */
+  function impactTitle(p) {
+    if (p.unrated) {
+      return 'He has never played an NBA possession. Shown at replacement ' +
+        'level because that is the least-wrong placeholder, not a projection.';
+    }
+    const share = Math.round((p.pbp_share || 0) * 100);
+    const se = (p.impact_se === null || p.impact_se === undefined)
+      ? '' : ` Give or take ${p.impact_se.toFixed(1)}.`;
+    let basis;
+    if (share >= 45) {
+      basis = `Mostly measured: ${share}% of this comes from what actually ` +
+        'happened on the floor with him out there.';
+    } else if (share >= 25) {
+      basis = `Half and half: ${share}% from possessions played, the rest ` +
+        'from his box score.';
+    } else {
+      basis = `Thin evidence: only ${share}% of this is measured impact. ` +
+        'The rest is his box score, and box scores flatter efficient big men.';
+    }
+    return `Impact: points per 100 possessions versus an average player.${se} ` +
+      basis;
+  }
+
   function renderRoster() {
     const mount = $('#roster');
     mount.innerHTML = '';
@@ -459,10 +486,11 @@
       row.appendChild(nm);
       row.appendChild(el('span', 'pos', p.position));
       const imp = el('span', 'num ' + cls(p.impact), signed(p.impact, 1));
-      imp.title = p.unrated
-        ? 'He has never played an NBA possession. Shown at replacement level ' +
-          'because that is the least-wrong placeholder, not a projection.'
-        : 'impact: points per 100 possessions versus an average player';
+      imp.title = impactTitle(p);
+      if (p.impact_se !== null && p.impact_se !== undefined) {
+        imp.appendChild(el('span', 'se', ' ±' + p.impact_se.toFixed(1)));
+      }
+      if (!p.unrated && (p.pbp_share || 0) < 0.25) imp.classList.add('thin');
       row.appendChild(imp);
       const usg = el('span', 'num', (p.usage * 100).toFixed(1) + '%');
       usg.title = 'usage: share of the team’s possessions he ends';

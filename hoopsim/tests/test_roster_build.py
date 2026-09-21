@@ -184,3 +184,50 @@ def test_clean_refuses_a_multi_row_lookup():
         B._clean(pd.Series([1.0, 2.0], index=["a", "b"]))
     with pytest.raises(TypeError, match="expected one value per field"):
         B._clean([1.0, 2.0])
+
+
+# -- how much to trust a rating ---------------------------------------------
+
+def test_uncertainty_says_where_the_rating_came_from():
+    from hoopsim import constants as K
+
+    entries = [
+        {"name": "Star", "impact": 5.0, "rapm_poss": 9000.0},
+        {"name": "Rotation", "impact": 1.0, "rapm_poss": 4000.0},
+        {"name": "Deep bench", "impact": 4.5, "rapm_poss": 400.0},
+        {"name": "Never played", "impact": -2.0, "rapm_poss": 0.0},
+    ]
+    out = {e["name"]: e for e in B.add_uncertainty(entries, K.RAPM_DEFAULT_ALPHA)}
+
+    # The share of a rating that play-by-play actually drove rises with
+    # possessions -- that is the whole point of the disclosure.
+    assert (out["Star"]["pbp_share"] > out["Rotation"]["pbp_share"]
+            > out["Deep bench"]["pbp_share"] > out["Never played"]["pbp_share"])
+    assert out["Never played"]["pbp_share"] == 0.0
+
+    # A bench player's rating is mostly his box score, so it is the least
+    # certain -- even though his number looks as confident as anyone's.
+    assert out["Deep bench"]["impact_se"] > out["Star"]["impact_se"]
+    for e in out.values():
+        assert e["impact_se"] > 0
+
+
+def test_a_player_with_no_record_has_no_error_bar_at_all():
+    profile = B._replacement_profile([
+        {"min": 2000.0, "impact": 2.0}, {"min": 1500.0, "impact": -1.0}])
+    # Not "very uncertain" -- unmeasured. An error bar would imply a
+    # measurement was taken.
+    assert profile["impact_se"] is None
+    assert profile["pbp_share"] == 0.0
+
+
+def test_error_bars_scale_with_how_noisy_the_league_is():
+    from hoopsim import constants as K
+
+    tight = [{"impact": v, "rapm_poss": 500.0} for v in (0.1, -0.1, 0.2, -0.2)]
+    wide = [{"impact": v, "rapm_poss": 500.0} for v in (6.0, -6.0, 4.0, -4.0)]
+    a = B.add_uncertainty(tight, K.RAPM_DEFAULT_ALPHA)[0]["impact_se"]
+    b = B.add_uncertainty(wide, K.RAPM_DEFAULT_ALPHA)[0]["impact_se"]
+    # The prior's error is a share of the spread it has to explain, so a
+    # league where ratings vary more has wider bars on its guesses.
+    assert b > a

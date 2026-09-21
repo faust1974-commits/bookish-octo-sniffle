@@ -250,6 +250,19 @@ RAPM_DEFAULT_ALPHA = 8000.0
 # using both beats using either.
 RAPM_PRIOR_WEIGHT = 1.0
 
+# How repeatable is a rating? Measured, not assumed: the 2025-26 season was
+# split in half at random by game, fitted twice independently, and the two
+# answers compared. Among players with enough possessions for the
+# play-by-play to actually drive their rating, the halves differed by 0.92
+# points per 100 (one standard deviation).
+RAPM_SE_DATA = 0.92
+
+# How well does the box score predict measured impact? Fitting the box model
+# against a no-prior RAPM -- the only non-circular way to ask -- gives
+# R^2 = 0.309. So where a rating comes from the prior rather than from
+# possessions, this is how much of it is guesswork.
+BOX_PRIOR_R_SQUARED = 0.309
+
 # Minimum possessions before a player gets an unregularized-ish estimate.
 RAPM_MIN_POSSESSIONS = 100
 
