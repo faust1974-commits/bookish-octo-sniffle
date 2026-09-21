@@ -227,9 +227,28 @@ USAGE_ABSORPTION_EXPONENT = 1.35
 # RAPM
 # --------------------------------------------------------------------------
 
-# Ridge penalty for RAPM. Chosen by cross-validation in practice; this is a
-# sane default for a single season of NBA possessions.
-RAPM_DEFAULT_ALPHA = 2000.0
+# Ridge penalty for RAPM, measured rather than assumed.
+#
+# The earlier value here was 2000 with a comment saying it should be chosen
+# by cross-validation. Nothing ever chose it. Measured on the job the model
+# is actually asked to do -- fit on 2024-25, apply to 2025-26 rosters, and
+# explain how those teams turned out -- 2000 was the worst setting tried:
+#
+#     alpha    2000    4000    8000   16000   32000
+#     R^2      0.325   0.343   0.344   0.337   0.331
+#
+# Under-regularising is what put a backup centre seventh in the league. See
+# `impact/evaluate.py` for why stint-level error cannot settle this.
+RAPM_DEFAULT_ALPHA = 8000.0
+
+# Weight on the box-score prior: 1.0 shrinks fully toward a player's box
+# estimate rather than toward zero.
+#
+# With the penalty above, the prior is the single largest gain available --
+# R^2 0.344 without it, 0.383 with it, against 0.275 for the box score alone.
+# Play-by-play and box score each carry information the other lacks, and
+# using both beats using either.
+RAPM_PRIOR_WEIGHT = 1.0
 
 # Minimum possessions before a player gets an unregularized-ish estimate.
 RAPM_MIN_POSSESSIONS = 100

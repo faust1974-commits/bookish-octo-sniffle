@@ -24,6 +24,7 @@ class Analysis:
 
     league: League
     rapm_alpha: float = K.RAPM_DEFAULT_ALPHA
+    rapm_prior_weight: float = K.RAPM_PRIOR_WEIGHT
     min_minutes: float = 100.0
     _overrides: dict = field(default_factory=dict, repr=False)
 
@@ -106,7 +107,25 @@ class Analysis:
 
         if not self.league.has_pbp:
             return None
-        return fit_rapm(self.league.stints, alpha=self.rapm_alpha)
+
+        # Shrink toward each player's box-score estimate rather than toward
+        # league-average. A season of possessions cannot separate teammates
+        # who are almost always on the floor together; the box score can,
+        # because it is measured per player rather than per lineup. Measured
+        # out of sample, this is worth more than any other single change:
+        # R^2 0.344 -> 0.383 at the same penalty.
+        #
+        # The prior is built from the *built-in* box coefficients. If it used
+        # refitted ones it would be fitted against RAPM, which is fitted
+        # against it -- so `refit_box_impact` deliberately leaves this fit
+        # alone once it has been computed.
+        prior = None
+        if self.rapm_prior_weight:
+            box = self.players
+            if "box_impact" in box.columns:
+                prior = box.set_index("player_id")["box_impact"].dropna()
+        return fit_rapm(self.league.stints, alpha=self.rapm_alpha,
+                        prior=prior, prior_weight=self.rapm_prior_weight)
 
     @cached_property
     def lineup_model(self):
