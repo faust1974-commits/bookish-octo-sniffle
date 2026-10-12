@@ -3,8 +3,9 @@
 const K = require('./kit.js');
 const C = require('./content-day2.js');
 const T = require('./content-teacher.js');
+const SC = require('./content-script.js');
 const {
-  Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule,
+  Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule, AlignmentType,
   INK, HEAD, BLUE, PROMPT, WARN, TINT, WARNTINT, FULL,
   rich, P, borders, cell, kicker, bigTitle, sub, sectionHead, calloutBox,
   statementPanel, labelValueTable, blockTable, gridTable, numberedList,
@@ -150,6 +151,94 @@ const teacherKids = [
     children: [new TextRun({ text: '—   ', size: 19, bold: true, color: BLUE }), ...rich(t, 19)],
   }))),
 ];
+
+/* ------------------------------------------------ the teacher speaking script */
+const DIRECTION = /^\[.*\]$/;
+
+/* One spoken line, or one stage direction. Spoken text is set large with open
+   leading so it can be read off the page mid-sentence without losing your
+   place; directions are small, grey and italic so the eye skips them. */
+const scriptLine = (t) => (DIRECTION.test(t.trim())
+  ? new Paragraph({
+      spacing: { before: 60, after: 110, line: 280 }, indent: { left: 300 },
+      children: [new TextRun({ text: t.trim().slice(1, -1), size: 19, italics: true, color: PROMPT })],
+    })
+  : new Paragraph({
+      spacing: { after: 130, line: 320 },
+      children: [new TextRun({ text: t, size: 23, color: INK })],
+    }));
+
+const partBlock = (p) => {
+  const accent = p.sendoff ? WARN : HEAD;
+  const head = new Table({
+    width: { size: FULL, type: WidthType.DXA }, columnWidths: [7100, 2260], borders: borders(accent, 8),
+    rows: [new TableRow({
+      children: [
+        cell([new Paragraph({ children: [
+          new TextRun({ text: `PART ${p.n}`, size: 17, bold: true, color: 'FFFFFF', characterSpacing: 30 }),
+          new TextRun({ text: `    ${p.name.toUpperCase()}`, size: 17, bold: true, color: 'FFFFFF', characterSpacing: 20 }),
+        ] })], { w: 7100, fill: accent, margins: { top: 100, bottom: 100, left: 170, right: 150 } }),
+        cell([new Paragraph({ alignment: AlignmentType.RIGHT, children: [
+          new TextRun({ text: `MIN ${p.min}`, size: 17, bold: true, color: 'FFFFFF', characterSpacing: 20 }),
+        ] })], { w: 2260, fill: accent, margins: { top: 100, bottom: 100, left: 150, right: 170 } }),
+      ],
+    })],
+  });
+  const body = new Table({
+    width: { size: FULL, type: WidthType.DXA }, columnWidths: [FULL], borders: borders(accent, 8),
+    rows: [
+      new TableRow({ children: [cell([new Paragraph({
+        spacing: { after: 0, line: 275 },
+        children: [
+          new TextRun({ text: 'CUE   ', size: 15, bold: true, color: accent, characterSpacing: 20 }),
+          new TextRun({ text: p.cue, size: 19, italics: true, color: PROMPT }),
+        ],
+      })], { w: FULL, fill: p.sendoff ? WARNTINT : TINT, margins: { top: 110, bottom: 110, left: 170, right: 170 } })] }),
+      new TableRow({ children: [cell(
+        p.lines.map(scriptLine),
+        { w: FULL, margins: { top: 170, bottom: 150, left: 200, right: 200 } },
+      )] }),
+    ],
+  });
+  return [head, body, P('', { after: 230 })];
+};
+
+teacherKids.push(new Paragraph({ children: [new PageBreak()] }));
+teacherKids.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: SC.heading, size: 38, bold: true, color: HEAD })] }));
+teacherKids.push(P(SC.blurb, { size: 21, color: PROMPT, after: 120, line: 290 }));
+teacherKids.push(calloutBox('HOW TO READ THIS PAGE', [
+  P('Large black text is yours to say out loud. Small grey italic text in brackets is a direction — do not read it out.', { size: 20, after: 70, line: 285 }),
+  P('The three orange parts are the send-offs: the moment you turn them loose on an assignment. Those are the ones to get right.', { size: 20, after: 0, line: 285 }),
+]));
+teacherKids.push(P('', { after: 230 }));
+
+let lastDay = null;
+SC.parts.forEach((p) => {
+  if (p.day !== lastDay) {
+    if (lastDay !== null) teacherKids.push(new Paragraph({ children: [new PageBreak()] }));
+    teacherKids.push(kicker(`${p.day} · YOUR PARTS`, BLUE));
+    teacherKids.push(P('', { after: 110 }));
+    lastDay = p.day;
+  }
+  teacherKids.push(...partBlock(p));
+});
+
+teacherKids.push(new Paragraph({ children: [new PageBreak()] }));
+teacherKids.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: SC.spotsHeading, size: 32, bold: true, color: HEAD })] }));
+teacherKids.push(P(SC.spotsBlurb, { size: 21, color: PROMPT, after: 200, line: 290 }));
+SC.spots.forEach((sp) => {
+  teacherKids.push(new Table({
+    width: { size: FULL, type: WidthType.DXA }, columnWidths: [FULL], borders: borders(BLUE, 8),
+    rows: [
+      new TableRow({ children: [cell([new Paragraph({ spacing: { after: 0, line: 280 }, children: [
+        new TextRun({ text: 'WHEN   ', size: 15, bold: true, color: BLUE, characterSpacing: 20 }),
+        new TextRun({ text: sp.when, size: 20, bold: true, color: INK }),
+      ] })], { w: FULL, fill: TINT, margins: { top: 110, bottom: 110, left: 170, right: 170 } })] }),
+      new TableRow({ children: [cell(sp.lines.map(scriptLine), { w: FULL, margins: { top: 170, bottom: 150, left: 200, right: 200 } })] }),
+    ],
+  }));
+  teacherKids.push(P('', { after: 230 }));
+});
 
 T.days.forEach((d) => {
   teacherKids.push(new Paragraph({ children: [new PageBreak()] }));

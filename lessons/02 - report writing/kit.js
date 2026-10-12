@@ -4,6 +4,7 @@
 const {
   Document, Packer, Paragraph, TextRun, PageBreak,
   Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle, HeightRule,
+  AlignmentType,
 } = require('docx');
 const fs = require('fs');
 
@@ -146,7 +147,7 @@ const nameDateLine = () => new Paragraph({
 });
 
 module.exports = {
-  Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule,
+  Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule, AlignmentType,
   INK, HEAD, BLUE, PROMPT, WARN, LINE, TINT, WARNTINT, FULL, FONT,
   rich, P, borders, cell, kicker, bigTitle, sub, sectionHead, calloutBox,
   statementPanel, labelValueTable, field, fieldHeight, blockTable, gridTable,
