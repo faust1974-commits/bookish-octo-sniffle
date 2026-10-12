@@ -1,0 +1,154 @@
+/* Shared document furniture for every file in this unit.
+   Lifted verbatim from build.js so Day 1 and Day 2 are visually identical:
+   same Arial, same navy heads, same tinted statement boxes, same borders. */
+const {
+  Document, Packer, Paragraph, TextRun, PageBreak,
+  Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle, HeightRule,
+} = require('docx');
+const fs = require('fs');
+
+const INK = '1B1B1B', HEAD = '10243A', BLUE = '1A5FB4', PROMPT = '5F6B79';
+const WARN = '9A3412', LINE = 'B9C4D0', TINT = 'F2F5F8', WARNTINT = 'FDF3EC';
+const FULL = 9360, FONT = 'Arial';
+
+/* <strong>/<em> inline markup so prompts can emphasise without a second field. */
+const rich = (s, size = 19) => {
+  const out = []; const re = /<(strong|em)>(.*?)<\/\1>/g; let last = 0, m;
+  while ((m = re.exec(s))) {
+    if (m.index > last) out.push(new TextRun({ text: s.slice(last, m.index), size, color: PROMPT }));
+    out.push(new TextRun({ text: m[2], size, color: m[1] === 'strong' ? INK : PROMPT, bold: m[1] === 'strong', italics: m[1] === 'em' }));
+    last = m.index + m[0].length;
+  }
+  if (last < s.length) out.push(new TextRun({ text: s.slice(last), size, color: PROMPT }));
+  return out;
+};
+
+const P = (t, o = {}) => new Paragraph({
+  spacing: { after: o.after ?? 120, line: o.line ?? 276 },
+  children: [new TextRun({ text: t, size: o.size ?? 21, color: o.color ?? INK, bold: o.bold, italics: o.italics })],
+});
+
+const borders = (color = LINE, size = 4) => ({
+  top: { style: BorderStyle.SINGLE, size, color }, bottom: { style: BorderStyle.SINGLE, size, color },
+  left: { style: BorderStyle.SINGLE, size, color }, right: { style: BorderStyle.SINGLE, size, color },
+  insideHorizontal: { style: BorderStyle.SINGLE, size, color }, insideVertical: { style: BorderStyle.SINGLE, size, color },
+});
+
+const cell = (children, { w, fill, span, margins } = {}) => new TableCell({
+  width: { size: w, type: WidthType.DXA }, columnSpan: span,
+  shading: fill ? { type: ShadingType.CLEAR, fill } : undefined,
+  margins: margins || { top: 110, bottom: 110, left: 150, right: 150 },
+  children,
+});
+
+const kicker = (t, color = PROMPT) => new Paragraph({
+  spacing: { after: 40 }, children: [new TextRun({ text: t, size: 17, bold: true, color, characterSpacing: 30 })],
+});
+const bigTitle = (t) => new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: t, size: 40, bold: true, color: HEAD })] });
+const sub = (t) => new Paragraph({ spacing: { after: 200 }, children: [new TextRun({ text: t, size: 22, color: PROMPT })] });
+const sectionHead = (t) => new Paragraph({
+  spacing: { before: 120, after: 90 }, children: [new TextRun({ text: t, size: 18, bold: true, color: HEAD, characterSpacing: 20 })],
+});
+
+const calloutBox = (label, children, color = BLUE, fill) => new Table({
+  width: { size: FULL, type: WidthType.DXA }, columnWidths: [FULL], borders: borders(color, 8),
+  rows: [new TableRow({ children: [cell([
+    new Paragraph({ spacing: { after: 70 }, children: [new TextRun({ text: label, size: 17, bold: true, color, characterSpacing: 20 })] }),
+    ...children,
+  ], { w: FULL, fill, margins: { top: 160, bottom: 160, left: 200, right: 200 } })] })],
+});
+
+/* A quoted statement: tinted panel, larger type, generous leading — made to be
+   read off a Promethean board from the back of the room. */
+const statementPanel = (paras, fill = TINT) => new Table({
+  width: { size: FULL, type: WidthType.DXA }, columnWidths: [FULL], borders: borders(),
+  rows: [new TableRow({ children: [cell(
+    paras.map((para, i) => new Paragraph({
+      spacing: { after: i === paras.length - 1 ? 0 : 150, line: 310 },
+      children: [new TextRun({ text: `“${para}”`, size: 23, color: INK })],
+    })),
+    { w: FULL, fill, margins: { top: 190, bottom: 190, left: 230, right: 230 } },
+  )] })],
+});
+
+const labelValueTable = (rows, lw = 2700) => new Table({
+  width: { size: FULL, type: WidthType.DXA }, columnWidths: [lw, FULL - lw], borders: borders(),
+  rows: rows.map(([k, v]) => new TableRow({
+    children: [
+      cell([new Paragraph({ children: [new TextRun({ text: k, size: 18, bold: true, color: PROMPT })] })], { w: lw, fill: TINT, margins: { top: 90, bottom: 90, left: 150, right: 150 } }),
+      cell([new Paragraph({ children: [new TextRun({ text: v, size: 22, color: INK })] })], { w: FULL - lw, margins: { top: 90, bottom: 90, left: 150, right: 150 } }),
+    ],
+  })),
+});
+
+/* A field the student types into. Height is ATLEAST so the cell grows as they
+   type instead of clipping — this is what makes the .docx usable on a
+   Chromebook in Word for the web. */
+const fieldHeight = (f) => (f.rows || 1) * 300 + 820;
+const field = (f, width) => cell([
+  new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: f.label.toUpperCase(), size: 17, bold: true, color: HEAD, characterSpacing: 10 })] }),
+  ...(f.prompt ? [new Paragraph({ spacing: { after: 90, line: 250 }, children: rich(f.prompt, 17) })] : []),
+  new Paragraph({ spacing: { after: 0, line: 300 }, children: [new TextRun({ text: '', size: 21 })] }),
+], { w: width });
+
+function blockTable(block) {
+  const rows = [new TableRow({
+    children: [cell([new Paragraph({ children: [
+      ...(block.n ? [new TextRun({ text: `BLOCK ${block.n}   `, size: 18, bold: true, color: 'FFFFFF' })] : []),
+      new TextRun({ text: block.name.toUpperCase(), size: 18, bold: true, color: 'FFFFFF', characterSpacing: 20 }),
+    ] })], { w: FULL, span: 2, fill: HEAD, margins: { top: 95, bottom: 95, left: 150, right: 150 } })],
+  })];
+  const q = [...block.fields];
+  while (q.length) {
+    const f = q.shift();
+    if (f.w === 'half' && q[0] && q[0].w === 'half') {
+      const g = q.shift();
+      rows.push(new TableRow({ height: { value: Math.max(fieldHeight(f), fieldHeight(g)), rule: HeightRule.ATLEAST }, children: [field(f, FULL / 2), field(g, FULL / 2)] }));
+    } else {
+      rows.push(new TableRow({ height: { value: fieldHeight(f), rule: HeightRule.ATLEAST }, children: [field(f, FULL)] }));
+    }
+  }
+  return new Table({ width: { size: FULL, type: WidthType.DXA }, columnWidths: [FULL / 2, FULL / 2], borders: borders(), rows });
+}
+
+/* A write-in grid: header row plus N empty typeable rows. */
+const gridTable = (cols, widths, nRows, rowHeight = 640) => new Table({
+  width: { size: FULL, type: WidthType.DXA }, columnWidths: widths, borders: borders(),
+  rows: [
+    new TableRow({ tableHeader: true, children: cols.map((t, i) => cell(
+      [new Paragraph({ children: [new TextRun({ text: t.toUpperCase(), size: 17, bold: true, color: 'FFFFFF', characterSpacing: 10 })] })],
+      { w: widths[i], fill: HEAD, margins: { top: 100, bottom: 100, left: 150, right: 150 } })) }),
+    ...Array.from({ length: nRows }, () => new TableRow({
+      height: { value: rowHeight, rule: HeightRule.ATLEAST },
+      children: widths.map((w) => cell([new Paragraph({ spacing: { line: 300 }, children: [new TextRun({ text: '', size: 21 })] })], { w })),
+    })),
+  ],
+});
+
+const numberedList = (items, color = BLUE) => items.map((r, i) => new Paragraph({
+  spacing: { after: 75, line: 285 }, indent: { left: 340, hanging: 340 },
+  children: [new TextRun({ text: `${i + 1}.  `, size: 19, bold: true, color }), ...rich(r, 19)],
+}));
+
+const makeDoc = (title, children) => new Document({
+  creator: 'Criminal Justice Operations', title,
+  styles: { default: { document: { run: { font: FONT, size: 21, color: INK } } } },
+  sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1000, bottom: 1000, left: 1080, right: 1080 } } }, children }],
+});
+
+const save = (name, doc) => Packer.toBuffer(doc).then((b) => {
+  fs.writeFileSync(name, b); console.log(' ', name, (b.length / 1024).toFixed(1) + ' KB');
+});
+
+const nameDateLine = () => new Paragraph({
+  spacing: { after: 160 },
+  children: [new TextRun({ text: 'Name: ______________________________          Date: ____________', size: 21, color: INK })],
+});
+
+module.exports = {
+  Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule,
+  INK, HEAD, BLUE, PROMPT, WARN, LINE, TINT, WARNTINT, FULL, FONT,
+  rich, P, borders, cell, kicker, bigTitle, sub, sectionHead, calloutBox,
+  statementPanel, labelValueTable, field, fieldHeight, blockTable, gridTable,
+  numberedList, makeDoc, save, nameDateLine,
+};

@@ -1,0 +1,188 @@
+/* Emits the three Day 2 student files plus the teacher run sheet.
+   Run:  NODE_PATH=<dir containing docx> node build-day2.js            */
+const K = require('./kit.js');
+const C = require('./content-day2.js');
+const T = require('./content-teacher.js');
+const {
+  Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule,
+  INK, HEAD, BLUE, PROMPT, WARN, TINT, WARNTINT, FULL,
+  rich, P, borders, cell, kicker, bigTitle, sub, sectionHead, calloutBox,
+  statementPanel, labelValueTable, blockTable, gridTable, numberedList,
+  makeDoc, save, nameDateLine,
+} = K;
+
+/* ------------------------------------------- 3. interview preparation sheet */
+const Pr = C.prep;
+const prepKids = [
+  kicker('CRIMINAL JUSTICE OPERATIONS'),
+  bigTitle(Pr.title),
+  sub(C.subtitle),
+  calloutBox('HAND THIS IN FIRST', [
+    P(Pr.brief, { size: 21, after: 0, line: 290 }),
+  ]),
+  P('', { after: 200 }),
+  nameDateLine(),
+
+  calloutBox('FIVE RULES FOR ASKING', numberedList(Pr.rules)),
+  P('', { after: 200 }),
+
+  sectionHead(Pr.exampleHeading.toUpperCase()),
+  new Table({
+    width: { size: FULL, type: WidthType.DXA }, columnWidths: [FULL], borders: borders(),
+    rows: [
+      new TableRow({ children: [cell([P(Pr.exampleGap, { size: 20, bold: true, after: 0 })], { w: FULL, fill: TINT })] }),
+      new TableRow({ children: [cell([
+        new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: 'WEAK', size: 16, bold: true, color: WARN, characterSpacing: 20 })] }),
+        P(Pr.exampleBad, { size: 22, italics: true, after: 60 }),
+        new Paragraph({ spacing: { after: 0, line: 270 }, children: rich(Pr.exampleBadWhy, 18) }),
+      ], { w: FULL, fill: WARNTINT })] }),
+      new TableRow({ children: [cell([
+        new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: 'BETTER', size: 16, bold: true, color: BLUE, characterSpacing: 20 })] }),
+        P(Pr.exampleGood, { size: 22, bold: true, after: 60 }),
+        new Paragraph({ spacing: { after: 0, line: 270 }, children: rich(Pr.exampleGoodWhy, 18) }),
+      ], { w: FULL })] }),
+    ],
+  }),
+  P('', { after: 240 }),
+
+  new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: Pr.gridHeading, size: 30, bold: true, color: HEAD })] }),
+  P(Pr.gridPrompt, { size: 21, color: PROMPT, after: 170, line: 290 }),
+  gridTable(Pr.gridCols, [3500, 5860], Pr.gridRows, 700),
+  P('', { after: 240 }),
+
+  new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: Pr.rayHeading, size: 26, bold: true, color: HEAD })] }),
+  P(Pr.rayPrompt, { size: 21, color: PROMPT, after: 150, line: 290 }),
+  gridTable(['#', 'The question I should have asked'], [700, 8660], Pr.rayRows, 700),
+];
+
+/* ------------------------------------------------- 4. the Vance statement */
+const V = C.vance;
+const vanceKids = [
+  kicker('CRIMINAL JUSTICE OPERATIONS'),
+  bigTitle(V.title),
+  sub(V.who),
+  calloutBox('WHAT THIS IS', [
+    P('The second witness. This is everything she told you — there is nothing else, and there is no third witness coming.', { size: 21, after: 90, line: 290 }),
+    P('Read it against your question sheet. Some of what you asked is answered here. Some of it is not, and that is also information.', { size: 21, after: 0, line: 290 }),
+  ]),
+  P('', { after: 180 }),
+
+  sectionHead('INTERVIEW DETAILS'),
+  labelValueTable(V.admin),
+  P('', { after: 220 }),
+
+  sectionHead('STATEMENT'),
+  P(V.note, { size: 18, italics: true, color: PROMPT, after: 100 }),
+  statementPanel(V.statement),
+  P('', { after: 220 }),
+
+  calloutBox(V.couldNotAnswerHeading.toUpperCase(), [
+    ...V.couldNotAnswer.map((t) => new Paragraph({
+      spacing: { after: 60, line: 285 }, indent: { left: 300, hanging: 300 },
+      children: [new TextRun({ text: '—   ', size: 19, bold: true, color: WARN }), new TextRun({ text: t, size: 20, color: INK })],
+    })),
+    P('An interview that leaves questions open is normal. Record them — do not fill them in yourself.', { size: 19, italics: true, color: PROMPT, after: 0, line: 280 }),
+  ], WARN, WARNTINT),
+];
+
+/* --------------------------------------------- 5. the supplemental report */
+const S = C.supp;
+const suppKids = [
+  kicker('CRIMINAL JUSTICE OPERATIONS'),
+  bigTitle(S.title),
+  sub(C.subtitle),
+  calloutBox('BEFORE YOU START', [
+    P(S.brief, { size: 21, after: 0, line: 290 }),
+  ]),
+  P('', { after: 200 }),
+  nameDateLine(),
+];
+S.blocks.forEach((b) => { suppKids.push(blockTable(b)); suppKids.push(P('', { after: 170 })); });
+
+suppKids.push(new Paragraph({ children: [new PageBreak()] }));
+suppKids.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: S.conflictHeading, size: 30, bold: true, color: HEAD })] }));
+suppKids.push(new Paragraph({ spacing: { after: 180, line: 290 }, children: rich(S.conflictPrompt, 21) }));
+suppKids.push(gridTable(S.conflictCols, [4680, 4680], 1, 1800));
+suppKids.push(P('', { after: 150 }));
+suppKids.push(blockTable({ name: S.conflictResolve, fields: [{ id: 'resolve', label: 'Write it as one sentence you would put in the report', prompt: 'Attribute both accounts. Do not decide which witness is right.', w: 'full', rows: 3 }] }));
+suppKids.push(P('', { after: 240 }));
+
+suppKids.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: S.leadsHeading, size: 26, bold: true, color: HEAD })] }));
+suppKids.push(new Paragraph({ spacing: { after: 160, line: 290 }, children: rich(S.leadsPrompt, 21) }));
+suppKids.push(gridTable(S.leadsCols, [3200, 3200, 2960], S.leadsRows, 680));
+suppKids.push(P('', { after: 240 }));
+
+suppKids.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: S.openHeading, size: 26, bold: true, color: HEAD })] }));
+suppKids.push(P(S.openPrompt, { size: 21, color: PROMPT, after: 160, line: 290 }));
+suppKids.push(gridTable(S.openCols, [5400, 3960], S.openRows, 660));
+
+/* ------------------------------------------------- 0. the teacher run sheet */
+const timeRow = (s) => new TableRow({
+  children: [
+    cell([new Paragraph({ children: [new TextRun({ text: s.t, size: 20, bold: true, color: HEAD })] })],
+      { w: 1100, fill: TINT, margins: { top: 120, bottom: 120, left: 120, right: 120 } }),
+    cell([
+      P(s.what, { size: 20, after: s.say ? 90 : 0, line: 285 }),
+      ...(s.say ? [new Paragraph({
+        spacing: { after: 0, line: 285 }, indent: { left: 260 },
+        children: [
+          new TextRun({ text: 'SAY   ', size: 15, bold: true, color: BLUE, characterSpacing: 20 }),
+          new TextRun({ text: `“${s.say}”`, size: 20, color: BLUE, italics: true }),
+        ],
+      })] : []),
+    ], { w: 8260, margins: { top: 120, bottom: 120, left: 150, right: 150 } }),
+  ],
+});
+
+const teacherKids = [
+  kicker('CRIMINAL JUSTICE OPERATIONS · TEACHER COPY', WARN),
+  bigTitle(T.title),
+  sub(T.subtitle),
+  calloutBox('THE ONE IDEA', [P(T.bigIdea, { size: 21, after: 0, line: 290 })]),
+  P('', { after: 180 }),
+  sectionHead('STANDARDS COVERED'),
+  labelValueTable(T.standards, 2300),
+  P('', { after: 200 }),
+  calloutBox('BEFORE EACH CLASS', numberedList(T.prep, WARN), WARN, WARNTINT),
+  P('', { after: 200 }),
+  calloutBox('GRADING — YOU HAVE 150 STUDENTS', T.grading.map((t) => new Paragraph({
+    spacing: { after: 70, line: 285 }, indent: { left: 300, hanging: 300 },
+    children: [new TextRun({ text: '—   ', size: 19, bold: true, color: BLUE }), ...rich(t, 19)],
+  }))),
+];
+
+T.days.forEach((d) => {
+  teacherKids.push(new Paragraph({ children: [new PageBreak()] }));
+  teacherKids.push(kicker(d.label, BLUE));
+  teacherKids.push(new Paragraph({ spacing: { after: 140 }, children: [new TextRun({ text: d.heading, size: 34, bold: true, color: HEAD })] }));
+  teacherKids.push(calloutBox('WHAT THEY WALK OUT WITH', [P(d.goal, { size: 21, after: 0, line: 290 })]));
+  teacherKids.push(P('', { after: 170 }));
+  teacherKids.push(sectionHead('FILES IN PLAY'));
+  teacherKids.push(...d.files.map((f) => new Paragraph({
+    spacing: { after: 60, line: 280 }, indent: { left: 300, hanging: 300 },
+    children: [new TextRun({ text: '■   ', size: 17, color: HEAD }), new TextRun({ text: f, size: 20, color: INK })],
+  })));
+  teacherKids.push(P('', { after: 200 }));
+  teacherKids.push(sectionHead('RUN OF SHOW — 90 MINUTES'));
+  teacherKids.push(new Table({
+    width: { size: FULL, type: WidthType.DXA }, columnWidths: [1100, 8260], borders: borders(),
+    rows: d.steps.map(timeRow),
+  }));
+  teacherKids.push(P('', { after: 200 }));
+  teacherKids.push(calloutBox('WATCH FOR THIS', d.watch.map((t) => new Paragraph({
+    spacing: { after: 80, line: 285 }, indent: { left: 300, hanging: 300 },
+    children: [new TextRun({ text: '!   ', size: 19, bold: true, color: WARN }), ...rich(t, 19)],
+  })), WARN, WARNTINT));
+});
+
+teacherKids.push(new Paragraph({ children: [new PageBreak()] }));
+teacherKids.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: T.answerKeyHeading, size: 30, bold: true, color: HEAD })] }));
+teacherKids.push(P('Do not give this page to students.', { size: 20, bold: true, color: WARN, after: 170 }));
+teacherKids.push(labelValueTable(T.answerKey, 1900));
+
+Promise.all([
+  save('0 - TEACHER - Run Sheet - Day 1 and Day 2.docx', makeDoc('Run Sheet', teacherKids)),
+  save('3 - Interview Preparation.docx', makeDoc('Interview Preparation', prepKids)),
+  save('4 - Witness Statement - Marisa Vance.docx', makeDoc('Witness Statement', vanceKids)),
+  save('5 - Supplemental Report.docx', makeDoc('Supplemental Report', suppKids)),
+]).then(() => console.log('done')).catch((e) => { console.error(e); process.exit(1); });

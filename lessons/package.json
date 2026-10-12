@@ -1,0 +1,6 @@
+{
+  "name": "cj-lesson-builders",
+  "private": true,
+  "type": "commonjs",
+  "description": "Lesson document builders. Run with: NODE_PATH=<dir with docx> node build.js"
+}
