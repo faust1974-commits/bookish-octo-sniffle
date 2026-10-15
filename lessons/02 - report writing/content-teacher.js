@@ -96,9 +96,11 @@ module.exports = {
 
   prepHeading: 'Before each class',
   prep: [
-    'Day 1 — one Canvas assignment, files 1 and 2 attached. File 1 also open on the board.',
-    'Day 2 — two Canvas assignments. First has file 3 only. Second has files 4 and 5, and stays unpublished until minute 32.',
+    'Files they type in go up as <strong>OneDrive cloud assignments</strong> — attached, a Word file opens read-only and they cannot save. <strong>External Tool</strong> → <strong>Find</strong> → <strong>Microsoft OneDrive</strong> (or Microsoft 365) → pick the file → <strong>Attach</strong> → <strong>Select</strong>. <strong>Never edit one after they open it</strong>: their work is lost.',
+    'Day 1 — cloud assignment, file 2. File 1 is evidence: attach it normally, and put it on the board.',
+    'Day 2 — cloud assignment, file 3. Another with file 6 (file 4 attached), unpublished until minute 26.',
+    'No OneDrive under External Tool? Attach the file, set Online → File Uploads; they download, type, upload.',
     'Open the board copy from your own OneDrive, not from the Canvas preview — the preview is read-only and you will want to annotate.',
-    'Test one student-side upload yourself before first period. Open the form in Word for the web and type in a table cell. The cells are set to grow, but verify it on your own setup.',
+    'Test it yourself before first period: open the form in Word for the web and type in a table cell. The cells are set to grow, but verify it on your own setup.',
   ],
 };

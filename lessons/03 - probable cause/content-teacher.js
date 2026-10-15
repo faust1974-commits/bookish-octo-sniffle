@@ -11,7 +11,9 @@ module.exports = {
   bigIdea: 'Up to now they have been recording what happened. Today what they write can take somebody’s liberty. The affidavit is where report writing stops being an exercise — and the lesson lands because the case gives them probable cause for theft and still refuses to give them burglary.',
 
   prep: [
-    'One Canvas assignment with file 1 (pawn record) attached but <strong>unpublished</strong>, and a second with file 2 (worksheet) published from the start — they need Parts A and B before the record drops.',
+    'File 2 (worksheet) as a <strong>OneDrive cloud assignment</strong>, published from the start — attached, it opens read-only and they cannot save. <strong>External Tool</strong> → <strong>Find</strong> → <strong>Microsoft OneDrive</strong> (or Microsoft 365) → pick the file → <strong>Attach</strong> → <strong>Select</strong>. <strong>Never edit it after they open it</strong>: their work is lost.',
+    'File 1 (pawn record) attached normally to a second assignment, <strong>unpublished</strong>. Evidence can stay read-only.',
+    'No Microsoft OneDrive under External Tool? Attach file 2, set Online → File Uploads; they download, type, and upload it back.',
     'Students need their incident report and supplemental report from last week. Remind them in the Canvas description.',
     'Open file 1 from OneDrive for the board, not the Canvas preview.',
     'Chromebooks need flsenate.gov reachable. <strong>Check this before first period</strong> — if your filter blocks it, Part B has to come off the devices and onto the board.',
