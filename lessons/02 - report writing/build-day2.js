@@ -1,6 +1,6 @@
 /* Emits the three Day 2 student files plus the teacher run sheet.
    Run:  NODE_PATH=<dir containing docx> node build-day2.js            */
-const K = require('./kit.js');
+const K = require('../kit.js');
 const C = require('./content-day2.js');
 const T = require('./content-teacher.js');
 const SC = require('./content-script.js');

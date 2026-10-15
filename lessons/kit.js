@@ -131,6 +131,27 @@ const gridTable = (cols, widths, nRows, rowHeight = 640) => new Table({
   ],
 });
 
+/* A table of real data: header row plus supplied rows. gridTable's sibling,
+   for evidence documents rather than write-in sheets. */
+const dataTable = (cols, widths, rows, opts = {}) => new Table({
+  width: { size: FULL, type: WidthType.DXA }, columnWidths: widths, borders: borders(),
+  rows: [
+    new TableRow({ tableHeader: true, children: cols.map((t, i) => cell(
+      [new Paragraph({ children: [new TextRun({ text: String(t).toUpperCase(), size: 17, bold: true, color: 'FFFFFF', characterSpacing: 10 })] })],
+      { w: widths[i], fill: HEAD, margins: { top: 100, bottom: 100, left: 150, right: 150 } })) }),
+    ...rows.map((r) => new TableRow({
+      children: r.map((v, i) => cell(
+        [new Paragraph({ spacing: { line: 285 }, children: [new TextRun({
+          text: String(v), size: opts.size || 20, color: INK,
+          bold: opts.boldFirstCol && i === 0,
+        })] })],
+        { w: widths[i], fill: opts.boldFirstCol && i === 0 ? TINT : undefined,
+          margins: { top: 110, bottom: 110, left: 150, right: 150 } },
+      )),
+    })),
+  ],
+});
+
 const numberedList = (items, color = BLUE) => items.map((r, i) => new Paragraph({
   spacing: { after: 75, line: 285 }, indent: { left: 340, hanging: 340 },
   children: [new TextRun({ text: `${i + 1}.  `, size: 19, bold: true, color }), ...rich(r, 19)],
@@ -155,6 +176,6 @@ module.exports = {
   Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule, AlignmentType,
   INK, HEAD, BLUE, PROMPT, WARN, LINE, TINT, WARNTINT, FULL, FONT,
   rich, P, borders, cell, kicker, bigTitle, sub, sectionHead, calloutBox,
-  statementPanel, labelValueTable, field, fieldHeight, blockTable, gridTable,
+  statementPanel, labelValueTable, field, fieldHeight, blockTable, gridTable, dataTable,
   numberedList, makeDoc, save, nameDateLine,
 };
