@@ -135,3 +135,9 @@ Gideon v. Wainwright is a Florida case.
 Ask before building. Build one thing, show it, take the correction. The
 teacher drives the design and does not want alternatives surveyed or scope
 widened unasked.
+
+**Reply short.** Hand over the files and say what they are in a sentence or
+two, like a colleague would. No summaries of the work, no tables of what
+changed, no bulleted tours of your own reasoning. If something genuinely
+needs flagging — unverified law, a file that has to stay unpublished — say
+that one thing and stop.
