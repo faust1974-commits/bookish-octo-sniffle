@@ -4,6 +4,7 @@ const K = require('./kit.js');
 const C = require('./content-day2.js');
 const T = require('./content-teacher.js');
 const SC = require('./content-script.js');
+const F = require('./content-final.js');
 const {
   Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule, AlignmentType,
   INK, HEAD, BLUE, PROMPT, WARN, TINT, WARNTINT, FULL,
@@ -116,6 +117,64 @@ suppKids.push(P('', { after: 240 }));
 suppKids.push(new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: S.openHeading, size: 26, bold: true, color: HEAD })] }));
 suppKids.push(P(S.openPrompt, { size: 21, color: PROMPT, after: 160, line: 290 }));
 suppKids.push(gridTable(S.openCols, [5400, 3960], S.openRows, 660));
+
+/* ----------------------------------------------- 6. the final narrative sheet */
+/* An empty bordered square they can click and type an X into, then the item. */
+const checkRow = (t) => new TableRow({
+  height: { value: 560, rule: HeightRule.ATLEAST },
+  children: [
+    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: '', size: 26 })] })],
+      { w: 620, margins: { top: 120, bottom: 120, left: 80, right: 80 } }),
+    cell([new Paragraph({ spacing: { line: 285 }, children: [new TextRun({ text: t, size: 20, color: INK })] })],
+      { w: FULL - 620, margins: { top: 120, bottom: 120, left: 150, right: 150 } }),
+  ],
+});
+
+const finalKids = [
+  kicker('CRIMINAL JUSTICE OPERATIONS'),
+  bigTitle(F.title),
+  sub(F.subtitle),
+  calloutBox('THIS IS THE ONE THAT COUNTS', [P(F.brief, { size: 21, after: 0, line: 290 })]),
+  P('', { after: 200 }),
+  nameDateLine(),
+
+  calloutBox('SIX RULES FOR THE NARRATIVE', numberedList(F.rules)),
+  P('', { after: 200 }),
+
+  sectionHead(F.openerHeading.toUpperCase()),
+  P(F.openerNote, { size: 18, italics: true, color: PROMPT, after: 100 }),
+  new Table({
+    width: { size: FULL, type: WidthType.DXA }, columnWidths: [FULL], borders: borders(BLUE, 8),
+    rows: [new TableRow({ children: [cell([
+      ...F.opener.map((t, i) => new Paragraph({
+        spacing: { after: i === F.opener.length - 1 ? 110 : 140, line: 310 },
+        children: [new TextRun({ text: t, size: 22, color: INK })],
+      })),
+      new Paragraph({ spacing: { after: 0, line: 280 }, children: [new TextRun({ text: F.openerAfter, size: 18, italics: true, color: PROMPT })] }),
+    ], { w: FULL, fill: TINT, margins: { top: 180, bottom: 180, left: 220, right: 220 } })] })],
+  }),
+  P('', { after: 230 }),
+
+  blockTable({ name: F.narrativeLabel, fields: [{ id: 'narrative', label: F.narrativeLabel, prompt: F.narrativePrompt, w: 'full', rows: F.narrativeRows }] }),
+
+  new Paragraph({ children: [new PageBreak()] }),
+  new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: F.conflictHeading, size: 30, bold: true, color: HEAD })] }),
+  new Paragraph({ spacing: { after: 180, line: 290 }, children: rich(F.conflictPrompt, 21) }),
+  gridTable(F.conflictCols, [4680, 4680], 1, 1800),
+  P('', { after: 150 }),
+  blockTable({ name: F.conflictResolveLabel, fields: [{ id: 'resolve', label: F.conflictResolveLabel, prompt: F.conflictResolvePrompt, w: 'full', rows: 3 }] }),
+  P('', { after: 240 }),
+
+  new Paragraph({ spacing: { after: 50 }, children: [new TextRun({ text: F.checkHeading, size: 26, bold: true, color: HEAD })] }),
+  P(F.checkPrompt, { size: 21, color: PROMPT, after: 160, line: 290 }),
+  new Table({
+    width: { size: FULL, type: WidthType.DXA }, columnWidths: [620, FULL - 620], borders: borders(),
+    rows: F.check.map(checkRow),
+  }),
+  P('', { after: 240 }),
+
+  blockTable({ name: F.lastHeading, fields: [{ id: 'last', label: F.lastHeading, prompt: F.lastPrompt, w: 'full', rows: 2 }] }),
+];
 
 /* ------------------------------------------------- 0. the teacher run sheet */
 const timeRow = (s) => new TableRow({
@@ -274,4 +333,5 @@ Promise.all([
   save('3 - Interview Preparation.docx', makeDoc('Interview Preparation', prepKids)),
   save('4 - Witness Statement - Marisa Vance.docx', makeDoc('Witness Statement', vanceKids)),
   save('5 - Supplemental Report.docx', makeDoc('Supplemental Report', suppKids)),
+  save('6 - Final Narrative and Self-Check.docx', makeDoc('Final Narrative', finalKids)),
 ]).then(() => console.log('done')).catch((e) => { console.error(e); process.exit(1); });

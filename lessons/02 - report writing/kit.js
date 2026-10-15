@@ -87,8 +87,10 @@ const labelValueTable = (rows, lw = 2700) => new Table({
    Chromebook in Word for the web. */
 const fieldHeight = (f) => (f.rows || 1) * 300 + 820;
 const field = (f, width) => cell([
-  new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: f.label.toUpperCase(), size: 17, bold: true, color: HEAD, characterSpacing: 10 })] }),
-  ...(f.prompt ? [new Paragraph({ spacing: { after: 90, line: 250 }, children: rich(f.prompt, 17) })] : []),
+  /* The header bar already carries the name when a one-field block is named
+     after its field, so printing the label again just stutters. */
+  ...(f.hideLabel ? [] : [new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: f.label.toUpperCase(), size: 17, bold: true, color: HEAD, characterSpacing: 10 })] })]),
+  ...(f.prompt ? [new Paragraph({ spacing: { after: f.hideLabel ? 110 : 90, line: 250 }, children: rich(f.prompt, 17) })] : []),
   new Paragraph({ spacing: { after: 0, line: 300 }, children: [new TextRun({ text: '', size: 21 })] }),
 ], { w: width });
 
@@ -99,7 +101,10 @@ function blockTable(block) {
       new TextRun({ text: block.name.toUpperCase(), size: 18, bold: true, color: 'FFFFFF', characterSpacing: 20 }),
     ] })], { w: FULL, span: 2, fill: HEAD, margins: { top: 95, bottom: 95, left: 150, right: 150 } })],
   })];
-  const q = [...block.fields];
+  const norm = (t) => String(t || '').trim().toLowerCase();
+  const q = block.fields.map((f) => (
+    block.fields.length === 1 && norm(f.label) === norm(block.name) ? { ...f, hideLabel: true } : f
+  ));
   while (q.length) {
     const f = q.shift();
     if (f.w === 'half' && q[0] && q[0].w === 'half') {
