@@ -3,11 +3,12 @@ const K = require('../kit.js');
 const PW = require('./content-pawn.js');
 const A = require('./content-affidavit.js');
 const T = require('./content-teacher.js');
+const CV = require('./content-canvas.js');
 const {
   Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule, AlignmentType,
   INK, HEAD, BLUE, PROMPT, WARN, TINT, WARNTINT, FULL,
   rich, P, borders, cell, kicker, bigTitle, sub, sectionHead, calloutBox,
-  labelValueTable, blockTable, gridTable, dataTable, numberedList,
+  labelValueTable, blockTable, gridTable, dataTable, numberedList, canvasSection,
   makeDoc, save, nameDateLine,
 } = K;
 
@@ -163,6 +164,8 @@ const t = [
   kicker('CRIMINAL JUSTICE OPERATIONS · TEACHER COPY', WARN),
   bigTitle(T.title),
   sub(T.subtitle),
+  ...canvasSection(CV),
+  new Paragraph({ children: [new PageBreak()] }),
   calloutBox('THE ONE IDEA', [P(T.bigIdea, { size: 21, after: 0, line: 290 })]),
   P('', { after: 180 }),
   sectionHead('STANDARDS COVERED'),

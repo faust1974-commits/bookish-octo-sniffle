@@ -157,6 +157,64 @@ const numberedList = (items, color = BLUE) => items.map((r, i) => new Paragraph(
   children: [new TextRun({ text: `${i + 1}.  `, size: 19, bold: true, color }), ...rich(r, 19)],
 }));
 
+/* ------------------------------------------------------------ Canvas setup */
+/* One block per Canvas assignment: the settings on the left, then the
+   description text the teacher pastes straight into Canvas. The pasted text is
+   student-facing, so it is set in normal weight and quoted visually rather
+   than styled like teacher instructions. */
+const canvasBlock = (a, i) => {
+  const accent = a.hidden ? WARN : HEAD;
+  const rows = [
+    new TableRow({ children: [cell([new Paragraph({ children: [
+      new TextRun({ text: `ASSIGNMENT ${a.label || i + 1}`, size: 17, bold: true, color: 'FFFFFF', characterSpacing: 30 }),
+      new TextRun({ text: `    ${a.title.toUpperCase()}`, size: 17, bold: true, color: 'FFFFFF', characterSpacing: 20 }),
+    ] })], { w: FULL, span: 2, fill: accent, margins: { top: 110, bottom: 110, left: 170, right: 170 } })] }),
+  ];
+  const setting = (k, v, bold) => new TableRow({
+    children: [
+      cell([new Paragraph({ children: [new TextRun({ text: k, size: 16, bold: true, color: PROMPT })] })],
+        { w: 2200, fill: TINT, margins: { top: 90, bottom: 90, left: 150, right: 150 } }),
+      cell([new Paragraph({ spacing: { line: 280 }, children: [new TextRun({ text: v, size: 19, color: bold ? accent : INK, bold })] })],
+        { w: FULL - 2200, margins: { top: 90, bottom: 90, left: 150, right: 150 } }),
+    ],
+  });
+  rows.push(setting('ATTACH', a.files.join('   \u00b7   ')));
+  rows.push(setting('POINTS', a.points));
+  rows.push(setting('SUBMISSION', a.submission));
+  rows.push(setting('PUBLISH', a.publish, true));
+  rows.push(new TableRow({ children: [cell([
+    new Paragraph({ spacing: { after: 90 }, children: [new TextRun({ text: 'PASTE THIS AS THE DESCRIPTION', size: 16, bold: true, color: accent, characterSpacing: 20 })] }),
+    ...a.description.map((t, j) => new Paragraph({
+      spacing: { after: j === a.description.length - 1 ? 0 : 110, line: 300 },
+      children: [new TextRun({ text: t, size: 20, color: INK })],
+    })),
+  ], { w: FULL, span: 2, margins: { top: 150, bottom: 150, left: 190, right: 190 } })] }));
+  return [
+    new Table({ width: { size: FULL, type: WidthType.DXA }, columnWidths: [2200, FULL - 2200], borders: borders(accent, 8), rows }),
+    P('', { after: 220 }),
+  ];
+};
+
+const canvasSection = (C) => {
+  const out = [
+    new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: 'Canvas Setup', size: 38, bold: true, color: HEAD })] }),
+    P(C.blurb, { size: 21, color: PROMPT, after: 150, line: 290 }),
+    calloutBox('HOW TO USE THIS PAGE', [
+      P('Build each assignment exactly as the box says, then copy the description text underneath straight into the Canvas description field. Nothing else on this page goes to students.', { size: 20, after: 70, line: 285 }),
+      P('An assignment in orange starts hidden. Do not publish it until the minute given \u2014 the lesson depends on it.', { size: 20, after: 0, line: 285 }),
+    ]),
+    P('', { after: 230 }),
+  ];
+  C.assignments.forEach((a, i) => out.push(...canvasBlock(a, i)));
+  if (C.notes && C.notes.length) {
+    out.push(calloutBox('ALSO', C.notes.map((t) => new Paragraph({
+      spacing: { after: 70, line: 285 }, indent: { left: 300, hanging: 300 },
+      children: [new TextRun({ text: '\u2014   ', size: 19, bold: true, color: BLUE }), ...rich(t, 19)],
+    }))));
+  }
+  return out;
+};
+
 const makeDoc = (title, children) => new Document({
   creator: 'Criminal Justice Operations', title,
   styles: { default: { document: { run: { font: FONT, size: 21, color: INK } } } },
@@ -177,5 +235,5 @@ module.exports = {
   INK, HEAD, BLUE, PROMPT, WARN, LINE, TINT, WARNTINT, FULL, FONT,
   rich, P, borders, cell, kicker, bigTitle, sub, sectionHead, calloutBox,
   statementPanel, labelValueTable, field, fieldHeight, blockTable, gridTable, dataTable,
-  numberedList, makeDoc, save, nameDateLine,
+  numberedList, canvasBlock, canvasSection, makeDoc, save, nameDateLine,
 };

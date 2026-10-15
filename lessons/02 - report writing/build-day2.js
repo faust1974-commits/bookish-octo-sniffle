@@ -5,11 +5,12 @@ const C = require('./content-day2.js');
 const T = require('./content-teacher.js');
 const SC = require('./content-script.js');
 const F = require('./content-final.js');
+const CV = require('./content-canvas.js');
 const {
   Paragraph, TextRun, PageBreak, Table, TableRow, WidthType, HeightRule, AlignmentType,
   INK, HEAD, BLUE, PROMPT, WARN, TINT, WARNTINT, FULL,
   rich, P, borders, cell, kicker, bigTitle, sub, sectionHead, calloutBox,
-  statementPanel, labelValueTable, blockTable, gridTable, numberedList,
+  statementPanel, labelValueTable, blockTable, gridTable, numberedList, canvasSection,
   makeDoc, save, nameDateLine,
 } = K;
 
@@ -198,6 +199,8 @@ const teacherKids = [
   kicker('CRIMINAL JUSTICE OPERATIONS · TEACHER COPY', WARN),
   bigTitle(T.title),
   sub(T.subtitle),
+  ...canvasSection(CV),
+  new Paragraph({ children: [new PageBreak()] }),
   calloutBox('THE ONE IDEA', [P(T.bigIdea, { size: 21, after: 0, line: 290 })]),
   P('', { after: 180 }),
   sectionHead('STANDARDS COVERED'),
